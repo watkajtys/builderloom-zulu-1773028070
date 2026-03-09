@@ -554,3 +554,50 @@ print(json.dumps({
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Integrate Python static analysis execution', async ({ page }) => {
+  const scriptContent = `
+import sys
+import json
+from pathlib import Path
+from backend.tools.python_analyzer import PythonAnalyzer
+
+test_file = Path("test_file_ruff.py")
+test_file.write_text("""
+def foo():
+ x = 1
+ return x
+import os
+""")
+
+analyzer = PythonAnalyzer(config_path="backend/tools/ruff.toml")
+result = analyzer.analyze_file(str(test_file))
+
+print("---ANALYZER_RESULT---")
+print(json.dumps(result))
+
+test_file.unlink()
+`;
+  const filename = 'test_analyzer_integration_' + crypto.randomBytes(4).toString('hex') + '.py';
+  fs.writeFileSync(filename, scriptContent);
+  
+  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+  const outputLines = combinedOutput.toString().trim().split('\n');
+  
+  fs.unlinkSync(filename);
+  
+  const resultIdx = outputLines.indexOf('---ANALYZER_RESULT---');
+  expect(resultIdx).toBeGreaterThan(-1);
+  
+  const resultJson = JSON.parse(outputLines[resultIdx + 1]);
+  
+  expect(resultJson.status).toBe('issues_found');
+  expect(resultJson.issues.length).toBeGreaterThan(0);
+  
+  const codes = resultJson.issues.map((i: any) => i.code);
+  expect(codes).toContain('E402'); // Module level import not at top of file
+  expect(codes).toContain('F401'); // os imported but unused
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});

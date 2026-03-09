@@ -9,3 +9,4 @@ playwright
 pocketbase
 pytest
 pytest-asyncio
+ruff
