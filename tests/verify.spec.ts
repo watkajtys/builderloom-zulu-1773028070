@@ -582,10 +582,22 @@ import os
 analyzer = PythonAnalyzer(config_path="backend/tools/ruff.toml")
 result = analyzer.analyze_file(str(test_file))
 
+test_file_clean = Path("test_file_clean.py")
+test_file_clean.write_text("""
+def foo():
+    x = 1
+    return x
+""")
+
+result_clean = analyzer.analyze_file(str(test_file_clean))
+
 print("---ANALYZER_RESULT---")
 print(json.dumps(result))
+print("---CLEAN_RESULT---")
+print(json.dumps(result_clean))
 
 test_file.unlink()
+test_file_clean.unlink()
 `;
   const filename = 'test_analyzer_integration_' + crypto.randomBytes(4).toString('hex') + '.py';
   fs.writeFileSync(filename, scriptContent);
@@ -609,6 +621,13 @@ test_file.unlink()
   const codes = resultJson.issues.map((i: any) => i.code);
   expect(codes).toContain('E402'); // Module level import not at top of file
   expect(codes).toContain('F401'); // os imported but unused
+  
+  const cleanResultIdx = outputLines.indexOf('---CLEAN_RESULT---');
+  expect(cleanResultIdx).toBeGreaterThan(-1);
+  
+  const cleanResultJson = JSON.parse(outputLines[cleanResultIdx + 1]);
+  expect(cleanResultJson.status).toBe('success');
+  expect(cleanResultJson.issues.length).toBe(0);
 
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
