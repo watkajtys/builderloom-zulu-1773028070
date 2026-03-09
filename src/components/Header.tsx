@@ -1,4 +1,5 @@
 import React from 'react';
+import { Search, Bell } from 'lucide-react';
 
 export function Header() {
   return (
@@ -17,10 +18,10 @@ export function Header() {
       <div className="flex items-center gap-4">
         <div className="relative">
           <input className="h-6 pl-2 pr-8 text-[10px] bg-dark-surface border border-border-muted rounded text-slate-300 focus:border-electric-blue focus:ring-0 w-40 transition-all font-mono" placeholder="SEARCH_ZULU_SYSTEM..." type="text" />
-          <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 text-sm">search</span>
+          <Search size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500" />
         </div>
         <button className="text-slate-500 hover:text-electric-blue transition-colors">
-          <span className="material-symbols-outlined text-[18px]">notifications</span>
+          <Bell size={18} />
         </button>
       </div>
     </header>

@@ -5,6 +5,7 @@ import { TelemetryStream } from './TelemetryStream';
 import { InferenceChart } from './InferenceChart';
 import { useTelemetry } from '../hooks/useTelemetry';
 import { useTelemetryLogs } from '../hooks/useTelemetryLogs';
+import { Cpu, BarChart3, RefreshCw, Maximize2 } from 'lucide-react';
 
 export function SystemHealth() {
   const { primaryData, secondaryData } = useTelemetry();
@@ -18,10 +19,10 @@ export function SystemHealth() {
             <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Hardware_State // Real-time</h2>
             <div className="flex gap-1">
               <button className="p-1 rounded text-slate-500 hover:text-electric-blue transition-colors">
-                <span className="material-symbols-outlined text-sm">refresh</span>
+                <RefreshCw size={14} />
               </button>
               <button className="p-1 rounded text-slate-500 hover:text-electric-blue transition-colors">
-                <span className="material-symbols-outlined text-sm">open_in_full</span>
+                <Maximize2 size={14} />
               </button>
             </div>
           </div>
@@ -29,7 +30,7 @@ export function SystemHealth() {
           <div className="grid grid-cols-2 gap-4">
             <MetricCard
               title="CPU_CORE_LOAD"
-              icon="memory"
+              icon={<Cpu size={18} />}
               value="24.8"
               unit="%"
               change="2.5"
@@ -39,7 +40,7 @@ export function SystemHealth() {
             />
             <MetricCard
               title="MEMORY_ALLOC"
-              icon="equalizer"
+              icon={<BarChart3 size={18} />}
               value="4.2"
               unit="GB"
               change="0.8"

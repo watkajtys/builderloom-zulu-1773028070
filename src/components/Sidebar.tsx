@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { Webhook, Activity, HeartPulse, Kanban, Map, Cpu, Database } from 'lucide-react';
 
 export function Sidebar() {
   return (
@@ -7,7 +8,7 @@ export function Sidebar() {
       <div className="p-5">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 bg-electric-blue flex items-center justify-center text-obsidian rounded-sm">
-            <span className="material-symbols-outlined text-lg font-bold">webhook</span>
+            <Webhook size={18} className="font-bold" />
           </div>
           <div className="flex flex-col">
             <h1 className="text-xs font-black leading-tight uppercase tracking-tighter text-white">Zulu <span className="text-electric-blue">AI</span></h1>
@@ -17,19 +18,19 @@ export function Sidebar() {
       </div>
       <nav className="flex-1 px-3 space-y-0.5">
         <NavLink to="/" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded transition-all group ${isActive ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
-          <span className="material-symbols-outlined text-[18px]">analytics</span>
+          <Activity size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Telemetry</span>
         </NavLink>
         <NavLink to="/system-health" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded transition-all ${isActive ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
-          <span className="material-symbols-outlined text-[18px] fill-[1]">monitor_heart</span>
+          <HeartPulse size={18} className="fill-[1]" />
           <span className="text-xs font-bold uppercase tracking-wider neon-glow-blue">System Health</span>
         </NavLink>
         <NavLink to="/kanban" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-neon-purple hover:bg-white/5 transition-all">
-          <span className="material-symbols-outlined text-[18px]">view_kanban</span>
+          <Kanban size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Kanban</span>
         </NavLink>
         <NavLink to="/roadmap" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-          <span className="material-symbols-outlined text-[18px]">alt_route</span>
+          <Map size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Roadmap</span>
         </NavLink>
 
@@ -37,11 +38,11 @@ export function Sidebar() {
           <p className="px-3 text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">Infrastructure</p>
         </div>
         <NavLink to="/clusters" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-          <span className="material-symbols-outlined text-[18px]">memory</span>
+          <Cpu size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Clusters</span>
         </NavLink>
         <NavLink to="/vectors" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-          <span className="material-symbols-outlined text-[18px]">database</span>
+          <Database size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Vectors</span>
         </NavLink>
       </nav>

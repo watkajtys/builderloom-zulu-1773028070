@@ -10,3 +10,4 @@ test-results
 evidence.png
 jules.patch
 *.log
+__pycache__/

@@ -1,8 +1,9 @@
 import React from 'react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   value: string;
   unit: string;
   change: string;
@@ -26,16 +27,14 @@ export function MetricCard({ title, icon, value, unit, change, trend, percentage
       <div className={`absolute top-0 right-0 w-16 h-16 ${bgClass} -mr-8 -mt-8 rounded-full blur-2xl`}></div>
       <div className="flex justify-between items-start mb-4">
         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{title}</span>
-        <span className={`material-symbols-outlined ${textClass} text-lg`}>{icon}</span>
+        <span className={`${textClass}`}>{icon}</span>
       </div>
       <div className="flex items-baseline gap-2">
         <span className="text-3xl font-black text-white tracking-tighter">
           {value}<span className="text-xs text-slate-500 ml-1">{unit}</span>
         </span>
         <span className={`text-[10px] ${textClass} font-bold flex items-center ${bgBadgeClass} px-1.5 py-0.5 rounded`}>
-          <span className="material-symbols-outlined text-[10px] mr-1">
-            {trend === 'up' ? 'arrow_upward' : 'arrow_downward'}
-          </span>
+          {trend === 'up' ? <ArrowUp size={10} className="mr-1" /> : <ArrowDown size={10} className="mr-1" />}
           {trend === 'up' ? '+' : '-'}{change}
         </span>
       </div>

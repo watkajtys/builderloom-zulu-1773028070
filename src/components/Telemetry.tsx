@@ -4,6 +4,7 @@ import { useTelemetryLogs } from '../hooks/useTelemetryLogs';
 import { TelemetryHeader } from './TelemetryHeader';
 import { TelemetryStats } from './TelemetryStats';
 import { TelemetryLogGrid } from './TelemetryLogGrid';
+import { Database, Cpu } from 'lucide-react';
 
 export function Telemetry() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -58,11 +59,11 @@ export function Telemetry() {
       <footer className="h-10 border-t border-border-muted bg-obsidian flex items-center justify-between px-6 flex-shrink-0 text-[10px] font-bold text-zinc-grey uppercase">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">database</span>
+            <Database size={14} />
             <span>Elastic Index: US-EAST-1-PROD</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm">memory</span>
+            <Cpu size={14} />
             <span>CPU: 24%</span>
           </div>
         </div>

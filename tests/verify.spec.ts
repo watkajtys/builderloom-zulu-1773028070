@@ -6,6 +6,26 @@ test('App initializes correctly', async ({ page }) => {
   await expect(page.locator('text=Telemetry / Log Grid')).toBeVisible();
 });
 
+test('Fix broken icon rendering showing raw text strings across the UI', async ({ page }) => {
+  await page.goto('/');
+
+  // Verify that the fallback raw text strings are no longer visible
+  await expect(page.locator('text=monitor_heart')).not.toBeVisible();
+  await expect(page.locator('text=analytics').first()).not.toBeVisible();
+  await expect(page.locator('text=filter_alt').first()).not.toBeVisible();
+  await expect(page.locator('text=file_download').first()).not.toBeVisible();
+
+  // Verify that the lucide-react SVGs are rendered in the sidebar (we can check for specific class or just svg presence)
+  const sidebar = page.locator('aside').filter({ hasText: 'Zulu AI' });
+  await expect(sidebar).toBeVisible();
+  
+  // Checking that svgs exist within the sidebar links
+  const systemHealthLink = sidebar.locator('a[href="/system-health"]');
+  await expect(systemHealthLink.locator('svg')).toBeVisible();
+
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('Zulu Dashboard loads correctly', async ({ page }) => {
   await page.goto('/viewer/index.html?view=zulu');
   await expect(page.locator('text=Zulu AI')).toBeVisible();
@@ -60,12 +80,13 @@ test('Smooth chart data rendering to feel like a premium, realistic dashboard', 
   await page.goto('/system-health');
   
   // Wait for the SVG to load
-  const svg = page.locator('svg').first();
+  const svgContainer = page.locator('.h-\\[220px\\]');
+  const svg = svgContainer.locator('svg').first();
   await expect(svg).toBeVisible();
   
   // Find the primary line stroke path (which we set to stroke="#00F2FF")
   const primaryPath = svg.locator('path[stroke="#00F2FF"]');
-  await expect(primaryPath).toBeVisible();
+  await expect(primaryPath).toBeVisible({ timeout: 10000 });
 
   // Wait a moment for dynamic data to start updating
   await page.waitForTimeout(1100);

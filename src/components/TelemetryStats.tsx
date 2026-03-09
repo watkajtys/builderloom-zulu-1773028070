@@ -1,4 +1,5 @@
 import React from 'react';
+import { TrendingDown } from 'lucide-react';
 
 interface TelemetryStatsProps {
   stats: {
@@ -36,8 +37,8 @@ export function TelemetryStats({ stats }: TelemetryStatsProps) {
           <h3 className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">Error Rate</h3>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl font-bold text-rose-500">{stats.errorRate}%</span>
-            <span className="text-[10px] text-electric-blue font-bold flex items-center">
-              <span className="material-symbols-outlined text-xs">trending_down</span> 4%
+            <span className="text-[10px] text-electric-blue font-bold flex items-center gap-1">
+              <TrendingDown size={12} /> 4%
             </span>
           </div>
         </div>

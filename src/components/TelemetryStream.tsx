@@ -1,6 +1,7 @@
 import React from 'react';
 import { TelemetryLog } from '../hooks/useTelemetryLogs';
 import { getLogLevelConfig, formatLogMessage } from '../utils/telemetryConfig';
+import { Terminal, SlidersHorizontal } from 'lucide-react';
 
 interface TelemetryStreamProps {
   logs: TelemetryLog[];
@@ -34,7 +35,7 @@ export function TelemetryStream({ logs }: TelemetryStreamProps) {
     <div className="w-[40%] flex flex-col bg-obsidian border-l border-border-muted overflow-hidden">
       <div className="h-10 px-4 flex items-center justify-between border-b border-border-muted bg-dark-surface/50 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-electric-blue text-sm">terminal</span>
+          <Terminal size={14} className="text-electric-blue" />
           <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Telemetry_Stream</h3>
         </div>
         <div className="flex items-center gap-3">
@@ -43,7 +44,7 @@ export function TelemetryStream({ logs }: TelemetryStreamProps) {
             <span className="text-[8px] font-black text-electric-blue uppercase tracking-widest">LIVE</span>
           </div>
           <button className="text-slate-500 hover:text-white transition-colors">
-            <span className="material-symbols-outlined text-sm">tune</span>
+            <SlidersHorizontal size={14} />
           </button>
         </div>
       </div>

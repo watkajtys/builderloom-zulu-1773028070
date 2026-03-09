@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { getLogLevelConfig } from '../utils/telemetryConfig';
+import { Filter, Settings, Download } from 'lucide-react';
 
 interface TelemetryHeaderProps {
   activeLevels: string[];
@@ -30,7 +31,7 @@ export function TelemetryHeader({ activeLevels, toggleLevel, searchQuery, setSea
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border-muted hover:bg-white/5 transition-all"
           >
-            <span className="material-symbols-outlined text-[18px]">filter_alt</span>
+            <Filter size={18} />
             <span className="text-[11px] font-bold uppercase tracking-wider">Filters</span>
           </button>
           
@@ -38,7 +39,7 @@ export function TelemetryHeader({ activeLevels, toggleLevel, searchQuery, setSea
             <div className="absolute right-0 top-full mt-2 w-72 bg-dark-surface border border-border-muted rounded-xl shadow-2xl p-4 hidden group-hover:block z-50">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter Config</h4>
-                <span className="material-symbols-outlined text-sm text-slate-500">settings</span>
+                <Settings size={14} className="text-slate-500" />
               </div>
               <div className="space-y-4">
                 <div className="space-y-1.5">
@@ -76,7 +77,7 @@ export function TelemetryHeader({ activeLevels, toggleLevel, searchQuery, setSea
           )}
         </div>
         <button className="p-2 rounded-lg hover:bg-white/5 text-zinc-grey">
-          <span className="material-symbols-outlined text-[20px]">file_download</span>
+          <Download size={20} />
         </button>
       </div>
     </header>
