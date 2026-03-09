@@ -4,11 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loom Observer Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "obsidian": "#050505",
+                        "electric-blue": "#00f2ff",
+                        "neon-purple": "#bc13fe",
+                        "dark-surface": "#111111",
+                        "border-muted": "#1e1e26",
+                        "zinc-grey": "#71717a"
+                    },
+                    fontFamily: {
+                        "display": ["Geist Sans", "sans-serif"],
+                        "mono": ["Geist Mono", "monospace"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&family=Geist:wght@300;400;500;600;700&display=swap');
+        
         body { background-color: #0f172a; color: #f8fafc; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -21,6 +46,13 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #050505; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e1e26; border-radius: 9999px; }
+        .neon-glow-blue { text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+        .neon-glow-purple { text-shadow: 0 0 10px rgba(188, 19, 254, 0.5); }
+        .neon-border-blue { box-shadow: 0 0 5px rgba(0, 242, 255, 0.2); }
     </style>
 </head>
 <body>
@@ -30,6 +62,301 @@
         const { useState, useEffect, useRef } = React;
 
         function App() {
+        function ZuluDashboard({ onBack }) {
+            const { useState } = React;
+            const [activeTab, setActiveTab] = useState('health');
+
+            return (
+                <div className="flex h-screen overflow-hidden font-display bg-[#09090b] text-[#f8fafc] w-full">
+                    <aside className="w-60 border-r border-[#1e1e26] flex flex-col bg-[#09090b] flex-shrink-0">
+                        <div className="p-5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-7 h-7 bg-[#00f2ff] flex items-center justify-center text-[#09090b] rounded-sm cursor-pointer" onClick={onBack} title="Back to Loom">
+                                    <span className="material-symbols-outlined text-lg font-bold">arrow_back</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h1 className="text-xs font-black leading-tight uppercase tracking-tighter text-white">Zulu <span className="text-[#00f2ff]">AI</span></h1>
+                                    <p className="text-[9px] text-[#71717a] uppercase tracking-widest font-bold">Factory OS</p>
+                                </div>
+                            </div>
+                        </div>
+                        <nav className="flex-1 px-3 space-y-0.5">
+                            <button onClick={() => setActiveTab('telemetry')} className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all group ${activeTab === 'telemetry' ? 'bg-[#00f2ff]/5 text-[#00f2ff] border-l-2 border-[#00f2ff]' : 'text-[#71717a] hover:text-[#00f2ff] hover:bg-white/5'}`}>
+                                <span className="material-symbols-outlined text-[18px]">analytics</span>
+                                <span className={`text-xs font-semibold uppercase tracking-wider ${activeTab === 'telemetry' ? 'font-bold neon-glow-blue' : ''}`}>Telemetry</span>
+                            </button>
+                            <button onClick={() => setActiveTab('health')} className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all ${activeTab === 'health' ? 'bg-[#00f2ff]/5 text-[#00f2ff] border-l-2 border-[#00f2ff]' : 'text-[#71717a] hover:text-[#00f2ff] hover:bg-white/5'}`}>
+                                <span className={`material-symbols-outlined text-[18px] ${activeTab === 'health' ? 'fill-[1]' : ''}`}>monitor_heart</span>
+                                <span className={`text-xs font-semibold uppercase tracking-wider ${activeTab === 'health' ? 'font-bold neon-glow-blue' : ''}`}>System Health</span>
+                            </button>
+                            <button onClick={() => setActiveTab('kanban')} className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all ${activeTab === 'kanban' ? 'bg-[#bc13fe]/5 text-[#bc13fe] border-l-2 border-[#bc13fe]' : 'text-[#71717a] hover:text-[#bc13fe] hover:bg-white/5'}`}>
+                                <span className="material-symbols-outlined text-[18px]">view_kanban</span>
+                                <span className={`text-xs font-semibold uppercase tracking-wider ${activeTab === 'kanban' ? 'font-bold neon-glow-purple' : ''}`}>Kanban</span>
+                            </button>
+                            <button onClick={() => setActiveTab('roadmap')} className={`w-full flex items-center gap-3 px-3 py-2 rounded transition-all ${activeTab === 'roadmap' ? 'bg-white/10 text-white border-l-2 border-white' : 'text-[#71717a] hover:text-white hover:bg-white/5'}`}>
+                                <span className="material-symbols-outlined text-[18px]">alt_route</span>
+                                <span className={`text-xs font-semibold uppercase tracking-wider ${activeTab === 'roadmap' ? 'font-bold' : ''}`}>Roadmap</span>
+                            </button>
+                            <div className="pt-6 pb-2">
+                                <p className="px-3 text-[9px] font-black text-[#71717a] uppercase tracking-[0.2em]">Infrastructure</p>
+                            </div>
+                            <button className="w-full flex items-center gap-3 px-3 py-2 rounded text-[#71717a] hover:text-white hover:bg-white/5 transition-all">
+                                <span className="material-symbols-outlined text-[18px]">memory</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider">Clusters</span>
+                            </button>
+                            <button className="w-full flex items-center gap-3 px-3 py-2 rounded text-[#71717a] hover:text-white hover:bg-white/5 transition-all">
+                                <span className="material-symbols-outlined text-[18px]">database</span>
+                                <span className="text-xs font-semibold uppercase tracking-wider">Vectors</span>
+                            </button>
+                        </nav>
+                        <div className="p-4 border-t border-[#1e1e26]">
+                            <div className="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer">
+                                <img alt="User" className="w-7 h-7 rounded-sm grayscale hover:grayscale-0 transition-all" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8n2h3FHCtOYJgNIdatiF69XTnXeYK_8v8XvBV9-uj5-l0xDi-DlFv5R3hmB4kjeBAEo_nHuSMbBPzreqJQ_E-QLvDOZFjhId4dhVfYduM-e1pcOQNWuH-58yqJjtnusOUZ4PXGSIvIOn0xqDPidd9c6EynCKftvMCtVN-jbP72BROVKVJFnd3FQPYKdDGIIwDsHgDaSBVS79Sq0b_C5TLNBDddZertU0g9Qkq9XHUDF4qjvRQxf6Gekh9EPy0XNvtXv7fWGP2guT6"/>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-bold text-white truncate">ALEX_CHEN</p>
+                                    <p className="text-[9px] text-[#00f2ff]/70 truncate uppercase tracking-tighter">Priority-Zero</p>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                    <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#09090b]">
+                        <header className="h-10 border-b border-[#1e1e26] bg-[#09090b] flex items-center justify-between px-6 flex-shrink-0">
+                            <div className="flex items-center gap-8">
+                                <nav className="flex items-center gap-4">
+                                    <button className="text-[10px] font-black text-[#00f2ff] border-b border-[#00f2ff] pb-0.5 tracking-widest uppercase">Health</button>
+                                    <button className="text-[10px] font-bold text-[#71717a] hover:text-white tracking-widest uppercase transition-colors">Logs</button>
+                                    <button className="text-[10px] font-bold text-[#71717a] hover:text-white tracking-widest uppercase transition-colors">Nodes</button>
+                                </nav>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1 h-1 rounded-full bg-[#00f2ff] animate-pulse"></div>
+                                    <span className="text-[9px] font-black text-[#00f2ff] uppercase tracking-tighter neon-glow-blue">Engine Active</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <input className="h-6 pl-2 pr-8 text-[10px] bg-[#121217] border border-[#1e1e26] rounded text-[#f8fafc] focus:border-[#00f2ff] focus:ring-0 w-40 transition-all font-mono" placeholder="SEARCH_ZULU_SYSTEM..." type="text"/>
+                                    <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-[#71717a] text-sm">search</span>
+                                </div>
+                                <button className="text-[#71717a] hover:text-[#00f2ff] transition-colors">
+                                    <span className="material-symbols-outlined text-[18px]">notifications</span>
+                                </button>
+                            </div>
+                        </header>
+                        <div className="flex flex-1 overflow-hidden">
+                            <div className="w-[60%] flex flex-col border-r border-[#1e1e26] bg-[#09090b] overflow-y-auto custom-scrollbar">
+                                <div className="p-6 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h2 className="text-[10px] font-black text-[#71717a] uppercase tracking-[0.3em]">{activeTab} // Real-time</h2>
+                                        <div className="flex gap-1">
+                                            <button className="p-1 rounded text-[#71717a] hover:text-[#00f2ff] transition-colors"><span className="material-symbols-outlined text-sm">refresh</span></button>
+                                            <button className="p-1 rounded text-[#71717a] hover:text-[#00f2ff] transition-colors"><span className="material-symbols-outlined text-sm">open_in_full</span></button>
+                                        </div>
+                                    </div>
+                                    
+                                    {activeTab === 'health' && (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="p-4 bg-[#121217] border border-[#1e1e26] rounded-lg neon-border-blue relative overflow-hidden group">
+                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-[#00f2ff]/5 -mr-8 -mt-8 rounded-full blur-2xl"></div>
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <span className="text-[9px] font-black text-[#71717a] uppercase tracking-widest">CPU_CORE_LOAD</span>
+                                                        <span className="material-symbols-outlined text-[#00f2ff] text-lg">memory</span>
+                                                    </div>
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="text-3xl font-black text-white tracking-tighter">24.8<span className="text-xs text-[#71717a] ml-1">%</span></span>
+                                                        <span className="text-[10px] text-[#00f2ff] font-bold flex items-center bg-[#00f2ff]/10 px-1.5 py-0.5 rounded">
+                                                            <span className="material-symbols-outlined text-[10px] mr-1">arrow_downward</span> -2.5
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-4 h-1 bg-[#09090b] rounded-full overflow-hidden">
+                                                        <div className="h-full bg-[#00f2ff] rounded-full w-[24.8%] shadow-[0_0_8px_rgba(0,242,255,0.8)]"></div>
+                                                    </div>
+                                                </div>
+                                                <div className="p-4 bg-[#121217] border border-[#1e1e26] rounded-lg relative overflow-hidden group">
+                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-[#bc13fe]/5 -mr-8 -mt-8 rounded-full blur-2xl"></div>
+                                                    <div className="flex justify-between items-start mb-4">
+                                                        <span className="text-[9px] font-black text-[#71717a] uppercase tracking-widest">MEMORY_ALLOC</span>
+                                                        <span className="material-symbols-outlined text-[#bc13fe] text-lg">equalizer</span>
+                                                    </div>
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="text-3xl font-black text-white tracking-tighter">4.2<span className="text-xs text-[#71717a] ml-1">GB</span></span>
+                                                        <span className="text-[10px] text-[#bc13fe] font-bold flex items-center bg-[#bc13fe]/10 px-1.5 py-0.5 rounded">
+                                                            <span className="material-symbols-outlined text-[10px] mr-1">arrow_upward</span> +0.8
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-4 h-1 bg-[#09090b] rounded-full overflow-hidden">
+                                                        <div className="h-full bg-[#bc13fe] rounded-full w-[62%] shadow-[0_0_8px_rgba(188,19,254,0.8)]"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="p-6 bg-[#121217] border border-[#1e1e26] rounded-lg">
+                                                <div className="flex items-center justify-between mb-8">
+                                                    <div>
+                                                        <h3 className="text-[10px] font-black text-white uppercase tracking-widest">Inference Throughput</h3>
+                                                        <p className="text-[9px] text-[#71717a] mt-1 uppercase tracking-tighter font-mono">Factory Node Aggregation [REQ/S]</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-[#00f2ff]"></div>
+                                                            <span className="text-[9px] font-bold text-[#71717a] uppercase tracking-tighter">Primary</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-[#bc13fe]"></div>
+                                                            <span className="text-[9px] font-bold text-[#71717a] uppercase tracking-tighter">Secondary</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="h-[220px] w-full relative">
+                                                    <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 100">
+                                                        <defs>
+                                                            <linearGradient id="blueGrad" x1="0" x2="0" y1="0" y2="1">
+                                                                <stop offset="0%" stopColor="#00f2ff" stopOpacity="0.2"></stop>
+                                                                <stop offset="100%" stopColor="#00f2ff" stopOpacity="0"></stop>
+                                                            </linearGradient>
+                                                            <linearGradient id="purpleGrad" x1="0" x2="0" y1="0" y2="1">
+                                                                <stop offset="0%" stopColor="#bc13fe" stopOpacity="0.1"></stop>
+                                                                <stop offset="100%" stopColor="#bc13fe" stopOpacity="0"></stop>
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <path d="M0,80 Q20,70 40,75 T80,40 T120,60 T160,20 T200,50 T240,30 T280,70 T320,40 T360,55 T400,30 V100 H0 Z" fill="url(#blueGrad)"></path>
+                                                        <path d="M0,80 Q20,70 40,75 T80,40 T120,60 T160,20 T200,50 T240,30 T280,70 T320,40 T360,55 T400,30" fill="none" stroke="#00f2ff" strokeWidth="2"></path>
+                                                        <path d="M0,90 Q30,80 60,85 T110,70 T170,80 T230,65 T300,75 T400,60" fill="none" stroke="#bc13fe" strokeDasharray="2 2" strokeWidth="1.5"></path>
+                                                    </svg>
+                                                    <div className="absolute inset-y-0 left-0 flex flex-col justify-between text-[8px] font-mono font-bold text-[#71717a] py-1">
+                                                        <span>2.0K</span>
+                                                        <span>1.0K</span>
+                                                        <span>0.0K</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between mt-4 text-[8px] font-mono font-bold text-[#71717a] uppercase">
+                                                    <span>14:20:00</span>
+                                                    <span>14:25:00</span>
+                                                    <span>14:30:00</span>
+                                                    <span>14:35:00</span>
+                                                    <span>14:40:00</span>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <h3 className="text-[9px] font-black text-[#71717a] uppercase tracking-[0.3em]">Worker_Nodes</h3>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="p-3 bg-[#121217] border border-[#1e1e26] rounded flex items-center justify-between border-l-2 border-l-[#00f2ff]">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-black text-white uppercase tracking-tighter">NODE-01</span>
+                                                            <span className="text-[8px] text-[#00f2ff] font-bold uppercase tracking-tighter">ONLINE</span>
+                                                        </div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-[#00f2ff] shadow-[0_0_8px_#00f2ff]"></div>
+                                                    </div>
+                                                    <div className="p-3 bg-[#121217] border border-[#1e1e26] rounded flex items-center justify-between">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-black text-white uppercase tracking-tighter text-opacity-50">NODE-02</span>
+                                                            <span className="text-[8px] text-[#71717a] font-bold uppercase tracking-tighter">STANDBY</span>
+                                                        </div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-[#1e1e26]"></div>
+                                                    </div>
+                                                    <div className="p-3 bg-[#121217] border border-[#1e1e26] rounded flex items-center justify-between border-l-2 border-l-[#bc13fe]">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-black text-white uppercase tracking-tighter">NODE-03</span>
+                                                            <span className="text-[8px] text-[#bc13fe] font-bold uppercase tracking-tighter">SYNCING</span>
+                                                        </div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-[#bc13fe] shadow-[0_0_8px_#bc13fe]"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                    {activeTab !== 'health' && (
+                                        <div className="flex items-center justify-center h-[500px] text-[#71717a] font-mono text-sm border border-dashed border-[#1e1e26] rounded-lg">
+                                            {activeTab.toUpperCase()} MODULE PENDING INTEGRATION
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="w-[40%] flex flex-col bg-[#09090b] border-l border-[#1e1e26] overflow-hidden">
+                                <div className="h-10 px-4 flex items-center justify-between border-b border-[#1e1e26] bg-[#121217]/50 flex-shrink-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[#00f2ff] text-sm">terminal</span>
+                                        <h3 className="text-[10px] font-black text-[#f8fafc] uppercase tracking-[0.2em]">Telemetry_Stream</h3>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-1 h-1 rounded-full bg-[#00f2ff] animate-pulse"></div>
+                                            <span className="text-[8px] font-black text-[#00f2ff] uppercase tracking-widest">LIVE</span>
+                                        </div>
+                                        <button className="text-[#71717a] hover:text-white transition-colors"><span className="material-symbols-outlined text-sm">tune</span></button>
+                                    </div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 font-mono text-[10px] leading-[1.6] space-y-1 bg-[#09090b]">
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:01</span>
+                                        <span className="text-[#00f2ff] shrink-0 font-bold">[SYS]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">Garbage collection triggered: +245MB heap</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:12</span>
+                                        <span className="text-[#00f2ff] shrink-0 font-bold">[SYS]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">Handshake initialized: LB_ALPHA &lt;-&gt; NODE_07</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:15</span>
+                                        <span className="text-[#bc13fe] shrink-0 font-bold">[DBG]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">WS_CONN_ESTABLISHED IP::219.0.4.11</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:24</span>
+                                        <span className="text-[#00f2ff] shrink-0 font-bold">[INF]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">Weights sync: llama-3-70b-zulu [OK]</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:35</span>
+                                        <span className="text-amber-500 shrink-0 font-bold">[WRN]</span>
+                                        <span className="text-amber-200/80">LATENCY_THRESHOLD_EXCEEDED API_GATEWAY: 450ms</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:42</span>
+                                        <span className="text-[#00f2ff] shrink-0 font-bold">[SYS]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">Heartbeat: 12/12 workers active</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:30:51</span>
+                                        <span className="text-[#bc13fe] shrink-0 font-bold">[DBG]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">Cache_Purge: 1,420 entries (TTL)</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:31:05</span>
+                                        <span className="text-[#00f2ff] shrink-0 font-bold">[INF]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">LB_REGION: us-east-1 balance confirmed</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:31:12</span>
+                                        <span className="text-red-500 shrink-0 font-bold">[ERR]</span>
+                                        <span className="text-red-400 font-bold underline decoration-red-900">VECTOR_STORE_CONNECTION_REFUSED :: retrying...</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:31:18</span>
+                                        <span className="text-[#bc13fe] shrink-0 font-bold">[DBG]</span>
+                                        <span className="text-[#71717a] group-hover:text-[#f8fafc]">Auto_Optimize: analyzing Pool-B fragments</span>
+                                    </div>
+                                    <div className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
+                                        <span className="text-[#71717a] shrink-0 uppercase">14:31:25</span>
+                                        <span className="text-[#00f2ff] shrink-0 font-bold">[SYS]</span>
+                                        <span className="text-white font-bold">DEPLOY_COMPLETE: v2.4.1-alpha LIVE</span>
+                                    </div>
+                                </div>
+                                <div className="h-12 border-t border-[#1e1e26] bg-[#121217] flex items-center justify-between px-4 flex-shrink-0">
+                                    <div className="flex items-center gap-2">
+                                        <input className="bg-[#09090b] border-[#1e1e26] text-[10px] h-7 rounded px-3 focus:border-[#00f2ff] focus:ring-0 w-44 text-[#71717a] font-mono" placeholder="FILTER_STREAM..." type="text"/>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-[8px] font-mono text-[#71717a] uppercase">1.2k events/hr</span>
+                                        <button className="bg-[#121217] border border-[#1e1e26] text-[#71717a] text-[9px] font-black px-4 py-1.5 rounded uppercase hover:text-white hover:bg-white/5 transition-colors">Export</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        }
             const [state, setState] = useState(null);
             const [gallery, setGallery] = useState(null);
             const [visiblePatches, setVisiblePatches] = useState({});
@@ -37,9 +364,21 @@
             const [isSteering, setIsSteering] = useState(false);
             const [isShuttingDown, setIsShuttingDown] = useState(false);
             const [steerNote, setSteerNote] = useState("");
-            const [viewMode, setViewMode] = useState("kanban"); // "history" | "kanban"
+            
+            // Parse initial view from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialView = urlParams.get('view') || 'kanban';
+            const [viewMode, setViewMode] = useState(initialView); // "history" | "kanban" | "zulu"
+            
             const [logFilter, setLogFilter] = useState("all"); // "all" | "error" | "jules" | "brain"
             const [expandedIters, setExpandedIters] = useState({});
+
+            // Sync view mode to URL
+            useEffect(() => {
+                const url = new URL(window.location);
+                url.searchParams.set('view', viewMode);
+                window.history.pushState({}, '', url);
+            }, [viewMode]);
             
             const openGallery = (images, index = 0) => {
                 setGallery({ images: images.filter(Boolean), index });
@@ -186,25 +525,30 @@
                 }
             };
 
-            if (!state) return <div className="p-8 text-center text-slate-400">Waiting for Loom Factory to start...</div>;
+            if (viewMode === "zulu") {
+                return <ZuluDashboard onBack={() => setViewMode("kanban")} />;
+            }
+
+            if (!state) return <div className="p-8 text-center text-[#71717a]">Waiting for Loom Factory to start...</div>;
+
 
             return (
-                <div className="h-screen flex flex-col bg-[#0f172a] text-slate-200 overflow-hidden">
+                <div className="h-screen flex flex-col bg-[#0f172a] text-[#f8fafc] overflow-hidden">
                     {gallery && gallery.images && gallery.images.length > 0 && (
                         <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4" onClick={closeGallery}>
                             <img src={gallery.images[gallery.index]} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()} />
                             
                             {gallery.images.length > 1 && (
                                 <>
-                                    <button onClick={prevImage} className="absolute left-6 top-1/2 -translate-y-1/2 bg-slate-800/80 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-slate-700 border border-slate-600 text-3xl font-bold backdrop-blur transition-all hover:scale-110">&lsaquo;</button>
-                                    <button onClick={nextImage} className="absolute right-6 top-1/2 -translate-y-1/2 bg-slate-800/80 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-slate-700 border border-slate-600 text-3xl font-bold backdrop-blur transition-all hover:scale-110">&rsaquo;</button>
+                                    <button onClick={prevImage} className="absolute left-6 top-1/2 -translate-y-1/2 bg-[#1e1e26]/80 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-[#1e1e26] border border-[#71717a] text-3xl font-bold backdrop-blur transition-all hover:scale-110">&lsaquo;</button>
+                                    <button onClick={nextImage} className="absolute right-6 top-1/2 -translate-y-1/2 bg-[#1e1e26]/80 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-[#1e1e26] border border-[#71717a] text-3xl font-bold backdrop-blur transition-all hover:scale-110">&rsaquo;</button>
                                 </>
                             )}
                             
-                            <button onClick={closeGallery} className="absolute top-6 right-6 bg-slate-800/80 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-slate-700 border border-slate-600 text-xl font-bold backdrop-blur">X</button>
+                            <button onClick={closeGallery} className="absolute top-6 right-6 bg-[#1e1e26]/80 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-[#1e1e26] border border-[#71717a] text-xl font-bold backdrop-blur">X</button>
                             
                             {gallery.images.length > 1 && (
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-800/80 px-4 py-2 rounded-full border border-slate-600 text-xs font-bold tracking-widest text-slate-300 backdrop-blur">
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#1e1e26]/80 px-4 py-2 rounded-full border border-[#71717a] text-xs font-bold tracking-widest text-[#f8fafc] backdrop-blur">
                                     {gallery.index + 1} / {gallery.images.length}
                                 </div>
                             )}
@@ -212,21 +556,21 @@
                     )}
 
                     {isSteering && (
-                        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-                            <div className="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="fixed inset-0 z-[110] bg-[#050505]/80 backdrop-blur-sm flex items-center justify-center p-4">
+                            <div className="bg-[#111111] border border-[#1e1e26] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
                                 <div className="p-6 space-y-4">
-                                    <h2 className="text-lg font-bold text-blue-400 uppercase tracking-wider">Director's Note</h2>
-                                    <p className="text-xs text-slate-400">Your note will be ingested at the start of the next major iteration gate.</p>
+                                    <h2 className="text-lg font-bold text-[#00f2ff] uppercase tracking-wider">Director's Note</h2>
+                                    <p className="text-xs text-[#71717a]">Your note will be ingested at the start of the next major iteration gate.</p>
                                     <textarea 
                                         autoFocus
                                         value={steerNote}
                                         onChange={(e) => setSteerNote(e.target.value)}
-                                        className="w-full h-32 bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm font-mono text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                        className="w-full h-32 bg-[#050505] border border-[#1e1e26] rounded-xl p-4 text-sm font-mono text-[#f8fafc] focus:outline-none focus:ring-2 focus:ring-[#00f2ff]/50 transition-all"
                                         placeholder="e.g., 'Focus more on the physical film strip aesthetic for the timeline...'"
                                     />
                                     <div className="flex gap-3 justify-end pt-2">
-                                        <button onClick={() => setIsSteering(false)} className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors">CANCEL</button>
-                                        <button onClick={sendSteer} className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg text-xs font-bold shadow-lg shadow-blue-900/20 transition-all active:scale-95">SEND TO BRAIN</button>
+                                        <button onClick={() => setIsSteering(false)} className="px-4 py-2 text-xs font-bold text-[#71717a] hover:text-[#f8fafc] transition-colors">CANCEL</button>
+                                        <button onClick={sendSteer} className="bg-[#00f2ff] hover:bg-[#00f2ff] text-white px-6 py-2 rounded-lg text-xs font-bold shadow-lg shadow-[#00f2ff]/20 transition-all active:scale-95">SEND TO BRAIN</button>
                                     </div>
                                 </div>
                             </div>
@@ -235,20 +579,20 @@
 
                     {isShuttingDown && (
                         <div className="fixed inset-0 z-[120] bg-red-950/90 backdrop-blur-md flex items-center justify-center p-4">
-                            <div className="bg-slate-900 border-2 border-red-500 w-full max-w-md rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.3)] overflow-hidden animate-in fade-in zoom-in duration-200">
+                            <div className="bg-[#111111] border-2 border-red-500 w-full max-w-md rounded-2xl shadow-[0_0_50px_rgba(239,68,68,0.3)] overflow-hidden animate-in fade-in zoom-in duration-200">
                                 <div className="p-8 text-center space-y-6">
                                     <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto border border-red-500/50">
                                         <span className="text-4xl">⚠️</span>
                                     </div>
                                     <div className="space-y-2">
                                         <h2 className="text-2xl font-black text-red-500 uppercase tracking-tighter">Emergency Shutdown</h2>
-                                        <p className="text-sm text-slate-400">This will immediately terminate all active loops, kill current implementation tasks, and freeze the factory state.</p>
+                                        <p className="text-sm text-[#71717a]">This will immediately terminate all active loops, kill current implementation tasks, and freeze the factory state.</p>
                                     </div>
                                     <div className="flex flex-col gap-3">
                                         <button onClick={sendShutdown} className="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-black uppercase tracking-widest shadow-lg shadow-red-900/40 transition-all active:scale-[0.98]">
                                             CONFIRM SHUTDOWN
                                         </button>
-                                        <button onClick={() => setIsShuttingDown(false)} className="w-full py-3 text-xs font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest">
+                                        <button onClick={() => setIsShuttingDown(false)} className="w-full py-3 text-xs font-bold text-[#71717a] hover:text-[#f8fafc] transition-colors uppercase tracking-widest">
                                             I'M NOT READY / CANCEL
                                         </button>
                                     </div>
@@ -257,7 +601,7 @@
                         </div>
                     )}
 
-                    <header className="bg-slate-900 border-b border-slate-800 p-4 shadow-md z-10 shrink-0 flex items-center justify-between">
+                    <header className="bg-[#111111] border-b border-[#1e1e26] p-4 shadow-md z-10 shrink-0 flex items-center justify-between">
                         <div className="flex items-center gap-8">
                             <div>
                                 <div className="flex items-center gap-3">
@@ -267,15 +611,15 @@
                                         DATABASE SOUL
                                     </a>
                                 </div>
-                                <p className="text-slate-400 text-xs mt-1">{state.project_name} - Iteration {state.current_iteration}</p>
+                                <p className="text-[#71717a] text-xs mt-1">{state.project_name} - Iteration {state.current_iteration}</p>
                             </div>
 
                             {state.pending_steer?.length > 0 && (
                                 <div className="hidden xl:flex flex-col gap-1 max-w-md">
-                                    <span className="text-[8px] font-bold text-blue-500 uppercase tracking-widest">Pending Steering</span>
+                                    <span className="text-[8px] font-bold text-[#00f2ff] uppercase tracking-widest">Pending Steering</span>
                                     <div className="flex flex-wrap gap-1">
                                         {state.pending_steer.map((note, idx) => (
-                                            <div key={idx} className="text-[9px] bg-blue-500/10 border border-blue-500/20 text-blue-300 px-2 py-0.5 rounded truncate max-w-[150px]" title={note}>
+                                            <div key={idx} className="text-[9px] bg-[#00f2ff]/10 border border-[#00f2ff]/20 text-[#00f2ff] px-2 py-0.5 rounded truncate max-w-[150px]" title={note}>
                                                 "{note}"
                                             </div>
                                         ))}
@@ -287,25 +631,31 @@
                             <a 
                                 href={`${window.location.protocol}//${window.location.hostname}:8081`}
                                 target="_blank"
-                                className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-2 rounded-full text-[10px] font-black transition-all flex items-center gap-2 group shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                                className="bg-[#00f2ff]/10 hover:bg-[#00f2ff]/20 text-[#00f2ff] border border-[#00f2ff]/30 px-4 py-2 rounded-full text-[10px] font-black transition-all flex items-center gap-2 group shadow-[0_0_15px_rgba(16,185,129,0.1)]"
                             >
                                 <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f2ff] opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00f2ff]"></span>
                                 </span>
                                 OPEN LIVE APP
                             </a>
                             <button 
+                                onClick={() => setViewMode('zulu')}
+                                className="bg-[#00f2ff]/10 hover:bg-[#00f2ff]/20 text-[#00f2ff] border border-[#00f2ff]/30 px-4 py-2 rounded-full text-xs font-black transition-all flex items-center gap-2 group shadow-[0_0_15px_rgba(0,242,255,0.1)] uppercase tracking-widest"
+                            >
+                                ZULU DASHBOARD
+                            </button>
+                            <button 
                                 onClick={() => setViewMode(v => v === 'kanban' ? 'history' : 'kanban')}
-                                className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2"
+                                className="bg-[#1e1e26] hover:bg-[#1e1e26] text-[#f8fafc] border border-[#1e1e26] px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2"
                             >
                                 {viewMode === 'kanban' ? 'VIEW HISTORY' : 'VIEW KANBAN'}
                             </button>
                             <button 
                                 onClick={() => setIsSteering(true)}
-                                className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 group"
+                                className="bg-[#00f2ff]/10 hover:bg-[#00f2ff]/20 text-[#00f2ff] border border-[#00f2ff]/30 px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-2 group"
                             >
-                                <span className="text-blue-500 group-hover:animate-pulse">⊕</span>
+                                <span className="text-[#00f2ff] group-hover:animate-pulse">⊕</span>
                                 STEER BRAIN
                             </button>
                             {state.update_scheduled && (
@@ -326,10 +676,10 @@
                                     KILL RUN
                                 </button>
                             )}
-                            {state.current_phase && <div className="text-xs font-bold text-slate-500 uppercase tracking-widest bg-slate-800/50 px-3 py-1 rounded-lg border border-slate-700/50">{state.current_phase}</div>}
-                            <div className={`flex items-center gap-3 bg-slate-800 px-4 py-2 rounded-full border ${state.shutdown_requested ? 'border-red-900' : 'border-slate-700'}`}>
+                            {state.current_phase && <div className="text-xs font-bold text-[#71717a] uppercase tracking-widest bg-[#1e1e26]/50 px-3 py-1 rounded-lg border border-[#1e1e26]/50">{state.current_phase}</div>}
+                            <div className={`flex items-center gap-3 bg-[#1e1e26] px-4 py-2 rounded-full border ${state.shutdown_requested ? 'border-red-900' : 'border-[#1e1e26]'}`}>
                                 {state.current_status !== "SHUTDOWN" && !state.shutdown_requested && <div className="spinner"></div>}
-                                <span className={`text-xs font-medium ${state.shutdown_requested ? 'text-red-400' : 'text-blue-300'}`}>{state.current_status}</span>
+                                <span className={`text-xs font-medium ${state.shutdown_requested ? 'text-red-400' : 'text-[#00f2ff]'}`}>{state.current_status}</span>
                             </div>
                         </div>
                     </header>
@@ -340,13 +690,13 @@
                                 <div className="flex flex-col h-full">
                                     <div className="mb-6 flex justify-between items-end shrink-0">
                                         <div>
-                                            <h2 className="text-2xl font-bold text-slate-100">Sprint Backlog</h2>
-                                            <p className="text-slate-400 text-sm mt-1">{state.product_roadmap || 'No active roadmap'}</p>
+                                            <h2 className="text-2xl font-bold text-white">Sprint Backlog</h2>
+                                            <p className="text-[#71717a] text-sm mt-1">{state.product_roadmap || 'No active roadmap'}</p>
                                         </div>
                                     </div>
                                     <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
                                         {/* P0 / CRITICAL */}
-                                        <div className="flex flex-col bg-slate-900/50 rounded-xl border border-red-900/30 overflow-hidden min-h-[500px]">
+                                        <div className="flex flex-col bg-[#111111]/50 rounded-xl border border-red-900/30 overflow-hidden min-h-[500px]">
                                             <div className="p-3 bg-red-950/30 border-b border-red-900/30 flex justify-between items-center shrink-0">
                                                 <h3 className="font-bold text-xs text-red-400 uppercase tracking-widest">Critical Debt (P0)</h3>
                                                 <span className="bg-red-500/20 text-red-300 text-[10px] px-2 py-0.5 rounded-full">
@@ -355,20 +705,20 @@
                                             </div>
                                             <div className="p-4 flex-1 overflow-y-auto space-y-3">
                                                 {state.backlog?.filter(t => t.priority === 0).map(task => (
-                                                    <div key={task.id} className={`bg-slate-800 p-4 rounded-lg border shadow-sm ${state.active_task_id === task.id ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse' : 'border-slate-700'}`}>
+                                                    <div key={task.id} className={`bg-[#1e1e26] p-4 rounded-lg border shadow-sm ${state.active_task_id === task.id ? 'border-[#00f2ff] shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse' : 'border-[#1e1e26]'}`}>
                                                         <div className="flex justify-between items-start mb-2">
                                                             <span className="text-[9px] font-bold uppercase tracking-wider bg-red-500/20 text-red-300 px-2 py-0.5 rounded">{task.type}</span>
-                                                            <span className="text-[9px] text-slate-500 font-mono">{task.id}</span>
+                                                            <span className="text-[9px] text-[#71717a] font-mono">{task.id}</span>
                                                         </div>
-                                                        <p className="text-sm text-slate-200 font-medium mb-3">{task.description}</p>
-                                                        {task.context && <p className="text-xs text-slate-400 font-mono bg-slate-900 p-2 rounded whitespace-pre-wrap">{task.context}</p>}
+                                                        <p className="text-sm text-[#f8fafc] font-medium mb-3">{task.description}</p>
+                                                        {task.context && <p className="text-xs text-[#71717a] font-mono bg-[#111111] p-2 rounded whitespace-pre-wrap">{task.context}</p>}
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
 
                                         {/* P1 / NEXT SPRINT */}
-                                        <div className="flex flex-col bg-slate-900/50 rounded-xl border border-yellow-900/30 overflow-hidden min-h-[500px]">
+                                        <div className="flex flex-col bg-[#111111]/50 rounded-xl border border-yellow-900/30 overflow-hidden min-h-[500px]">
                                             <div className="p-3 bg-yellow-950/20 border-b border-yellow-900/30 flex justify-between items-center shrink-0">
                                                 <h3 className="font-bold text-xs text-yellow-400 uppercase tracking-widest">Next Sprint (P1)</h3>
                                                 <span className="bg-yellow-500/20 text-yellow-300 text-[10px] px-2 py-0.5 rounded-full">
@@ -377,34 +727,34 @@
                                             </div>
                                             <div className="p-4 flex-1 overflow-y-auto space-y-3">
                                                 {state.backlog?.filter(t => t.priority === 1).map(task => (
-                                                    <div key={task.id} className={`bg-slate-800 p-4 rounded-lg border shadow-sm ${state.active_task_id === task.id ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse' : 'border-slate-700'}`}>
+                                                    <div key={task.id} className={`bg-[#1e1e26] p-4 rounded-lg border shadow-sm ${state.active_task_id === task.id ? 'border-[#00f2ff] shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse' : 'border-[#1e1e26]'}`}>
                                                         <div className="flex justify-between items-start mb-2">
-                                                            <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-700 text-slate-300 px-2 py-0.5 rounded">{task.type}</span>
-                                                            <span className="text-[9px] text-slate-500 font-mono">{task.id}</span>
+                                                            <span className="text-[9px] font-bold uppercase tracking-wider bg-[#1e1e26] text-[#f8fafc] px-2 py-0.5 rounded">{task.type}</span>
+                                                            <span className="text-[9px] text-[#71717a] font-mono">{task.id}</span>
                                                         </div>
-                                                        <p className="text-sm text-slate-200 font-medium mb-3">{task.description}</p>
-                                                        {task.context && <p className="text-xs text-slate-400 font-mono line-clamp-3 bg-slate-900 p-2 rounded">{task.context}</p>}
+                                                        <p className="text-sm text-[#f8fafc] font-medium mb-3">{task.description}</p>
+                                                        {task.context && <p className="text-xs text-[#71717a] font-mono line-clamp-3 bg-[#111111] p-2 rounded">{task.context}</p>}
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
 
                                         {/* P2 / BACKLOG */}
-                                        <div className="flex flex-col bg-slate-900/50 rounded-xl border border-slate-800 overflow-hidden min-h-[500px]">
-                                            <div className="p-3 bg-slate-800/30 border-b border-slate-800 flex justify-between items-center shrink-0">
-                                                <h3 className="font-bold text-xs text-slate-400 uppercase tracking-widest">Backlog (P2)</h3>
-                                                <span className="bg-slate-800 text-slate-300 text-[10px] px-2 py-0.5 rounded-full">
+                                        <div className="flex flex-col bg-[#111111]/50 rounded-xl border border-[#1e1e26] overflow-hidden min-h-[500px]">
+                                            <div className="p-3 bg-[#1e1e26]/30 border-b border-[#1e1e26] flex justify-between items-center shrink-0">
+                                                <h3 className="font-bold text-xs text-[#71717a] uppercase tracking-widest">Backlog (P2)</h3>
+                                                <span className="bg-[#1e1e26] text-[#f8fafc] text-[10px] px-2 py-0.5 rounded-full">
                                                     {state.backlog?.filter(t => t.priority === 2).length || 0}
                                                 </span>
                                             </div>
                                             <div className="p-4 flex-1 overflow-y-auto space-y-3">
                                                 {state.backlog?.filter(t => t.priority === 2).map(task => (
-                                                    <div key={task.id} className={`bg-slate-800 p-4 rounded-lg border shadow-sm ${state.active_task_id === task.id ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse' : 'border-slate-700'}`}>
+                                                    <div key={task.id} className={`bg-[#1e1e26] p-4 rounded-lg border shadow-sm ${state.active_task_id === task.id ? 'border-[#00f2ff] shadow-[0_0_15px_rgba(59,130,246,0.3)] animate-pulse' : 'border-[#1e1e26]'}`}>
                                                         <div className="flex justify-between items-start mb-2">
-                                                            <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-700 text-slate-300 px-2 py-0.5 rounded">{task.type}</span>
-                                                            <span className="text-[9px] text-slate-500 font-mono">{task.id}</span>
+                                                            <span className="text-[9px] font-bold uppercase tracking-wider bg-[#1e1e26] text-[#f8fafc] px-2 py-0.5 rounded">{task.type}</span>
+                                                            <span className="text-[9px] text-[#71717a] font-mono">{task.id}</span>
                                                         </div>
-                                                        <p className="text-sm text-slate-400 font-medium mb-3">{task.description}</p>
+                                                        <p className="text-sm text-[#71717a] font-medium mb-3">{task.description}</p>
                                                     </div>
                                                 ))}
                                             </div>
@@ -416,36 +766,36 @@
                         <main className="w-[95%] max-w-[1800px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-8 pb-12">
                             <div className="lg:col-span-1 space-y-6 md:sticky md:top-6 max-h-[calc(100vh-350px)] overflow-y-auto pr-2">
                                 {state.app_meta && (
-                                    <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-4">
-                                        <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                    <div className="bg-[#111111]/50 border border-[#1e1e26] rounded-xl p-4 mb-4">
+                                        <h2 className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest mb-2">
                                             Product Identity
                                         </h2>
-                                        <p className="text-[10px] text-slate-400 font-mono leading-relaxed whitespace-pre-wrap">{state.app_meta}</p>
+                                        <p className="text-[10px] text-[#71717a] font-mono leading-relaxed whitespace-pre-wrap">{state.app_meta}</p>
                                     </div>
                                 )}
                                 {(state.product_phase || state.product_roadmap) && (
-                                    <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-8">
-                                        <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                    <div className="bg-[#111111]/50 border border-[#1e1e26] rounded-xl p-4 mb-8">
+                                        <h2 className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest mb-2">
                                             Roadmap Phase
                                         </h2>
-                                        {state.product_phase && <div className="text-xs font-bold text-emerald-400 mb-2">{state.product_phase}</div>}
-                                        {state.product_roadmap && <p className="text-[10px] text-slate-400 font-mono leading-relaxed whitespace-pre-wrap">{state.product_roadmap}</p>}
+                                        {state.product_phase && <div className="text-xs font-bold text-[#00f2ff] mb-2">{state.product_phase}</div>}
+                                        {state.product_roadmap && <p className="text-[10px] text-[#71717a] font-mono leading-relaxed whitespace-pre-wrap">{state.product_roadmap}</p>}
                                     </div>
                                 )}
                                 <h2 className="text-lg font-semibold tracking-wider uppercase text-sm mb-4">Build Timeline</h2>
                                 <div className="space-y-6">
                                     {[...state.history].reverse().map((iter) => (
-                                        <div key={iter.id} className={`pl-4 border-l-2 ${iter.id === state.current_iteration ? 'border-blue-500' : 'border-slate-800'}`}>
+                                        <div key={iter.id} className={`pl-4 border-l-2 ${iter.id === state.current_iteration ? 'border-[#00f2ff]' : 'border-[#1e1e26]'}`}>
                                             <div className="flex justify-between items-start mb-1">
                                                 <div className="flex flex-col items-start gap-1">
-                                                    <button onClick={() => document.getElementById(`iter-${iter.id}`)?.scrollIntoView({ behavior: 'smooth' })} className={`font-bold text-sm hover:underline text-left ${iter.id === state.current_iteration ? 'text-blue-400' : 'text-slate-300'}`}>
+                                                    <button onClick={() => document.getElementById(`iter-${iter.id}`)?.scrollIntoView({ behavior: 'smooth' })} className={`font-bold text-sm hover:underline text-left ${iter.id === state.current_iteration ? 'text-[#00f2ff]' : 'text-[#f8fafc]'}`}>
                                                         {iter.id === 1 ? 'Genesis' : `Refinement ${iter.id - 1}`}
                                                     </button>
-                                                    {iter.timestamp && <span className="text-[9px] text-slate-500 font-mono">{new Date(iter.timestamp).toLocaleTimeString()}</span>}
+                                                    {iter.timestamp && <span className="text-[9px] text-[#71717a] font-mono">{new Date(iter.timestamp).toLocaleTimeString()}</span>}
                                                 </div>
-                                                {iter.happiness_score > 0 && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${iter.happiness_score >= 8 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>{iter.happiness_score}/10</span>}
+                                                {iter.happiness_score > 0 && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${iter.happiness_score >= 8 ? 'bg-[#00f2ff]/10 text-[#00f2ff]' : 'bg-red-500/10 text-red-500'}`}>{iter.happiness_score}/10</span>}
                                             </div>
-                                            <p className="text-xs text-slate-400">{iter.goal}</p>
+                                            <p className="text-xs text-[#71717a]">{iter.goal}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -456,24 +806,24 @@
                                     const isExpanded = expandedIters[iter.id] !== undefined ? expandedIters[iter.id] : iter.id === state.current_iteration;
                                     return (
                                     <div key={iter.id} id={`iter-${iter.id}`} className="space-y-8 relative">
-                                        <div className="bg-slate-900 border border-slate-700/50 rounded-xl overflow-hidden shadow-lg p-6 md:p-8 space-y-6">
+                                        <div className="bg-[#111111] border border-[#1e1e26]/50 rounded-xl overflow-hidden shadow-lg p-6 md:p-8 space-y-6">
                                             <div className="flex justify-between items-start">
                                                 <div className="flex-1 cursor-pointer group" onClick={() => toggleIter(iter.id)}>
                                                     <div className="flex items-center gap-3">
-                                                        <span className={`text-slate-500 group-hover:text-slate-300 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
-                                                        <h2 className="font-bold text-slate-500 text-[10px] uppercase tracking-widest mb-2">Iteration {iter.id} Goal {iter.target_route && <span className="ml-2 font-mono text-fuchsia-400 bg-fuchsia-500/10 px-2 py-0.5 rounded tracking-normal normal-case">{iter.target_route}</span>}</h2>
+                                                        <span className={`text-[#71717a] group-hover:text-[#f8fafc] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>▶</span>
+                                                        <h2 className="font-bold text-[#71717a] text-[10px] uppercase tracking-widest mb-2">Iteration {iter.id} Goal {iter.target_route && <span className="ml-2 font-mono text-[#bc13fe] bg-fuchsia-500/10 px-2 py-0.5 rounded tracking-normal normal-case">{iter.target_route}</span>}</h2>
                                                     </div>
-                                                    <p className={`text-lg md:text-xl text-blue-50 font-medium leading-relaxed whitespace-pre-wrap ${!isExpanded && 'line-clamp-2'}`}>{iter.goal}</p>
+                                                    <p className={`text-lg md:text-xl text-white font-medium leading-relaxed whitespace-pre-wrap ${!isExpanded && 'line-clamp-2'}`}>{iter.goal}</p>
                                                 </div>
                                                 <div className="flex flex-col items-end gap-2 ml-4">
-                                                    {iter.timestamp && <span className="text-xs text-slate-500 font-mono">{new Date(iter.timestamp).toLocaleTimeString()}</span>}
-                                                    {iter.git_commit && <a href={`#`} className="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded font-mono hover:text-blue-400 transition-colors flex items-center gap-1" title="Git Commit"><span className="text-blue-500 text-[8px]">●</span> {iter.git_commit.substring(0, 7)}</a>}
+                                                    {iter.timestamp && <span className="text-xs text-[#71717a] font-mono">{new Date(iter.timestamp).toLocaleTimeString()}</span>}
+                                                    {iter.git_commit && <a href={`#`} className="text-[10px] bg-[#1e1e26] text-[#71717a] px-2 py-1 rounded font-mono hover:text-[#00f2ff] transition-colors flex items-center gap-1" title="Git Commit"><span className="text-[#00f2ff] text-[8px]">●</span> {iter.git_commit.substring(0, 7)}</a>}
                                                 </div>
                                             </div>
                                             {isExpanded && iter.test_scenario && (
-                                                <div className="bg-slate-950/50 rounded-lg p-4 border border-slate-800 animate-in fade-in slide-in-from-top-2">
-                                                    <h3 className="text-[10px] font-bold text-emerald-500/70 uppercase tracking-widest mb-2">Verification Scenario</h3>
-                                                    <p className="text-xs text-slate-300 font-mono leading-relaxed">{iter.test_scenario}</p>
+                                                <div className="bg-[#050505]/50 rounded-lg p-4 border border-[#1e1e26] animate-in fade-in slide-in-from-top-2">
+                                                    <h3 className="text-[10px] font-bold text-[#00f2ff]/70 uppercase tracking-widest mb-2">Verification Scenario</h3>
+                                                    <p className="text-xs text-[#f8fafc] font-mono leading-relaxed">{iter.test_scenario}</p>
                                                 </div>
                                             )}
                                             {isExpanded && iter.negative_history?.length > 0 && (
@@ -486,94 +836,94 @@
 
                                         {isExpanded && iter.brainstorming_output && (
                                             <div className="bg-transparent border-none animate-in fade-in slide-in-from-top-4">
-                                                <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Discovery Internal Monologue</h3>
+                                                <h3 className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest mb-3">Discovery Internal Monologue</h3>
                                                 <div>
-                                                    <p className="text-[11px] text-slate-500 font-mono whitespace-pre-wrap leading-relaxed py-1">{iter.brainstorming_output}</p>
+                                                    <p className="text-[11px] text-[#71717a] font-mono whitespace-pre-wrap leading-relaxed py-1">{iter.brainstorming_output}</p>
                                                 </div>
                                             </div>
                                         )}
 
                                         {isExpanded && ((iter.base_seed_paths?.length > 0) || (iter.design_variants_paths?.length > 0) || (iter.theme_variants_paths?.length > 0)) && (
-                                            <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg p-6 space-y-8 animate-in fade-in slide-in-from-top-4">
-                                                <h2 className="font-semibold text-slate-400 text-xs uppercase tracking-widest border-b border-slate-700 pb-2">Design Pipeline (Evolved Concepts)</h2>
+                                            <div className="bg-[#111111] border border-[#1e1e26] rounded-xl overflow-hidden shadow-lg p-6 space-y-8 animate-in fade-in slide-in-from-top-4">
+                                                <h2 className="font-semibold text-[#71717a] text-xs uppercase tracking-widest border-b border-[#1e1e26] pb-2">Design Pipeline (Evolved Concepts)</h2>
                                                 
                                                 {iter.base_seed_paths?.length > 0 && (
                                                     <div className="space-y-4">
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phase 1: Parallel Discovery Seeds</span>
+                                                        <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Phase 1: Parallel Discovery Seeds</span>
                                                         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                                                             {iter.base_seed_paths.map((vPath, idx) => (
                                                                 <div key={idx} className="space-y-2">
-                                                                    <div onClick={() => vPath && openGallery(iter.base_seed_paths.map(p => `/viewer/public/${p}`), idx)} className={`relative cursor-pointer border rounded-lg overflow-hidden transition-all aspect-video bg-slate-950 flex items-center justify-center p-2 ${iter.design_screenshot_path === vPath ? 'ring-2 ring-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)] border-blue-500' : 'border-slate-800 hover:border-slate-600'}`}>
-                                                                        {vPath ? <img src={`/viewer/public/${vPath}`} loading="lazy" className="max-w-full max-h-full object-contain" /> : <div className="w-full h-full bg-slate-800 animate-pulse rounded"></div>}
-                                                                        {(vPath && iter.design_screenshot_path === vPath) && <div className="absolute top-1 right-1 bg-blue-500 text-white text-[7px] font-bold px-1 rounded shadow-lg">WINNER</div>}
+                                                                    <div onClick={() => vPath && openGallery(iter.base_seed_paths.map(p => `/viewer/public/${p}`), idx)} className={`relative cursor-pointer border rounded-lg overflow-hidden transition-all aspect-video bg-[#050505] flex items-center justify-center p-2 ${iter.design_screenshot_path === vPath ? 'ring-2 ring-[#00f2ff] shadow-[0_0_15px_rgba(59,130,246,0.5)] border-[#00f2ff]' : 'border-[#1e1e26] hover:border-[#71717a]'}`}>
+                                                                        {vPath ? <img src={`/viewer/public/${vPath}`} loading="lazy" className="max-w-full max-h-full object-contain" /> : <div className="w-full h-full bg-[#1e1e26] animate-pulse rounded"></div>}
+                                                                        {(vPath && iter.design_screenshot_path === vPath) && <div className="absolute top-1 right-1 bg-[#00f2ff] text-white text-[7px] font-bold px-1 rounded shadow-lg">WINNER</div>}
                                                                     </div>
-                                                                    <p className="text-[9px] text-slate-500 leading-tight italic">{iter.base_briefs?.[idx] || "Drafting..."}</p>
+                                                                    <p className="text-[9px] text-[#71717a] leading-tight italic">{iter.base_briefs?.[idx] || "Drafting..."}</p>
                                                                 </div>
                                                             ))}
                                                         </div>
                                                         {iter.design_screenshot_path && (
-                                                            <div className="mt-6 border border-slate-800 rounded-xl overflow-hidden shadow-xl bg-slate-950/30">
-                                                                <div className="bg-slate-900/50 p-3 border-b border-slate-800/50 flex justify-between items-center">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Winning Seed Preview</span>
-                                                                    <span className="bg-blue-500/10 text-blue-400 text-[8px] px-2 py-0.5 rounded font-mono">SELECTED</span>
+                                                            <div className="mt-6 border border-[#1e1e26] rounded-xl overflow-hidden shadow-xl bg-[#050505]/30">
+                                                                <div className="bg-[#111111]/50 p-3 border-b border-[#1e1e26]/50 flex justify-between items-center">
+                                                                    <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Winning Seed Preview</span>
+                                                                    <span className="bg-[#00f2ff]/10 text-[#00f2ff] text-[8px] px-2 py-0.5 rounded font-mono">SELECTED</span>
                                                                 </div>
                                                                 <img src={`/viewer/public/${iter.design_screenshot_path}`} onClick={() => openGallery(iter.base_seed_paths.map(p => `/viewer/public/${p}`), iter.base_seed_paths.indexOf(iter.design_screenshot_path))} className="w-full h-auto cursor-pointer" />
                                                             </div>
                                                         )}
                                                         {iter.seed_review_critique && (
-                                                            <div className="mt-4 p-4 bg-blue-950/10 rounded-lg">
-                                                                <h4 className="text-[9px] font-bold text-blue-400/70 uppercase tracking-widest mb-1">Seed Selection Reasoning</h4>
-                                                                <p className="text-[10px] text-slate-400 font-mono leading-relaxed whitespace-pre-wrap">{iter.seed_review_critique}</p>
+                                                            <div className="mt-4 p-4 bg-[#00f2ff]/10 rounded-lg">
+                                                                <h4 className="text-[9px] font-bold text-[#00f2ff]/70 uppercase tracking-widest mb-1">Seed Selection Reasoning</h4>
+                                                                <p className="text-[10px] text-[#71717a] font-mono leading-relaxed whitespace-pre-wrap">{iter.seed_review_critique}</p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 )}
 
                                                 {iter.design_variants_paths?.length > 0 && (
-                                                    <div className="space-y-4 pt-4 border-t border-slate-800">
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Layout Variants & Selection</span>
+                                                    <div className="space-y-4 pt-4 border-t border-[#1e1e26]">
+                                                        <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Layout Variants & Selection</span>
                                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                                             {iter.design_variants_paths.map((vPath, idx) => (
-                                                                <div key={idx} onClick={() => openGallery(iter.design_variants_paths.map(p => `/viewer/public/${p}`), idx)} className={`relative cursor-pointer border rounded-lg overflow-hidden transition-all aspect-video bg-slate-950 flex items-center justify-center p-2 ${iter.chosen_design_path === vPath ? 'ring-2 ring-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)] border-blue-500' : 'border-slate-800 hover:border-slate-600'}`}>
+                                                                <div key={idx} onClick={() => openGallery(iter.design_variants_paths.map(p => `/viewer/public/${p}`), idx)} className={`relative cursor-pointer border rounded-lg overflow-hidden transition-all aspect-video bg-[#050505] flex items-center justify-center p-2 ${iter.chosen_design_path === vPath ? 'ring-2 ring-[#00f2ff] shadow-[0_0_15px_rgba(59,130,246,0.5)] border-[#00f2ff]' : 'border-[#1e1e26] hover:border-[#71717a]'}`}>
                                                                     <img src={`/viewer/public/${vPath}`} loading="lazy" className="max-w-full max-h-full object-contain" />
-                                                                    {(vPath && iter.chosen_design_path === vPath) && <div className="absolute top-1 right-1 bg-blue-500 text-white text-[7px] font-bold px-1 rounded shadow-lg">WINNER</div>}
+                                                                    {(vPath && iter.chosen_design_path === vPath) && <div className="absolute top-1 right-1 bg-[#00f2ff] text-white text-[7px] font-bold px-1 rounded shadow-lg">WINNER</div>}
                                                                 </div>
                                                             ))}
                                                         </div>
                                                         {iter.chosen_design_path && (
-                                                            <div className="mt-6 border border-slate-800 rounded-xl overflow-hidden shadow-xl bg-slate-950/30">
-                                                                <div className="bg-slate-900/50 p-3 border-b border-slate-800/50 flex justify-between items-center">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Winning Layout Preview</span>
-                                                                    <span className="bg-blue-500/10 text-blue-400 text-[8px] px-2 py-0.5 rounded font-mono">SELECTED</span>
+                                                            <div className="mt-6 border border-[#1e1e26] rounded-xl overflow-hidden shadow-xl bg-[#050505]/30">
+                                                                <div className="bg-[#111111]/50 p-3 border-b border-[#1e1e26]/50 flex justify-between items-center">
+                                                                    <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Winning Layout Preview</span>
+                                                                    <span className="bg-[#00f2ff]/10 text-[#00f2ff] text-[8px] px-2 py-0.5 rounded font-mono">SELECTED</span>
                                                                 </div>
                                                                 <img src={`/viewer/public/${iter.chosen_design_path}`} onClick={() => openGallery(iter.design_variants_paths.map(p => `/viewer/public/${p}`), iter.design_variants_paths.indexOf(iter.chosen_design_path))} className="w-full h-auto cursor-pointer" />
                                                             </div>
                                                         )}
                                                         {iter.layout_review_critique && (
-                                                            <div className="mt-4 p-4 bg-blue-950/10 rounded-lg">
-                                                                <h4 className="text-[9px] font-bold text-blue-400/70 uppercase tracking-widest mb-1">Vision Critique</h4>
-                                                                <p className="text-[10px] text-slate-400 font-mono leading-relaxed whitespace-pre-wrap">{iter.layout_review_critique}</p>
+                                                            <div className="mt-4 p-4 bg-[#00f2ff]/10 rounded-lg">
+                                                                <h4 className="text-[9px] font-bold text-[#00f2ff]/70 uppercase tracking-widest mb-1">Vision Critique</h4>
+                                                                <p className="text-[10px] text-[#71717a] font-mono leading-relaxed whitespace-pre-wrap">{iter.layout_review_critique}</p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 )}
 
                                                 {iter.theme_variants_paths?.length > 0 && (
-                                                    <div className="space-y-4 pt-4 border-t border-slate-800">
-                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Phase 3: Materiality & Palette</span>
+                                                    <div className="space-y-4 pt-4 border-t border-[#1e1e26]">
+                                                        <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Phase 3: Materiality & Palette</span>
                                                         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                                                             {iter.theme_variants_paths.map((vPath, idx) => (
-                                                                <div key={idx} onClick={() => openGallery(iter.theme_variants_paths.map(p => `/viewer/public/${p}`), idx)} className={`relative cursor-pointer border rounded-lg overflow-hidden transition-all aspect-video bg-slate-950 flex items-center justify-center p-2 ${iter.chosen_theme_path === vPath ? 'ring-2 ring-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)] border-emerald-500' : 'border-slate-800 hover:border-slate-600'}`}>
+                                                                <div key={idx} onClick={() => openGallery(iter.theme_variants_paths.map(p => `/viewer/public/${p}`), idx)} className={`relative cursor-pointer border rounded-lg overflow-hidden transition-all aspect-video bg-[#050505] flex items-center justify-center p-2 ${iter.chosen_theme_path === vPath ? 'ring-2 ring-[#00f2ff] shadow-[0_0_15px_rgba(16,185,129,0.5)] border-[#00f2ff]' : 'border-[#1e1e26] hover:border-[#71717a]'}`}>
                                                                     <img src={`/viewer/public/${vPath}`} loading="lazy" className="max-w-full max-h-full object-contain" />
-                                                                    {(vPath && iter.chosen_theme_path === vPath) && <div className="absolute top-1 right-1 bg-emerald-500 text-white text-[7px] font-bold px-1 rounded shadow-lg">FINAL VIBE</div>}
+                                                                    {(vPath && iter.chosen_theme_path === vPath) && <div className="absolute top-1 right-1 bg-[#00f2ff] text-white text-[7px] font-bold px-1 rounded shadow-lg">FINAL VIBE</div>}
                                                                 </div>
                                                             ))}
                                                         </div>
                                                         {iter.chosen_theme_path && (
-                                                            <div className="mt-6 border border-emerald-500/30 rounded-xl overflow-hidden shadow-xl bg-slate-950/30">
-                                                                <div className="bg-emerald-950/10 p-3 border-b border-emerald-500/20 flex justify-between items-center">
-                                                                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Final Theme Preview</span>
-                                                                    <span className="bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full font-bold shadow-lg">FINAL VIBE</span>
+                                                            <div className="mt-6 border border-[#00f2ff]/30 rounded-xl overflow-hidden shadow-xl bg-[#050505]/30">
+                                                                <div className="bg-[#00f2ff]/10 p-3 border-b border-[#00f2ff]/20 flex justify-between items-center">
+                                                                    <span className="text-[10px] font-bold text-[#00f2ff] uppercase tracking-widest">Final Theme Preview</span>
+                                                                    <span className="bg-[#00f2ff] text-white text-[8px] px-2 py-0.5 rounded-full font-bold shadow-lg">FINAL VIBE</span>
                                                                 </div>
                                                                 <img src={`/viewer/public/${iter.chosen_theme_path}`} onClick={() => openGallery(iter.theme_variants_paths.map(p => `/viewer/public/${p}`), iter.theme_variants_paths.indexOf(iter.chosen_theme_path))} className="w-full h-auto cursor-pointer" />
                                                             </div>
@@ -587,17 +937,17 @@
                                             <div className="grid grid-cols-1 gap-8 animate-in fade-in slide-in-from-top-4">
                                                 {/* Phase 1 Winner */}
                                                 {iter.design_screenshot_path && (
-                                                    <div className="bg-slate-900 border border-slate-700/50 rounded-xl overflow-hidden shadow-lg flex flex-col">
-                                                        <div className="p-3 bg-slate-800/50 border-b border-slate-800/50 flex justify-between items-center">
-                                                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phase 1 Winner: Studio Seed</h3>
-                                                            <span className="bg-blue-500/10 text-blue-400 text-[8px] px-2 py-0.5 rounded font-mono uppercase tracking-tighter">Selected Concept</span>
+                                                    <div className="bg-[#111111] border border-[#1e1e26]/50 rounded-xl overflow-hidden shadow-lg flex flex-col">
+                                                        <div className="p-3 bg-[#1e1e26]/50 border-b border-[#1e1e26]/50 flex justify-between items-center">
+                                                            <h3 className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Phase 1 Winner: Studio Seed</h3>
+                                                            <span className="bg-[#00f2ff]/10 text-[#00f2ff] text-[8px] px-2 py-0.5 rounded font-mono uppercase tracking-tighter">Selected Concept</span>
                                                         </div>
-                                                        <div className="flex-1 bg-slate-950/30 p-0 flex items-center justify-center">
+                                                        <div className="flex-1 bg-[#050505]/30 p-0 flex items-center justify-center">
                                                             <img src={`/viewer/public/${iter.design_screenshot_path}`} onClick={() => openGallery(iter.base_seed_paths.map(p => `/viewer/public/${p}`), iter.base_seed_paths.indexOf(iter.design_screenshot_path))} className="w-full h-auto cursor-pointer" />
                                                         </div>
                                                         {iter.seed_review_critique && (
-                                                            <div className="p-4 bg-slate-950/30 border-t border-slate-800/50">
-                                                                <p className="text-[10px] text-slate-500 font-mono transition-all">{iter.seed_review_critique}</p>
+                                                            <div className="p-4 bg-[#050505]/30 border-t border-[#1e1e26]/50">
+                                                                <p className="text-[10px] text-[#71717a] font-mono transition-all">{iter.seed_review_critique}</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -605,17 +955,17 @@
 
                                                 {/* Phase 2 Winner */}
                                                 {iter.chosen_design_path && (
-                                                    <div className="bg-slate-900 border border-slate-700/50 rounded-xl overflow-hidden shadow-lg flex flex-col">
-                                                        <div className="p-3 bg-slate-800/50 border-b border-slate-800/50 flex justify-between items-center">
-                                                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phase 2 Winner: Structural Layout</h3>
-                                                            <span className="bg-blue-500/10 text-blue-400 text-[8px] px-2 py-0.5 rounded font-mono uppercase tracking-tighter">Evolution Winner</span>
+                                                    <div className="bg-[#111111] border border-[#1e1e26]/50 rounded-xl overflow-hidden shadow-lg flex flex-col">
+                                                        <div className="p-3 bg-[#1e1e26]/50 border-b border-[#1e1e26]/50 flex justify-between items-center">
+                                                            <h3 className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">Phase 2 Winner: Structural Layout</h3>
+                                                            <span className="bg-[#00f2ff]/10 text-[#00f2ff] text-[8px] px-2 py-0.5 rounded font-mono uppercase tracking-tighter">Evolution Winner</span>
                                                         </div>
-                                                        <div className="flex-1 bg-slate-950/30 p-0 flex items-center justify-center">
+                                                        <div className="flex-1 bg-[#050505]/30 p-0 flex items-center justify-center">
                                                             <img src={`/viewer/public/${iter.chosen_design_path}`} onClick={() => openGallery(iter.design_variants_paths.map(p => `/viewer/public/${p}`), iter.design_variants_paths.indexOf(iter.chosen_design_path))} className="w-full h-auto cursor-pointer" />
                                                         </div>
                                                          {iter.layout_review_critique && (
-                                                            <div className="p-4 bg-slate-950/30 border-t border-slate-800/50">
-                                                                <p className="text-[10px] text-slate-500 font-mono transition-all">{iter.layout_review_critique}</p>
+                                                            <div className="p-4 bg-[#050505]/30 border-t border-[#1e1e26]/50">
+                                                                <p className="text-[10px] text-[#71717a] font-mono transition-all">{iter.layout_review_critique}</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -623,17 +973,17 @@
 
                                                 {/* Phase 3 Winner */}
                                                 {iter.chosen_theme_path && (
-                                                    <div className="bg-slate-900 border border-emerald-500/30 rounded-xl overflow-hidden shadow-lg flex flex-col relative">
-                                                        <div className="absolute top-0 right-0 p-2 z-10"><span className="bg-emerald-500 text-white text-[8px] px-2 py-0.5 rounded-full font-bold shadow-lg">FINAL VIBE</span></div>
-                                                        <div className="p-3 bg-emerald-950/10 border-b border-emerald-500/20 flex justify-between items-center">
-                                                            <h3 className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Phase 3 Winner: Visual Materiality</h3>
+                                                    <div className="bg-[#111111] border border-[#00f2ff]/30 rounded-xl overflow-hidden shadow-lg flex flex-col relative">
+                                                        <div className="absolute top-0 right-0 p-2 z-10"><span className="bg-[#00f2ff] text-white text-[8px] px-2 py-0.5 rounded-full font-bold shadow-lg">FINAL VIBE</span></div>
+                                                        <div className="p-3 bg-[#00f2ff]/10 border-b border-[#00f2ff]/20 flex justify-between items-center">
+                                                            <h3 className="text-[10px] font-bold text-[#00f2ff] uppercase tracking-widest">Phase 3 Winner: Visual Materiality</h3>
                                                         </div>
-                                                        <div className="flex-1 bg-slate-950/30 p-0 flex items-center justify-center">
+                                                        <div className="flex-1 bg-[#050505]/30 p-0 flex items-center justify-center">
                                                             <img src={`/viewer/public/${iter.chosen_theme_path}`} onClick={() => openGallery(iter.theme_variants_paths.map(p => `/viewer/public/${p}`), iter.theme_variants_paths.indexOf(iter.chosen_theme_path))} className="w-full h-auto cursor-pointer" />
                                                         </div>
                                                          {iter.theme_review_critique && (
-                                                            <div className="p-4 bg-slate-950/30 border-t border-slate-800/50">
-                                                                <p className="text-[10px] text-slate-500 font-mono transition-all">{iter.theme_review_critique}</p>
+                                                            <div className="p-4 bg-[#050505]/30 border-t border-[#1e1e26]/50">
+                                                                <p className="text-[10px] text-[#71717a] font-mono transition-all">{iter.theme_review_critique}</p>
                                                             </div>
                                                         )}
                                                     </div>
@@ -642,63 +992,63 @@
                                         )}
 
                                         {isExpanded && iter.attempts?.map((att, i) => (
-                                            <div key={i} className={`bg-slate-900 border rounded-xl overflow-hidden shadow-lg ${att.score >= 8 ? 'border-emerald-500/30' : 'border-red-500/30'} animate-in fade-in slide-in-from-top-4`}>
-                                                <div className={`p-4 flex justify-between items-center ${att.score >= 8 ? 'bg-emerald-950/20' : 'bg-red-950/20'} border-b border-slate-800/50`}>
+                                            <div key={i} className={`bg-[#111111] border rounded-xl overflow-hidden shadow-lg ${att.score >= 8 ? 'border-[#00f2ff]/30' : 'border-red-500/30'} animate-in fade-in slide-in-from-top-4`}>
+                                                <div className={`p-4 flex justify-between items-center ${att.score >= 8 ? 'bg-[#00f2ff]/20' : 'bg-red-950/20'} border-b border-[#1e1e26]/50`}>
                                                     <div className="flex items-center gap-3">
                                                         <h2 className="font-semibold text-xs uppercase">Attempt {att.attempt_number}</h2>
                                                         {att.jules_url && (
-                                                            <a href={att.jules_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-blue-400 hover:text-blue-300 font-mono flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded transition-colors">
+                                                            <a href={att.jules_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-[#00f2ff] hover:text-[#00f2ff] font-mono flex items-center gap-1 bg-[#00f2ff]/10 px-2 py-0.5 rounded transition-colors">
                                                                 <span>Console</span>
                                                                 <span className="text-[7px]">↗</span>
                                                             </a>
                                                         )}
                                                     </div>
-                                                    <span className="px-2 py-1 rounded text-[10px] font-bold bg-slate-800">Score: {att.score}/10</span>
+                                                    <span className="px-2 py-1 rounded text-[10px] font-bold bg-[#1e1e26]">Score: {att.score}/10</span>
                                                 </div>
                                                 {att.prompt_used && (
-                                                    <div className="p-4 bg-slate-950/50 border-b border-slate-800">
-                                                        <h3 className="text-[9px] font-bold text-blue-400/70 uppercase tracking-widest mb-1">Jules Implementation Brief</h3>
-                                                        <p className="text-[10px] text-slate-400 font-mono leading-relaxed whitespace-pre-wrap">{att.prompt_used}</p>
+                                                    <div className="p-4 bg-[#050505]/50 border-b border-[#1e1e26]">
+                                                        <h3 className="text-[9px] font-bold text-[#00f2ff]/70 uppercase tracking-widest mb-1">Jules Implementation Brief</h3>
+                                                        <p className="text-[10px] text-[#71717a] font-mono leading-relaxed whitespace-pre-wrap">{att.prompt_used}</p>
                                                     </div>
                                                 )}
-                                                {att.app_screenshot_path && <img src={`/viewer/public/${att.app_screenshot_path}`} onClick={() => openGallery([`/viewer/public/${att.app_screenshot_path}`])} className="w-full h-auto object-contain border-b border-slate-800 cursor-pointer" style={{maxHeight:'60vh'}} />}
+                                                {att.app_screenshot_path && <img src={`/viewer/public/${att.app_screenshot_path}`} onClick={() => openGallery([`/viewer/public/${att.app_screenshot_path}`])} className="w-full h-auto object-contain border-b border-[#1e1e26] cursor-pointer" style={{maxHeight:'60vh'}} />}
                                                 <div className="p-6 space-y-4">
-                                                    {att.jules_patch_path && <button onClick={() => togglePatch(att.jules_patch_path)} className="w-full p-2.5 bg-slate-800/40 hover:bg-slate-800/80 transition-colors rounded-lg text-[10px] font-bold text-slate-300 uppercase tracking-widest flex justify-between items-center px-4 border border-slate-700/50"><span>View Code Patch</span> <span className="text-slate-500">{visiblePatches[att.jules_patch_path] ? '▲' : '▼'}</span></button>}
-                                                    {visiblePatches[att.jules_patch_path] && <pre className="text-[10px] font-mono bg-[#0d1117] p-4 rounded overflow-auto max-h-[50vh] border border-slate-800">{patchContents[att.jules_patch_path]?.split('\n').map((line, i) => {
-                                                        let lineClass = 'text-slate-400';
-                                                        if (line.startsWith('+') && !line.startsWith('+++')) lineClass = 'text-emerald-400 bg-emerald-500/10';
+                                                    {att.jules_patch_path && <button onClick={() => togglePatch(att.jules_patch_path)} className="w-full p-2.5 bg-[#1e1e26]/40 hover:bg-[#1e1e26]/80 transition-colors rounded-lg text-[10px] font-bold text-[#f8fafc] uppercase tracking-widest flex justify-between items-center px-4 border border-[#1e1e26]/50"><span>View Code Patch</span> <span className="text-[#71717a]">{visiblePatches[att.jules_patch_path] ? '▲' : '▼'}</span></button>}
+                                                    {visiblePatches[att.jules_patch_path] && <pre className="text-[10px] font-mono bg-[#0d1117] p-4 rounded overflow-auto max-h-[50vh] border border-[#1e1e26]">{patchContents[att.jules_patch_path]?.split('\n').map((line, i) => {
+                                                        let lineClass = 'text-[#71717a]';
+                                                        if (line.startsWith('+') && !line.startsWith('+++')) lineClass = 'text-[#00f2ff] bg-[#00f2ff]/10';
                                                         else if (line.startsWith('-') && !line.startsWith('---')) lineClass = 'text-red-400 bg-red-500/10';
-                                                        else if (line.startsWith('@@')) lineClass = 'text-blue-400 bg-blue-500/10';
-                                                        else if (line.startsWith('---') || line.startsWith('+++')) lineClass = 'text-slate-300 font-bold';
+                                                        else if (line.startsWith('@@')) lineClass = 'text-[#00f2ff] bg-[#00f2ff]/10';
+                                                        else if (line.startsWith('---') || line.startsWith('+++')) lineClass = 'text-[#f8fafc] font-bold';
                                                         return <div key={i} className={`px-2 -mx-2 ${lineClass}`}>{line}</div>;
                                                     })}</pre>}
-                                                    <div><h3 className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Critique</h3><p className="text-xs text-slate-400 font-mono border-l-2 border-slate-700 pl-4">{att.critique}</p></div>
+                                                    <div><h3 className="text-[9px] font-bold text-[#71717a] uppercase tracking-widest mb-1">Critique</h3><p className="text-xs text-[#71717a] font-mono border-l-2 border-[#1e1e26] pl-4">{att.critique}</p></div>
                                                 </div>
                                             </div>
                                         ))}
 
                                         {isExpanded && iter.architectural_critique && (
-                                            <div className="bg-slate-900 border border-amber-500/30 rounded-xl overflow-hidden shadow-lg mt-8 animate-in fade-in slide-in-from-top-4">
+                                            <div className="bg-[#111111] border border-amber-500/30 rounded-xl overflow-hidden shadow-lg mt-8 animate-in fade-in slide-in-from-top-4">
                                                 <div className="bg-amber-950/20 p-4 border-b border-amber-500/20 flex justify-between items-center">
                                                     <h3 className="text-[10px] font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
                                                         Architectural Review
                                                     </h3>
                                                 </div>
                                                 <div className="p-6">
-                                                    <p className="text-[11px] text-slate-300 font-mono whitespace-pre-wrap leading-relaxed border-l-2 border-amber-500/30 pl-4">{iter.architectural_critique}</p>
+                                                    <p className="text-[11px] text-[#f8fafc] font-mono whitespace-pre-wrap leading-relaxed border-l-2 border-amber-500/30 pl-4">{iter.architectural_critique}</p>
                                                 </div>
                                             </div>
                                         )}
 
                                         {isExpanded && state.repo_memory?.learnings?.find(l => l.iteration === iter.id) && (
-                                            <div className="bg-slate-900 border border-blue-500/30 rounded-xl overflow-hidden shadow-lg mt-8 animate-in fade-in slide-in-from-top-4">
-                                                <div className="bg-blue-950/20 p-4 border-b border-blue-500/20 flex justify-between items-center">
-                                                    <h3 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest flex items-center gap-2">
+                                            <div className="bg-[#111111] border border-[#00f2ff]/30 rounded-xl overflow-hidden shadow-lg mt-8 animate-in fade-in slide-in-from-top-4">
+                                                <div className="bg-[#00f2ff]/20 p-4 border-b border-[#00f2ff]/20 flex justify-between items-center">
+                                                    <h3 className="text-[10px] font-bold text-[#00f2ff] uppercase tracking-widest flex items-center gap-2">
                                                         Technical Learnings
                                                     </h3>
                                                 </div>
                                                 <div className="p-6">
-                                                    <p className="text-[11px] text-slate-300 font-mono whitespace-pre-wrap leading-relaxed border-l-2 border-blue-500/30 pl-4">
+                                                    <p className="text-[11px] text-[#f8fafc] font-mono whitespace-pre-wrap leading-relaxed border-l-2 border-[#00f2ff]/30 pl-4">
                                                         {state.repo_memory.learnings.find(l => l.iteration === iter.id).takeaways}
                                                     </p>
                                                 </div>
@@ -706,19 +1056,19 @@
                                         )}
 
                                         {iter.id === state.current_iteration && state.active_jules_prompt && (
-                                            <div className="bg-slate-950 border border-blue-500/30 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.1)]">
-                                                <div className="bg-slate-900 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+                                            <div className="bg-[#050505] border border-[#00f2ff]/30 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                                                <div className="bg-[#111111] px-4 py-2 border-b border-[#1e1e26] flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="spinner border-blue-400 w-3 h-3 border-2"></div>
-                                                        <h3 className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">JULES IS CODING</h3>
+                                                        <div className="spinner border-[#00f2ff] w-3 h-3 border-2"></div>
+                                                        <h3 className="text-[10px] font-bold text-[#00f2ff] uppercase tracking-widest">JULES IS CODING</h3>
                                                     </div>
-                                                    <a href={state.active_jules_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-blue-400 hover:text-blue-300 font-mono flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded transition-colors">
+                                                    <a href={state.active_jules_url} target="_blank" rel="noopener noreferrer" className="text-[9px] text-[#00f2ff] hover:text-[#00f2ff] font-mono flex items-center gap-1 bg-[#00f2ff]/10 px-2 py-0.5 rounded transition-colors">
                                                         <span>View Console</span>
                                                         <span className="text-[7px]">↗</span>
                                                     </a>
                                                 </div>
-                                                <div className="p-4 font-mono text-[11px] text-emerald-400 leading-relaxed bg-[#0d1117]">
-                                                    <span className="text-slate-500 select-none mr-2">jules$</span>
+                                                <div className="p-4 font-mono text-[11px] text-[#00f2ff] leading-relaxed bg-[#0d1117]">
+                                                    <span className="text-[#71717a] select-none mr-2">jules$</span>
                                                     <span className="animate-pulse">{state.active_jules_action || "Initializing task..."}</span>
                                                 </div>
                                             </div>
@@ -731,16 +1081,16 @@
                         )}
                     </div>
 
-                    <div className="h-64 shrink-0 bg-[#0a0a0a] border-t border-slate-800 flex flex-col overflow-hidden">
-                        <div className="px-6 py-2 border-b border-slate-800/50 bg-slate-900/30 flex items-center justify-between shrink-0">
+                    <div className="h-64 shrink-0 bg-[#0a0a0a] border-t border-[#1e1e26] flex flex-col overflow-hidden">
+                        <div className="px-6 py-2 border-b border-[#1e1e26]/50 bg-[#111111]/30 flex items-center justify-between shrink-0">
                             <div className="flex items-center gap-4">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">System Logs</span>
+                                <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest">System Logs</span>
                                 <div className="flex gap-1">
                                     {['all', 'error', 'jules', 'brain'].map(f => (
                                         <button 
                                             key={f}
                                             onClick={() => setLogFilter(f)}
-                                            className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${logFilter === f ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-500 hover:bg-slate-700'}`}
+                                            className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all ${logFilter === f ? 'bg-[#00f2ff] text-white' : 'bg-[#1e1e26] text-[#71717a] hover:bg-[#1e1e26]'}`}
                                         >
                                             {f}
                                         </button>
@@ -749,10 +1099,10 @@
                             </div>
                             {state.db_stats && Object.keys(state.db_stats).length > 0 && (
                                 <div className="flex items-center gap-3">
-                                    <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mr-1">Data Soul:</span>
+                                    <span className="text-[10px] font-bold text-[#71717a] uppercase tracking-widest mr-1">Data Soul:</span>
                                     {Object.entries(state.db_stats).map(([col, count]) => (
-                                        <div key={col} className="text-[9px] font-mono text-slate-400 bg-slate-800/50 px-2 py-0.5 rounded border border-slate-700/30">
-                                            {col}: <span className="text-emerald-400 font-bold">{count}</span>
+                                        <div key={col} className="text-[9px] font-mono text-[#71717a] bg-[#1e1e26]/50 px-2 py-0.5 rounded border border-[#1e1e26]/30">
+                                            {col}: <span className="text-[#00f2ff] font-bold">{count}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -766,8 +1116,8 @@
                                     if (logFilter === 'brain') return log.includes("Overseer") || log.includes("Think");
                                     return true;
                                 }).map((log, i) => (
-                                    <div key={i} className={`flex gap-3 leading-relaxed ${log.includes("ERROR") ? "text-red-400" : log.includes("Jules") ? "text-blue-400" : log.includes("Stitch") ? "text-fuchsia-400" : "text-slate-400"}`}>
-                                        <span className="text-slate-700 select-none">❯</span>
+                                    <div key={i} className={`flex gap-3 leading-relaxed ${log.includes("ERROR") ? "text-red-400" : log.includes("Jules") ? "text-[#00f2ff]" : log.includes("Stitch") ? "text-[#bc13fe]" : "text-[#71717a]"}`}>
+                                        <span className="text-[#71717a] select-none">❯</span>
                                         <span className="break-all">{log}</span>
                                     </div>
                                 ))}
