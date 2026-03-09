@@ -391,3 +391,82 @@ print(store.pb.base_url)
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Implement a single node executor with prompt interpolation', async ({ page }) => {
+  const scriptContent = `
+import sys
+import json
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import google.generativeai as genai
+from unittest.mock import MagicMock
+
+from backend.agents.core.chain import Node, ExecutionState
+from backend.agents.core.node_executor import NodeExecutor
+from backend.agents.core.io_models import AgentRequest
+
+# Mock the genai model
+mock_model = MagicMock()
+mock_response = MagicMock()
+mock_response.text = "Mocked LLM completion"
+mock_model.generate_content.return_value = mock_response
+
+# Patch the genai.GenerativeModel to return our mock
+genai.GenerativeModel = MagicMock(return_value=mock_model)
+
+# 1. Create a node with a prompt template
+node_config = {
+    "prompt_template": "Analyze the following system health metric: {metric_name} with value {metric_value}.",
+    "model": "gemini-2.5-flash"
+}
+node = Node(node_id="analyst_node", agent_type="analyzer", config=node_config)
+
+# 2. Create the executor
+executor = NodeExecutor(node)
+
+# 3. Create execution state with variables to be interpolated
+state = ExecutionState(
+    chain_id="chain-xyz",
+    current_node="analyst_node",
+    variables={"metric_name": "CPU_LOAD", "metric_value": "95%"}
+)
+
+# 4. Execute the node
+request = AgentRequest(task_id="task-1", data={"state": state.model_dump()})
+response = executor.execute(request)
+
+# Output results for verification
+print("---RESULT---")
+print(json.dumps({
+    "status": response.status,
+    "result": response.data.get("result"),
+    "interpolated_prompt": mock_model.generate_content.call_args[0][0]
+}))
+`;
+
+  const filename = 'test_executor_' + crypto.randomBytes(4).toString('hex') + '.py';
+  fs.writeFileSync(filename, scriptContent);
+  
+  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+  const outputLines = combinedOutput.toString().trim().split('\n');
+  
+  fs.unlinkSync(filename);
+  
+  const resultIdx = outputLines.indexOf('---RESULT---');
+  expect(resultIdx).toBeGreaterThan(-1);
+  
+  const resultJson = JSON.parse(outputLines[resultIdx + 1]);
+  
+  // Assert the execution was successful
+  expect(resultJson.status).toBe('success');
+  
+  // Assert the mocked response was returned
+  expect(resultJson.result).toBe('Mocked LLM completion');
+  
+  // Assert the variable interpolation worked perfectly
+  expect(resultJson.interpolated_prompt).toBe('Analyze the following system health metric: CPU_LOAD with value 95%.');
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
