@@ -1,7 +1,8 @@
-import uuid
 import logging
+import uuid
 from typing import Dict, List, Optional
-from .execution_engine import Job, JobStatus, BaseExecutionEngine, ExecutionState
+
+from .execution_engine import BaseExecutionEngine, ExecutionState, Job, JobStatus
 from .execution_store import ExecutionStore
 
 logger = logging.getLogger("loom")
@@ -19,7 +20,7 @@ class Orchestrator:
     def submit_job(self, engine: str, target: str) -> str:
         job_id = str(uuid.uuid4())
         job = Job(id=job_id, engine=engine, target=target, status=JobStatus.PENDING)
-        
+
         self.queue.append(job_id)
         self._save_job(job)
         return job_id
@@ -33,11 +34,11 @@ class Orchestrator:
         job = self.get_job(job_id)
         if not job:
             return None
-        
+
         engine_impl = self.engines.get(job.engine)
         if engine_impl and job.status == JobStatus.RUNNING:
             return engine_impl.get_status(job_id)
-            
+
         return ExecutionState(
             job_id=job.id,
             status=job.status,
