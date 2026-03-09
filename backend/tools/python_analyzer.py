@@ -14,7 +14,7 @@ class PythonAnalyzer:
     def __init__(self, config_path: str = "backend/tools/ruff.toml"):
         self.config_path = Path(config_path)
 
-    def analyze_file(self, filepath: str) -> Dict[str, Any]:
+    def analyze_file(self, filepath: str, fix: bool = False) -> Dict[str, Any]:
         """
         Runs Ruff on the specified file and returns the analysis report as a structured JSON object.
         """
@@ -33,6 +33,9 @@ class PythonAnalyzer:
             str(path.absolute()),
             "--output-format", "json"
         ]
+
+        if fix:
+            cmd.append("--fix")
 
         if config_path_str:
             cmd.extend(["--config", config_path_str])

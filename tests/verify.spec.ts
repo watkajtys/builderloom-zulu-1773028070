@@ -176,14 +176,20 @@ test('Python agent logs are structured JSON format', async ({ page }) => {
   
   const stdout = execSync('python3 -c \"import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})\"');
   const stderrOutput = execSync('python3 -c \"import sys; import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})\" 2>&1');
-  const outputLines = stderrOutput.toString().trim().split('\n');
-  const output = outputLines[outputLines.length - 1]; // get the last line which is the json log
+  const outStr = stderrOutput.toString().trim();
+  const startIdx = outStr.indexOf('{');
+  const endIdx = outStr.lastIndexOf('}');
+  
+  let jsonStr = '{}';
+  if (startIdx !== -1 && endIdx !== -1) {
+    jsonStr = outStr.substring(startIdx, endIdx + 1);
+  }
   
   // Assert the output is parsable JSON
   let isJson = false;
   let parsed: any = {};
   try {
-    parsed = JSON.parse(output);
+    parsed = JSON.parse(jsonStr);
     isJson = true;
   } catch(e) {}
   
@@ -314,18 +320,10 @@ print(res.data)
   // Standard logging might output: INFO:loom:{"timestamp":...}
   // The log line could also contain trailing characters like color codes, so we extract strictly
   const startIdx = logLine!.indexOf('{');
-  const jsonPartStr = logLine!.substring(startIdx);
-  // There might be unexpected newlines or other logs caught in outputLines. Let's isolate the first valid JSON block
+  const endIdx = logLine!.lastIndexOf('}');
+  const jsonPartStr = logLine!.substring(startIdx, endIdx + 1);
   
-  let parsedLog;
-  try {
-      parsedLog = JSON.parse(jsonPartStr);
-  } catch (e) {
-      // Fallback: try to find the end of the JSON string
-      const endIdx = jsonPartStr.indexOf('}');
-      const cleanJsonStr = jsonPartStr.substring(0, endIdx + 1);
-      parsedLog = JSON.parse(cleanJsonStr);
-  }
+  let parsedLog = JSON.parse(jsonPartStr);
   
   expect(parsedLog.log_level).toBe('INFO');
   expect(parsedLog.node_id).toBe('TEST-NODE');
@@ -378,12 +376,20 @@ print(store.pb.base_url)
   const modelsIdx = outputLines.indexOf('---MODELS---');
   expect(modelsIdx).toBeGreaterThan(-1);
   
-  const chainJson = JSON.parse(outputLines[modelsIdx + 1]);
+  const chainStr = outputLines[modelsIdx + 1];
+  const chainStart = chainStr.indexOf('{');
+  const chainEnd = chainStr.lastIndexOf('}');
+  const chainJson = JSON.parse(chainStr.substring(chainStart, chainEnd + 1));
+
   expect(chainJson.chain_id).toBe('chain-test-123');
   expect(chainJson.nodes.length).toBe(2);
   expect(chainJson.edges[0].source).toBe('n1');
   
-  const stateJson = JSON.parse(outputLines[modelsIdx + 2]);
+  const stateStr = outputLines[modelsIdx + 2];
+  const stateStart = stateStr.indexOf('{');
+  const stateEnd = stateStr.lastIndexOf('}');
+  const stateJson = JSON.parse(stateStr.substring(stateStart, stateEnd + 1));
+
   expect(stateJson.chain_id).toBe('chain-test-123');
   expect(stateJson.current_node).toBe('n1');
 
@@ -462,7 +468,10 @@ print(json.dumps({
   const resultIdx = outputLines.indexOf('---RESULT---');
   expect(resultIdx).toBeGreaterThan(-1);
   
-  const resultJson = JSON.parse(outputLines[resultIdx + 1]);
+  const resultStr = outputLines[resultIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
   
   // Assert the execution was successful
   expect(resultJson.status).toBe('success');
@@ -546,7 +555,10 @@ print(json.dumps({
   const resultIdx = outputLines.indexOf('---ORCHESTRATOR_RESULT---');
   expect(resultIdx).toBeGreaterThan(-1);
   
-  const resultJson = JSON.parse(outputLines[resultIdx + 1]);
+  const resultStr = outputLines[resultIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
   
   // Verify execution completed the chain (current_node becomes None/null)
   expect(resultJson.final_node).toBeNull();
@@ -615,7 +627,10 @@ test_file_clean.unlink()
   const resultIdx = outputLines.indexOf('---ANALYZER_RESULT---');
   expect(resultIdx).toBeGreaterThan(-1);
   
-  const resultJson = JSON.parse(outputLines[resultIdx + 1]);
+  const resultStr = outputLines[resultIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
   
   expect(resultJson.status).toBe('issues_found');
   expect(resultJson.issues.length).toBeGreaterThan(0);
@@ -627,13 +642,22 @@ test_file_clean.unlink()
   const cleanResultIdx = outputLines.indexOf('---CLEAN_RESULT---');
   expect(cleanResultIdx).toBeGreaterThan(-1);
   
-  const cleanResultJson = JSON.parse(outputLines[cleanResultIdx + 1]);
+  const cleanResultStr = outputLines[cleanResultIdx + 1];
+  const cleanStart = cleanResultStr.indexOf('{');
+  const cleanEnd = cleanResultStr.lastIndexOf('}');
+  const cleanResultJson = JSON.parse(cleanResultStr.substring(cleanStart, cleanEnd + 1));
+
   expect(cleanResultJson.status).toBe('success');
   expect(cleanResultJson.issues.length).toBe(0);
 
   const configIdx = outputLines.indexOf('---ANALYZER_CONFIG---');
   expect(configIdx).toBeGreaterThan(-1);
-  const configJson = JSON.parse(outputLines[configIdx + 1]);
+
+  const configStr = outputLines[configIdx + 1];
+  const configStart = configStr.indexOf('{');
+  const configEnd = configStr.lastIndexOf('}');
+  const configJson = JSON.parse(configStr.substring(configStart, configEnd + 1));
+
   expect(configJson.config_path).toContain('ruff.toml');
 
   await page.goto('/');
