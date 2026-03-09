@@ -90,7 +90,7 @@ test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ p
   await page.waitForSelector('text=retrying...');
   
   // Get the message span of the specific log
-  const errLogMsgSpan = page.locator('span', { hasText: 'VECTOR_STORE_CONNECTION_REFUSED :: retrying...' });
+  const errLogMsgSpan = page.locator('span', { hasText: 'ConnectionTimeout' });
   const spanBox = await errLogMsgSpan.boundingBox();
   expect(spanBox).not.toBeNull();
   

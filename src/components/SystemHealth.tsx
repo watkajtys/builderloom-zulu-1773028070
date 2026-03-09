@@ -4,9 +4,11 @@ import { WorkerNode } from './WorkerNode';
 import { TelemetryStream } from './TelemetryStream';
 import { InferenceChart } from './InferenceChart';
 import { useTelemetry } from '../hooks/useTelemetry';
+import { useTelemetryLogs } from '../hooks/useTelemetryLogs';
 
 export function SystemHealth() {
   const { primaryData, secondaryData } = useTelemetry();
+  const { logs } = useTelemetryLogs();
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -59,7 +61,7 @@ export function SystemHealth() {
           </div>
         </div>
       </div>
-      <TelemetryStream />
+      <TelemetryStream logs={logs} />
     </div>
   );
 }

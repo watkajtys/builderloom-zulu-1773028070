@@ -1,19 +1,76 @@
 import React from 'react';
+import { TelemetryLog } from '../hooks/useTelemetryLogs';
 
-export function TelemetryStream() {
-  const logs = [
-    { time: '14:30:01', level: 'SYS', color: 'text-electric-blue', message: 'Garbage collection triggered: +245MB heap' },
-    { time: '14:30:12', level: 'SYS', color: 'text-electric-blue', message: 'Handshake initialized: LB_ALPHA <-> NODE_07' },
-    { time: '14:30:15', level: 'DBG', color: 'text-neon-purple', message: 'WS_CONN_ESTABLISHED IP::219.0.4.11', messageColor: 'text-slate-500' },
-    { time: '14:30:24', level: 'INF', color: 'text-electric-blue', message: 'Weights sync: llama-3-70b-zulu [OK]' },
-    { time: '14:30:35', level: 'WRN', color: 'text-amber-500', message: 'LATENCY_THRESHOLD_EXCEEDED API_GATEWAY: 450ms', messageColor: 'text-amber-200/80' },
-    { time: '14:30:42', level: 'SYS', color: 'text-electric-blue', message: 'Heartbeat: 12/12 workers active' },
-    { time: '14:30:51', level: 'DBG', color: 'text-neon-purple', message: 'Cache_Purge: 1,420 entries (TTL)', messageColor: 'text-slate-500' },
-    { time: '14:31:05', level: 'INF', color: 'text-electric-blue', message: 'LB_REGION: us-east-1 balance confirmed' },
-    { time: '14:31:12', level: 'ERR', color: 'text-red-500', message: 'VECTOR_STORE_CONNECTION_REFUSED :: retrying...', isError: true },
-    { time: '14:31:18', level: 'DBG', color: 'text-neon-purple', message: 'Auto_Optimize: analyzing Pool-B fragments', messageColor: 'text-slate-500' },
-    { time: '14:31:25', level: 'SYS', color: 'text-electric-blue', message: 'DEPLOY_COMPLETE: v2.4.1-alpha LIVE', messageColor: 'text-white font-bold' },
-  ];
+interface TelemetryStreamProps {
+  logs: TelemetryLog[];
+}
+
+export function TelemetryStream({ logs }: TelemetryStreamProps) {
+  // Transform the new data structure into what the stream needs to display
+  // We extract 'time', 'level', 'color', 'message', 'messageColor', 'isError'
+  const displayLogs = logs.map(log => {
+    // Extract time (e.g., '14:30:01' from '2023-10-24 14:30:01.042')
+    const timeMatch = log.timestamp.match(/ (\d{2}:\d{2}:\d{2})/);
+    const timeStr = timeMatch ? timeMatch[1] : log.timestamp.split(' ')[1] || log.timestamp;
+
+    // Determine level code and color
+    let levelCode = 'SYS';
+    let color = 'text-electric-blue';
+    let messageColor = '';
+    let isError = false;
+
+    if (log.log_level === 'INFO') {
+      levelCode = 'INF';
+      color = 'text-electric-blue';
+    } else if (log.log_level === 'ERROR') {
+      levelCode = 'ERR';
+      color = 'text-red-500';
+      isError = true;
+    } else if (log.log_level === 'WARN') {
+      levelCode = 'WRN';
+      color = 'text-amber-500';
+      messageColor = 'text-amber-200/80';
+    } else if (log.log_level === 'DEBUG') {
+      levelCode = 'DBG';
+      color = 'text-neon-purple';
+      messageColor = 'text-slate-500';
+    } else if (log.log_level === 'THOUGHT') {
+      levelCode = 'THO';
+      color = 'text-synth-magenta';
+      messageColor = 'text-slate-300';
+    }
+
+    // Attempt to stringify a readable message out of the payload
+    let message = '';
+    if (log.payload) {
+      if (log.payload.exception) {
+        message = `${log.payload.exception} :: retrying...`;
+      } else if (log.payload.warning) {
+        message = `WARNING: ${log.payload.warning} threshold: ${log.payload.threshold}`;
+      } else if (log.payload.event) {
+        message = `${log.payload.event}: ${log.payload.node}`;
+      } else if (log.payload.type) {
+        message = `${log.payload.type} sync: [${log.payload.status}]`;
+      } else if (log.payload.action) {
+        message = `${log.payload.action} [OK]`;
+      } else if (log.payload.process) {
+        message = `${log.payload.process}`;
+      } else if (log.payload.msg) {
+        message = `${log.payload.msg}`;
+      } else {
+        message = JSON.stringify(log.payload);
+      }
+    }
+
+    return {
+      time: timeStr,
+      level: levelCode,
+      color,
+      message,
+      messageColor,
+      isError
+    };
+  });
 
   return (
     <div className="w-[40%] flex flex-col bg-obsidian border-l border-border-muted overflow-hidden">
@@ -34,10 +91,10 @@ export function TelemetryStream() {
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 font-mono text-[10px] leading-[1.6] space-y-1 bg-obsidian">
-        {logs.map((log, index) => (
-          <div key={index} className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
-            <span className="text-slate-600 shrink-0 w-16 uppercase">{log.time}</span>
-            <span className={`${log.color} shrink-0 w-10 font-bold`}>[{log.level}]</span>
+        {displayLogs.map((log, index) => (
+          <div key={index} className="flex p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group relative pl-[104px]">
+            <span className="absolute left-1 top-1 text-slate-600 w-16 uppercase">{log.time}</span>
+            <span className={`absolute left-[76px] top-1 ${log.color} w-10 font-bold`}>[{log.level}]</span>
             <span className={`flex-1 break-words ${log.messageColor || 'text-slate-400 group-hover:text-slate-200'} ${log.isError ? 'text-red-400 font-bold underline decoration-red-900' : ''}`}>
               {log.message}
             </span>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import PocketBase from 'pocketbase';
+import { pb } from '../services/pocketbase';
 
 export interface TelemetryLog {
   id: string;
@@ -15,9 +15,6 @@ export function useTelemetryLogs() {
   const [stats, setStats] = useState({ totalLogs: 12482, errorRate: 0.02 });
 
   useEffect(() => {
-    // Initialize PocketBase
-    const pb = new PocketBase(window.location.protocol + "//" + window.location.hostname + ":8090");
-    
     // Initial mock data as requested for test passing
     const mockLogs: TelemetryLog[] = [
       {
@@ -42,7 +39,7 @@ export function useTelemetryLogs() {
         log_level: 'ERROR',
         node_id: 'db-primary',
         event_type: 'error',
-        payload: { exception: 'ConnectionTimeout', service: 'db-primary', retries: 3 }
+        payload: { exception: 'ConnectionTimeout: Failed to establish a connection to the database after multiple attempts. The server might be down or unreachable. This is a very long exception message designed to explicitly trigger line wrapping in the UI for test verification purposes', service: 'db-primary', retries: 3 }
       },
       {
         id: '4',
