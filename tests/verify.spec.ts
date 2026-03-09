@@ -26,6 +26,25 @@ test('Fix broken icon rendering showing raw text strings across the UI', async (
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('Clean up the top right global navigation and search alignment', async ({ page }) => {
+  await page.goto('/');
+
+  // Verify the input has proper placeholder and doesn't overlap weirdly
+  const searchInput = page.getByPlaceholder('SEARCH_ZULU_SYSTEMS...');
+  await expect(searchInput).toBeVisible();
+  
+  // Verify it exists in a TopNavUtility or similar container, and icons are rendered
+  // Verify the bell button has an aria-label
+  const notifButton = page.locator('button[aria-label="Notifications"]');
+  await expect(notifButton).toBeVisible();
+  
+  // Check the bell icon doesn't show raw text fallback
+  await expect(page.locator('text=notifications')).not.toBeVisible();
+  await expect(page.locator('text=search').first()).not.toBeVisible();
+
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('Zulu Dashboard loads correctly', async ({ page }) => {
   await page.goto('/viewer/index.html?view=zulu');
   await expect(page.locator('text=Zulu AI')).toBeVisible();

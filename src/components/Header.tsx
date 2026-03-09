@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Bell } from 'lucide-react';
+import { TopNavUtility } from './TopNavUtility';
 
 export function Header() {
   return (
@@ -15,15 +15,7 @@ export function Header() {
           <span className="text-[9px] font-black text-electric-blue uppercase tracking-tighter neon-glow-blue">Engine Active</span>
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <input className="h-6 pl-2 pr-8 text-[10px] bg-dark-surface border border-border-muted rounded text-slate-300 focus:border-electric-blue focus:ring-0 w-40 transition-all font-mono" placeholder="SEARCH_ZULU_SYSTEM..." type="text" />
-          <Search size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500" />
-        </div>
-        <button className="text-slate-500 hover:text-electric-blue transition-colors">
-          <Bell size={18} />
-        </button>
-      </div>
+      <TopNavUtility />
     </header>
   );
 }
