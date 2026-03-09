@@ -1,5 +1,7 @@
 import { execSync } from 'child_process';
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
+import * as crypto from 'crypto';
 
 test('App initializes correctly', async ({ page }) => {
   await page.goto('/');
@@ -301,7 +303,8 @@ print(res.data)
 `;
 
   const combinedOutput = execSync(`python3 -c '${script}' 2>&1`);
-  const outputLines = combinedOutput.toString().trim().split('\n');
+  const outStr = combinedOutput.toString().trim();
+  const outputLines = outStr.split('\n');
   
   // Find the log line
   const logLine = outputLines.find(line => line.includes('Dummy execution'));
@@ -335,5 +338,56 @@ print(res.data)
   expect(outputLines[responseIdx + 1]).toBe('success');
   expect(outputLines[responseIdx + 2]).toBe("{'test': True}");
   
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Define core data models and interfaces for the prompt chain', async ({ page }) => {
+  
+  // write script to file, then execute to avoid escaping issues
+  const scriptContent = `
+import sys
+import json
+from backend.agents.core.chain import Chain, Node, Edge, EdgeType, ExecutionState
+from backend.agents.core.chain_store import ChainStore
+
+node1 = Node(node_id="n1", agent_type="researcher", config={"max_results": 5})
+node2 = Node(node_id="n2", agent_type="writer")
+edge = Edge(source="n1", target="n2", edge_type=EdgeType.DIRECT)
+chain = Chain(chain_id="chain-test-123", nodes=[node1, node2], edges=[edge])
+
+state = ExecutionState(chain_id=chain.chain_id, current_node="n1", variables={"query": "test"})
+
+store = ChainStore()
+
+print("---MODELS---")
+print(json.dumps(chain.model_dump()))
+print(json.dumps(state.model_dump()))
+print(store.pb.base_url)
+`;
+  const filename = 'test_script_' + crypto.randomBytes(4).toString('hex') + '.py';
+  fs.writeFileSync(filename, scriptContent);
+  
+  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+  const outputLines = combinedOutput.toString().trim().split('\n');
+  
+  fs.unlinkSync(filename);
+  
+  const modelsIdx = outputLines.indexOf('---MODELS---');
+  expect(modelsIdx).toBeGreaterThan(-1);
+  
+  const chainJson = JSON.parse(outputLines[modelsIdx + 1]);
+  expect(chainJson.chain_id).toBe('chain-test-123');
+  expect(chainJson.nodes.length).toBe(2);
+  expect(chainJson.edges[0].source).toBe('n1');
+  
+  const stateJson = JSON.parse(outputLines[modelsIdx + 2]);
+  expect(stateJson.chain_id).toBe('chain-test-123');
+  expect(stateJson.current_node).toBe('n1');
+
+  // Verify PocketBase connection URL
+  const pbUrl = outputLines[modelsIdx + 3];
+  expect(pbUrl).toBe('http://loom-pocketbase:8090');
+
+  await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
