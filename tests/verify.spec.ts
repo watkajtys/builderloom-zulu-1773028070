@@ -31,3 +31,23 @@ test('PocketBase connection uses proper relative path', async ({ page }) => {
   await page.goto('/viewer/index.html?view=zulu');
   await expect(page.locator('text=Zulu AI')).toBeVisible();
 });
+
+test('Dashboard uses abstracted reusable components', async ({ page }) => {
+  await page.goto('/system-health');
+  
+  // Verify Sidebar layout component is visible
+  await expect(page.locator('aside').filter({ hasText: 'Zulu AI' })).toBeVisible();
+  
+  // Verify Header layout component is visible
+  await expect(page.locator('header').filter({ hasText: 'Health' })).toBeVisible();
+
+  // Verify MetricCard abstract component is loaded
+  await expect(page.locator('text=CPU_CORE_LOAD')).toBeVisible();
+  
+  // Verify WorkerNode abstract component is loaded
+  await expect(page.locator('text=NODE-01')).toBeVisible();
+  await expect(page.locator('text=ONLINE').first()).toBeVisible();
+
+  // Verify TelemetryStream component is active
+  await expect(page.locator('text=Telemetry_Stream')).toBeVisible();
+});

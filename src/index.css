@@ -1,3 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-obsidian text-white font-sans;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-zinc-grey/30 rounded-full;
+}
+
+.neon-glow-blue {
+  text-shadow: 0 0 8px rgba(0, 242, 255, 0.5);
+}
+
+.neon-border-blue {
+  box-shadow: inset 0 0 0 1px rgba(0, 242, 255, 0.2);
+}
