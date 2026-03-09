@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -26,7 +27,7 @@ class PythonAnalyzer:
         config_path_str = str(self.config_path.absolute()) if self.config_path else ""
         
         cmd = [
-            "ruff", "check",
+            sys.executable, "-m", "ruff", "check",
             str(path.absolute()),
             "--output-format", "json"
         ]
@@ -46,7 +47,16 @@ class PythonAnalyzer:
             issues: List[Dict[str, Any]] = []
             if result.stdout.strip():
                 try:
-                    issues = json.loads(result.stdout)
+                    stdout_str = result.stdout.strip()
+                    # Isolate the JSON object by extracting the substring from the first '[' to the last ']'
+                    start_idx = stdout_str.find('[')
+                    end_idx = stdout_str.rfind(']')
+                    
+                    if start_idx != -1 and end_idx != -1 and end_idx >= start_idx:
+                        json_str = stdout_str[start_idx:end_idx+1]
+                        issues = json.loads(json_str)
+                    else:
+                        issues = json.loads(stdout_str)
                 except json.JSONDecodeError:
                     return {
                         "status": "error",

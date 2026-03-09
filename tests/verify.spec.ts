@@ -367,10 +367,13 @@ print(store.pb.base_url)
   const filename = 'test_script_' + crypto.randomBytes(4).toString('hex') + '.py';
   fs.writeFileSync(filename, scriptContent);
   
-  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
-  const outputLines = combinedOutput.toString().trim().split('\n');
-  
-  fs.unlinkSync(filename);
+  let outputLines;
+  try {
+    const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+    outputLines = combinedOutput.toString().trim().split('\n');
+  } finally {
+    fs.unlinkSync(filename);
+  }
   
   const modelsIdx = outputLines.indexOf('---MODELS---');
   expect(modelsIdx).toBeGreaterThan(-1);
@@ -448,10 +451,13 @@ print(json.dumps({
   const filename = 'test_executor_' + crypto.randomBytes(4).toString('hex') + '.py';
   fs.writeFileSync(filename, scriptContent);
   
-  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
-  const outputLines = combinedOutput.toString().trim().split('\n');
-  
-  fs.unlinkSync(filename);
+  let outputLines;
+  try {
+    const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+    outputLines = combinedOutput.toString().trim().split('\n');
+  } finally {
+    fs.unlinkSync(filename);
+  }
   
   const resultIdx = outputLines.indexOf('---RESULT---');
   expect(resultIdx).toBeGreaterThan(-1);
@@ -529,10 +535,13 @@ print(json.dumps({
   const filename = 'test_orchestrator_' + crypto.randomBytes(4).toString('hex') + '.py';
   fs.writeFileSync(filename, scriptContent);
   
-  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
-  const outputLines = combinedOutput.toString().trim().split('\n');
-  
-  fs.unlinkSync(filename);
+  let outputLines;
+  try {
+    const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+    outputLines = combinedOutput.toString().trim().split('\n');
+  } finally {
+    fs.unlinkSync(filename);
+  }
   
   const resultIdx = outputLines.indexOf('---ORCHESTRATOR_RESULT---');
   expect(resultIdx).toBeGreaterThan(-1);
@@ -581,10 +590,13 @@ test_file.unlink()
   const filename = 'test_analyzer_integration_' + crypto.randomBytes(4).toString('hex') + '.py';
   fs.writeFileSync(filename, scriptContent);
   
-  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
-  const outputLines = combinedOutput.toString().trim().split('\n');
-  
-  fs.unlinkSync(filename);
+  let outputLines;
+  try {
+    const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+    outputLines = combinedOutput.toString().trim().split('\n');
+  } finally {
+    fs.unlinkSync(filename);
+  }
   
   const resultIdx = outputLines.indexOf('---ANALYZER_RESULT---');
   expect(resultIdx).toBeGreaterThan(-1);
