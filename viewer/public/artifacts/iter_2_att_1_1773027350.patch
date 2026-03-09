@@ -1,0 +1,42 @@
+diff --git a/src/components/layout/Header.tsx b/src/components/layout/Header.tsx
+index 72b006f..bf686f1 100644
+--- a/src/components/layout/Header.tsx
++++ b/src/components/layout/Header.tsx
+@@ -44,7 +44,9 @@ export function Header({ currentView, setSearchParams }: { currentView: string,
+           <span className="text-slate-500 tracking-tighter">MISSION_TIME: 1284:44:02</span>
+           <span className="text-success-cyan">SIGNAL_STRENGTH: 98.4%</span>
+         </div>
+-        <div className="w-9 h-9 rounded-sm border border-neon-pink/40 bg-cover bg-center ring-1 ring-sky-blue/20" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCxc518eizkO9lo2wuOfiMZOYlEofEHc0z6NDoDnYAn6HnKXKhNY-N1ngCXY7KEHFf42xA909mFo-zxf6AK4D1FWHb1o3qE1kxRfYlXPJDHqJAp3mCrjI0wqqVa7QYG1aInQnUtGiGQOquO4DRKYCLSxdFOT_F4giu0XFbtSsPocsJhsaOS-0xTWNATlyAewvOeSVu_HFxGxjutKUHoY5IIWU6vPEU0XzdE_7AfVh8d2XAVs_AMlMSOsa1eLThuOAiTsKNEcPGni54')"}}></div>
++        <div className="w-9 h-9 flex items-center justify-center rounded-sm border border-sky-blue/40 bg-black/60 ring-1 ring-sky-blue/20 relative overflow-hidden">
++          <span className="material-symbols-outlined text-success-cyan animate-pulse">radar</span>
++        </div>
+       </div>
+     </header>
+   );
+diff --git a/tests/verify.spec.ts b/tests/verify.spec.ts
+index 757febe..34fad30 100644
+--- a/tests/verify.spec.ts
++++ b/tests/verify.spec.ts
+@@ -36,3 +36,22 @@ test('Verify view components exist and navigate correctly', async ({ page }) =>
+   await page.click('button:has-text("ROADMAP")');
+   await expect(page.locator('text=MISSION ROADMAP - Q3')).toBeVisible();
+ });
++
++test('Verify thematic radar element replaced out-of-palette image', async ({ page }) => {
++  await page.goto('/');
++
++  // Verify the out-of-palette image is not present
++  const oldImageLocator = page.locator('div[style*="https://lh3.googleusercontent.com/aida-public/"]');
++  await expect(oldImageLocator).toHaveCount(0);
++
++  // Verify the new radar icon is present
++  const radarIcon = page.locator('span.material-symbols-outlined:has-text("radar")');
++  await expect(radarIcon).toBeVisible();
++  
++  // Verify styling logic applied
++  const radarContainer = radarIcon.locator('..');
++  await expect(radarContainer).toHaveClass(/border-sky-blue\/40/);
++
++  // Take screenshot as required
++  await page.screenshot({ path: 'evidence.png' });
++});

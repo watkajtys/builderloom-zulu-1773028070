@@ -1,0 +1,55 @@
+diff --git a/app/tests/verify.spec.ts b/app/tests/verify.spec.ts
+index 7dd47b6..008abc6 100644
+--- a/app/tests/verify.spec.ts
++++ b/app/tests/verify.spec.ts
+@@ -40,3 +40,24 @@ test('Core system interface loads status and handles API boundary', async ({ pag
+   // Ensure screenshot is captured
+   await page.screenshot({ path: 'evidence.png', fullPage: true });
+ });
++
++test('Verify duplication removed on roadmap view', async ({ page }) => {
++  await page.goto('/viewer/index.html?view=roadmap');
++  
++  // Verify 'Strategic Roadmap' text appears only once (as the main header outside the card container or as the singular header).
++  await expect(page.getByText('Strategic Roadmap')).toHaveCount(1);
++  
++  // Verify the 'Future milestones and factory goals.' text does not appear in the card content.
++  // Wait, the main subheader actually says: "Future milestones and factory goals." as well. Let's check the DOM structure.
++  // Wait, I completely removed it from the card. Does it appear elsewhere?
++  // Let's verify the outer one exists and the inner one doesn't.
++  // The outer one was: <p className="text-[var(--zulu-muted)] mt-1 font-medium">{viewSubtitles[currentView] || "Managing factory state..."}</p>
++  // Its text is: "Future milestones and strategic planning..." not "Future milestones and factory goals."
++  // So 'Future milestones and factory goals.' should be completely gone.
++  await expect(page.getByText('Future milestones and factory goals.')).toHaveCount(0);
++
++  // The main header should still have Strategic Roadmap
++  await expect(page.getByText('Strategic Roadmap')).toHaveCount(1);
++
++  await page.screenshot({ path: 'evidence.png' });
++});
+diff --git a/playwright.config.ts b/playwright.config.ts
+index 59c3023..ec17cd2 100644
+--- a/playwright.config.ts
++++ b/playwright.config.ts
+@@ -1,7 +1,7 @@
+ import { defineConfig, devices } from '@playwright/test';
+ 
+ export default defineConfig({
+-  testDir: './tests',
++  testDir: './app/tests',
+   fullyParallel: true,
+   forbidOnly: !!process.env.CI,
+   retries: process.env.CI ? 2 : 0,
+diff --git a/viewer/index.html b/viewer/index.html
+index 5c0b333..ff226d9 100644
+--- a/viewer/index.html
++++ b/viewer/index.html
+@@ -304,8 +304,6 @@
+                     case "roadmap":
+                         return (
+                             <div className="bg-[var(--zulu-surface)] border border-[var(--zulu-border)] rounded p-8">
+-                                <h2 className="text-2xl font-bold mb-4 matrix-text-glow">Strategic Roadmap</h2>
+-                                <p className="text-[var(--zulu-muted)] mb-4">Future milestones and factory goals.</p>
+                                 <div className="space-y-4">
+                                     <div className="p-4 border-l-2 border-success bg-[var(--zulu-primary)]">
+                                         <h4 className="font-bold">Phase 1: Foundation</h4>

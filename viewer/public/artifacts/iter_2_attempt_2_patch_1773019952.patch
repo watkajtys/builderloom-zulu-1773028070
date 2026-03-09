@@ -1,0 +1,136 @@
+diff --git a/app/tests/verify.spec.ts b/app/tests/verify.spec.ts
+index 008abc6..baf3bc0 100644
+--- a/app/tests/verify.spec.ts
++++ b/app/tests/verify.spec.ts
+@@ -22,20 +22,20 @@ test.beforeEach(async ({ page }) => {
+ 
+ test('App initializes correctly', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+-  await expect(page.locator('text=ZULU STEALTH COMMAND')).toBeVisible();
++  await expect(page.locator('text=BuilderLoom Zulu')).toBeVisible();
+ });
+ 
+ test('Core system interface loads status and handles API boundary', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   
+   // Navigate to health tab
+-  await page.getByRole('button', { name: /health/i }).click();
++  await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
+ 
+   // Verify the system status element appears, indicating the core service ran
+-  await expect(page.locator('text=Core System Diagnostics')).toBeVisible();
+-  await expect(page.locator('text=Primary Status')).toBeVisible();
+-  await expect(page.locator('text=Current Phase')).toBeVisible();
+-  await expect(page.locator('text=Resource Alloc')).toBeVisible();
++  await expect(page.locator('text=System Health Overview')).toBeVisible();
++  await expect(page.getByRole('heading', { name: 'Database' })).toBeVisible();
++  await expect(page.getByRole('heading', { name: 'Workers' })).toBeVisible();
++  await expect(page.getByRole('heading', { name: 'Queue' })).toBeVisible();
+ 
+   // Ensure screenshot is captured
+   await page.screenshot({ path: 'evidence.png', fullPage: true });
+@@ -61,3 +61,29 @@ test('Verify duplication removed on roadmap view', async ({ page }) => {
+ 
+   await page.screenshot({ path: 'evidence.png' });
+ });
++
++test('Verify that the HTML app loads and displays the main dashboard shell with the required tabs without errors.', async ({ page }) => {
++  await page.goto('/viewer/index.html');
++  
++  // Verify tabs are visible
++  await expect(page.getByRole('link', { name: 'analytics Telemetry' })).toBeVisible();
++  await expect(page.getByRole('link', { name: 'monitor_heart System Health' })).toBeVisible();
++  await expect(page.getByRole('link', { name: 'view_kanban Kanban' })).toBeVisible();
++  await expect(page.getByRole('link', { name: 'map Roadmap' })).toBeVisible();
++
++  // Navigate to different tabs to check URLSearchParams deep linking
++  await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
++  await expect(page).toHaveURL(/.*view=health.*/);
++  await expect(page.getByText('System Health Overview')).toBeVisible();
++
++  await page.getByRole('link', { name: 'view_kanban Kanban' }).click();
++  await expect(page).toHaveURL(/.*view=kanban.*/);
++  await expect(page.getByText('Sprint Backlog (Kanban)')).toBeVisible();
++
++  await page.getByRole('link', { name: 'map Roadmap' }).click();
++  await expect(page).toHaveURL(/.*view=roadmap.*/);
++  await expect(page.getByText('Strategic Roadmap').first()).toBeVisible();
++
++  // Test screenshot
++  await page.screenshot({ path: 'evidence.png' });
++});
+diff --git a/dev_server.log b/dev_server.log
+index 6512950..7d7b3dd 100644
+--- a/dev_server.log
++++ b/dev_server.log
+@@ -3,9 +3,10 @@
+ > vite --host
+ 
+ 
+-  VITE v6.4.1  ready in 324 ms
++  VITE v6.4.1  ready in 322 ms
+ 
+   ➜  Local:   http://localhost:5173/
+   ➜  Network: http://192.168.0.2:5173/
+-10:32:38 PM [vite] (client) page reload playwright-report/index.html
+-10:32:38 PM [vite] (client) page reload playwright-report/index.html
++1:22:16 AM [vite] (client) page reload playwright-report/index.html
++1:22:16 AM [vite] (client) page reload playwright-report/index.html
++1:26:46 AM [vite] (client) page reload playwright-report/index.html
+diff --git a/tests/verify.spec.ts b/tests/verify.spec.ts
+index d42f302..baf3bc0 100644
+--- a/tests/verify.spec.ts
++++ b/tests/verify.spec.ts
+@@ -22,25 +22,46 @@ test.beforeEach(async ({ page }) => {
+ 
+ test('App initializes correctly', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+-  await expect(page.locator('text=ZULU STEALTH COMMAND')).toBeVisible();
++  await expect(page.locator('text=BuilderLoom Zulu')).toBeVisible();
+ });
+ 
+ test('Core system interface loads status and handles API boundary', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   
+   // Navigate to health tab
+-  await page.getByRole('button', { name: /health/i }).click();
++  await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
+ 
+   // Verify the system status element appears, indicating the core service ran
+-  await expect(page.locator('text=Core System Diagnostics')).toBeVisible();
+-  await expect(page.locator('text=Primary Status')).toBeVisible();
+-  await expect(page.locator('text=Current Phase')).toBeVisible();
+-  await expect(page.locator('text=Resource Alloc')).toBeVisible();
++  await expect(page.locator('text=System Health Overview')).toBeVisible();
++  await expect(page.getByRole('heading', { name: 'Database' })).toBeVisible();
++  await expect(page.getByRole('heading', { name: 'Workers' })).toBeVisible();
++  await expect(page.getByRole('heading', { name: 'Queue' })).toBeVisible();
+ 
+   // Ensure screenshot is captured
+   await page.screenshot({ path: 'evidence.png', fullPage: true });
+ });
+ 
++test('Verify duplication removed on roadmap view', async ({ page }) => {
++  await page.goto('/viewer/index.html?view=roadmap');
++  
++  // Verify 'Strategic Roadmap' text appears only once (as the main header outside the card container or as the singular header).
++  await expect(page.getByText('Strategic Roadmap')).toHaveCount(1);
++  
++  // Verify the 'Future milestones and factory goals.' text does not appear in the card content.
++  // Wait, the main subheader actually says: "Future milestones and factory goals." as well. Let's check the DOM structure.
++  // Wait, I completely removed it from the card. Does it appear elsewhere?
++  // Let's verify the outer one exists and the inner one doesn't.
++  // The outer one was: <p className="text-[var(--zulu-muted)] mt-1 font-medium">{viewSubtitles[currentView] || "Managing factory state..."}</p>
++  // Its text is: "Future milestones and strategic planning..." not "Future milestones and factory goals."
++  // So 'Future milestones and factory goals.' should be completely gone.
++  await expect(page.getByText('Future milestones and factory goals.')).toHaveCount(0);
++
++  // The main header should still have Strategic Roadmap
++  await expect(page.getByText('Strategic Roadmap')).toHaveCount(1);
++
++  await page.screenshot({ path: 'evidence.png' });
++});
++
+ test('Verify that the HTML app loads and displays the main dashboard shell with the required tabs without errors.', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   

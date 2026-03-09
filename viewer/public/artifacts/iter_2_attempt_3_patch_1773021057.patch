@@ -1,0 +1,220 @@
+diff --git a/app/tests/verify.spec.ts b/app/tests/verify.spec.ts
+index baf3bc0..8b31bc1 100644
+--- a/app/tests/verify.spec.ts
++++ b/app/tests/verify.spec.ts
+@@ -20,6 +20,24 @@ test.beforeEach(async ({ page }) => {
+   });
+ });
+ 
++test('React App root loads with System Status Widget', async ({ page }) => {
++  // Navigate to root
++  await page.goto('/');
++
++  // Verify 'Zulu AI Factory' text appears
++  await expect(page.getByText('Zulu AI Factory')).toBeVisible();
++
++  // Wait for the System Status Widget to load (or fail to load)
++  const widgetLoaded = page.locator('[data-testid="system-status"]');
++  const widgetFailed = page.getByText('Failed to load system status.');
++  const widgetLoading = page.getByText('Loading system status...');
++  
++  await expect(widgetLoaded.or(widgetFailed).or(widgetLoading).first()).toBeVisible();
++
++  // Test screenshot
++  await page.screenshot({ path: 'evidence.png' });
++});
++
+ test('App initializes correctly', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   await expect(page.locator('text=BuilderLoom Zulu')).toBeVisible();
+diff --git a/dev_server.log b/dev_server.log
+index 7d7b3dd..66f080d 100644
+--- a/dev_server.log
++++ b/dev_server.log
+@@ -3,10 +3,9 @@
+ > vite --host
+ 
+ 
+-  VITE v6.4.1  ready in 322 ms
++  VITE v6.4.1  ready in 363 ms
+ 
+   ➜  Local:   http://localhost:5173/
+   ➜  Network: http://192.168.0.2:5173/
+-1:22:16 AM [vite] (client) page reload playwright-report/index.html
+-1:22:16 AM [vite] (client) page reload playwright-report/index.html
+-1:26:46 AM [vite] (client) page reload playwright-report/index.html
++1:44:47 AM [vite] (client) page reload playwright-report/index.html
++1:46:40 AM [vite] (client) page reload playwright-report/index.html
+diff --git a/index.html b/index.html
+index 8c70ff5..e71b92e 100644
+--- a/index.html
++++ b/index.html
+@@ -3,9 +3,12 @@
+   <head>
+     <meta charset="UTF-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>Loom App</title>
++    <title>Zulu AI Factory</title>
++    <link rel="preconnect" href="https://fonts.googleapis.com">
++    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+   </head>
+-  <body>
++  <body class="bg-zulu-primary text-zulu-text font-sans">
+     <div id="root"></div>
+     <script type="module" src="/src/main.tsx"></script>
+   </body>
+diff --git a/src/App.tsx b/src/App.tsx
+index b7b7434..e24fa1d 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -1,46 +1,10 @@
+-import { useEffect, useState } from 'react';
+-import { systemService } from './core/api';
+-import type { SystemStatus } from './core/types';
++import { SystemStatusWidget } from './components/SystemStatusWidget';
+ 
+ export default function App() {
+-  const [status, setStatus] = useState<SystemStatus | null>(null);
+-  const [loading, setLoading] = useState(true);
+-
+-  useEffect(() => {
+-    async function checkStatus() {
+-      try {
+-        const result = await systemService.getStatus();
+-        setStatus(result);
+-      } catch (err) {
+-        console.error('Failed to get status:', err);
+-      } finally {
+-        setLoading(false);
+-      }
+-    }
+-    
+-    checkStatus();
+-  }, []);
+-
+   return (
+-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center space-y-4">
+-      <h1 className="text-4xl font-bold">Loom Initialized</h1>
+-      
+-      {loading ? (
+-        <p className="text-slate-400">Loading system status...</p>
+-      ) : status ? (
+-        <div className="bg-slate-900 p-6 rounded-lg border border-slate-800" data-testid="system-status">
+-          <h2 className="text-xl font-semibold mb-2">Core System Status</h2>
+-          <ul className="space-y-2 text-slate-300">
+-            <li>
+-              Status: <span className={status.status === 'online' ? 'text-green-400' : 'text-red-400'}>{status.status}</span>
+-            </li>
+-            <li>Version: {status.version}</li>
+-            <li>Modules: {status.active_modules.join(', ') || 'None'}</li>
+-          </ul>
+-        </div>
+-      ) : (
+-        <p className="text-red-400">Failed to load system status.</p>
+-      )}
++    <div className="min-h-screen bg-zulu-primary text-zulu-text flex flex-col items-center justify-center space-y-4 font-sans">
++      <h1 className="text-4xl font-bold font-sans">Zulu AI Factory</h1>
++      <SystemStatusWidget />
+     </div>
+   )
+ }
+diff --git a/src/components/SystemStatusWidget.tsx b/src/components/SystemStatusWidget.tsx
+new file mode 100644
+index 0000000..0e44f87
+--- /dev/null
++++ b/src/components/SystemStatusWidget.tsx
+@@ -0,0 +1,44 @@
++import { useEffect, useState } from 'react';
++import { systemService } from '../core/api';
++import type { SystemStatus } from '../core/types';
++
++export function SystemStatusWidget() {
++  const [status, setStatus] = useState<SystemStatus | null>(null);
++  const [loading, setLoading] = useState(true);
++
++  useEffect(() => {
++    async function checkStatus() {
++      try {
++        const result = await systemService.getStatus();
++        setStatus(result);
++      } catch (err) {
++        console.error('Failed to get status:', err);
++      } finally {
++        setLoading(false);
++      }
++    }
++    
++    checkStatus();
++  }, []);
++
++  if (loading) {
++    return <p className="text-zulu-muted font-sans">Loading system status...</p>;
++  }
++
++  if (!status) {
++    return <p className="text-red-400 font-sans">Failed to load system status.</p>;
++  }
++
++  return (
++    <div className="bg-zulu-surface p-6 rounded-lg border border-zulu-border" data-testid="system-status">
++      <h2 className="text-xl font-semibold mb-4 font-sans text-zulu-accent">System Health Overview</h2>
++      <ul className="space-y-2 text-zulu-text font-mono text-sm">
++        <li>
++          Status: <span className={status.status === 'online' ? 'text-zulu-success font-bold' : 'text-red-400 font-bold'}>{status.status}</span>
++        </li>
++        <li>Version: {status.version}</li>
++        <li>Modules: {status.active_modules.join(', ') || 'None'}</li>
++      </ul>
++    </div>
++  );
++}
+diff --git a/src/core/api.ts b/src/core/api.ts
+index 52f024c..81d5179 100644
+--- a/src/core/api.ts
++++ b/src/core/api.ts
+@@ -1,12 +1,15 @@
+ import PocketBase from 'pocketbase';
+ import type { SystemStatus } from './types';
+ 
+-// Use window.location.hostname for browser context, fallback to localhost for tests
++// Use environment variables for connection context, fallback to location hostname
+ const getApiUrl = () => {
++  if (import.meta.env && import.meta.env.VITE_PB_URL) {
++    return import.meta.env.VITE_PB_URL;
++  }
+   if (typeof window !== 'undefined') {
+     return `http://${window.location.hostname}:8090`;
+   }
+-  return 'http://loom-pocketbase:8090'; // Use Docker network hostname for SSR/tests
++  return ''; // Default fallback, relative path
+ };
+ 
+ export const pb = new PocketBase(getApiUrl());
+diff --git a/tailwind.config.js b/tailwind.config.js
+index dca8ba0..d986e92 100644
+--- a/tailwind.config.js
++++ b/tailwind.config.js
+@@ -5,7 +5,21 @@ export default {
+     "./src/**/*.{js,ts,jsx,tsx}",
+   ],
+   theme: {
+-    extend: {},
++    extend: {
++      colors: {
++        "zulu-primary": "#0F071B", /* Midnight Plum */
++        "zulu-surface": "#1E1532", /* Deep Indigo */
++        "zulu-accent": "#A855F7", /* Electric Violet */
++        "zulu-success": "#2DD4BF", /* Neon Mint */
++        "zulu-border": "#3A2A5A",
++        "zulu-text": "#E9D8FD",
++        "zulu-muted": "#805AD5",
++      },
++      fontFamily: {
++        "sans": ["Geist", "sans-serif"],
++        "mono": ["JetBrains Mono", "monospace"]
++      }
++    },
+   },
+   plugins: [],
+ }

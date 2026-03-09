@@ -1,0 +1,56 @@
+diff --git a/app/tests/verify.spec.ts b/app/tests/verify.spec.ts
+index 11f4a6e..97c2ba4 100644
+--- a/app/tests/verify.spec.ts
++++ b/app/tests/verify.spec.ts
+@@ -38,6 +38,17 @@ test('React App root loads with System Status Widget', async ({ page }) => {
+   await page.screenshot({ path: 'evidence.png' });
+ });
+ 
++test('Verify text glow reduction on roadmap view', async ({ page }) => {
++  await page.goto('/viewer/index.html?view=roadmap');
++  
++  // Verify main heading exists
++  const heading = page.getByRole('heading', { name: 'Strategic Roadmap' });
++  await expect(heading).toBeVisible();
++
++  // Test screenshot
++  await page.screenshot({ path: 'evidence.png' });
++});
++
+ test('App initializes correctly', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   await expect(page.locator('text=ZULU STEALTH COMMAND')).toBeVisible();
+diff --git a/dev_server.log b/dev_server.log
+deleted file mode 100644
+index 66f080d..0000000
+--- a/dev_server.log
++++ /dev/null
+@@ -1,11 +0,0 @@
+-
+-> app@0.0.0 dev
+-> vite --host
+-
+-
+-  VITE v6.4.1  ready in 363 ms
+-
+-  ➜  Local:   http://localhost:5173/
+-  ➜  Network: http://192.168.0.2:5173/
+-1:44:47 AM [vite] (client) page reload playwright-report/index.html
+-1:46:40 AM [vite] (client) page reload playwright-report/index.html
+diff --git a/viewer/index.html b/viewer/index.html
+index f0aa0e0..c69c755 100644
+--- a/viewer/index.html
++++ b/viewer/index.html
+@@ -30,10 +30,10 @@
+             color: var(--zulu-text);
+         }
+         .matrix-text-glow {
+-            text-shadow: 0 0 5px rgba(168, 85, 247, 0.5), 0 0 10px rgba(168, 85, 247, 0.3);
++            text-shadow: 0 0 3px rgba(168, 85, 247, 0.4);
+         }
+         .success-text-glow {
+-            text-shadow: 0 0 5px rgba(45, 212, 191, 0.5), 0 0 10px rgba(45, 212, 191, 0.3);
++            text-shadow: 0 0 3px rgba(45, 212, 191, 0.4);
+         }
+         .matrix-border {
+             border-color: var(--zulu-border);

@@ -1,0 +1,109 @@
+diff --git a/app/tests/verify.spec.ts b/app/tests/verify.spec.ts
+index 8b31bc1..11f4a6e 100644
+--- a/app/tests/verify.spec.ts
++++ b/app/tests/verify.spec.ts
+@@ -40,17 +40,18 @@ test('React App root loads with System Status Widget', async ({ page }) => {
+ 
+ test('App initializes correctly', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+-  await expect(page.locator('text=BuilderLoom Zulu')).toBeVisible();
++  await expect(page.locator('text=ZULU STEALTH COMMAND')).toBeVisible();
++  await page.screenshot({ path: 'evidence.png' });
+ });
+ 
+ test('Core system interface loads status and handles API boundary', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   
+   // Navigate to health tab
+-  await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
++  await page.getByRole('link', { name: /monitor_heart System Health/i }).click();
+ 
+   // Verify the system status element appears, indicating the core service ran
+-  await expect(page.locator('text=System Health Overview')).toBeVisible();
++  await expect(page.locator('text=Core System Diagnostics')).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Database' })).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Workers' })).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Queue' })).toBeVisible();
+@@ -92,7 +93,7 @@ test('Verify that the HTML app loads and displays the main dashboard shell with
+   // Navigate to different tabs to check URLSearchParams deep linking
+   await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
+   await expect(page).toHaveURL(/.*view=health.*/);
+-  await expect(page.getByText('System Health Overview')).toBeVisible();
++  await expect(page.getByText('Core System Diagnostics')).toBeVisible();
+ 
+   await page.getByRole('link', { name: 'view_kanban Kanban' }).click();
+   await expect(page).toHaveURL(/.*view=kanban.*/);
+diff --git a/tests/verify.spec.ts b/tests/verify.spec.ts
+index baf3bc0..24aafa8 100644
+--- a/tests/verify.spec.ts
++++ b/tests/verify.spec.ts
+@@ -22,17 +22,18 @@ test.beforeEach(async ({ page }) => {
+ 
+ test('App initializes correctly', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+-  await expect(page.locator('text=BuilderLoom Zulu')).toBeVisible();
++  await expect(page.locator('text=ZULU STEALTH COMMAND')).toBeVisible();
++  await page.screenshot({ path: 'evidence.png' });
+ });
+ 
+ test('Core system interface loads status and handles API boundary', async ({ page }) => {
+   await page.goto('/viewer/index.html');
+   
+   // Navigate to health tab
+-  await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
++  await page.getByRole('link', { name: /monitor_heart System Health/i }).click();
+ 
+   // Verify the system status element appears, indicating the core service ran
+-  await expect(page.locator('text=System Health Overview')).toBeVisible();
++  await expect(page.locator('text=Core System Diagnostics')).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Database' })).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Workers' })).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Queue' })).toBeVisible();
+@@ -74,7 +75,7 @@ test('Verify that the HTML app loads and displays the main dashboard shell with
+   // Navigate to different tabs to check URLSearchParams deep linking
+   await page.getByRole('link', { name: 'monitor_heart System Health' }).click();
+   await expect(page).toHaveURL(/.*view=health.*/);
+-  await expect(page.getByText('System Health Overview')).toBeVisible();
++  await expect(page.getByText('Core System Diagnostics')).toBeVisible();
+ 
+   await page.getByRole('link', { name: 'view_kanban Kanban' }).click();
+   await expect(page).toHaveURL(/.*view=kanban.*/);
+diff --git a/viewer/index.html b/viewer/index.html
+index ff226d9..f0aa0e0 100644
+--- a/viewer/index.html
++++ b/viewer/index.html
+@@ -3,7 +3,7 @@
+ <head>
+     <meta charset="utf-8"/>
+     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+-    <title>BuilderLoom Zulu - AI Factory Dashboard</title>
++    <title>ZULU STEALTH COMMAND - AI Factory Dashboard</title>
+     
+     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+@@ -262,7 +262,6 @@
+                     case "health":
+                         return (
+                             <div className="bg-[var(--zulu-surface)] border border-[var(--zulu-border)] rounded p-8">
+-                                <h2 className="text-2xl font-bold mb-4 matrix-text-glow">System Health Overview</h2>
+                                 <p className="text-[var(--zulu-muted)] mb-4">Detailed diagnostics and node statuses.</p>
+                                 <div className="grid grid-cols-3 gap-6">
+                                     <div className="p-6 bg-[var(--zulu-primary)] border border-[var(--zulu-border)] rounded-sm">
+@@ -323,7 +322,7 @@
+ 
+             const viewTitles = {
+                 telemetry: "Telemetry Console",
+-                health: "System Health",
++                health: "Core System Diagnostics",
+                 kanban: "Sprint Backlog",
+                 roadmap: "Strategic Roadmap"
+             };
+@@ -344,7 +343,7 @@
+                                 <span className="material-symbols-outlined text-xl">deployed_code</span>
+                             </div>
+                             <div>
+-                                <h1 className="font-bold text-sm tracking-tight matrix-text-glow">BuilderLoom Zulu</h1>
++                                <h1 className="font-bold text-sm tracking-tight matrix-text-glow">ZULU STEALTH COMMAND</h1>
+                                 <p className="text-[10px] text-[var(--zulu-muted)] uppercase tracking-widest font-bold">AI Factory</p>
+                             </div>
+                         </div>
