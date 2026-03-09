@@ -1,16 +1,30 @@
 import logging
-from rich.console import Console
-from rich.logging import RichHandler
+import json
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-console = Console()
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        from datetime import datetime
+        log_record = {
+            "timestamp": datetime.fromtimestamp(record.created).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage()
+        }
+        if hasattr(record, "markup"):
+            log_record["markup"] = record.markup
+        if record.exc_info:
+            log_record["exc_info"] = self.formatException(record.exc_info)
+        return json.dumps(log_record)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(JSONFormatter())
+
 logging.basicConfig(
     level="INFO",
-    format="%(message)s",
-    datefmt="[%X]",
-    handlers=[RichHandler(console=console, rich_tracebacks=True)]
+    handlers=[console_handler]
 )
 
 import os
@@ -109,17 +123,13 @@ def doctor():
 class StateLogHandler(logging.Handler):
     def emit(self, record):
         try:
-            import re
+            # self.format(record) will now produce the structured JSON output
+            # because we will set the JSONFormatter on this handler as well.
             msg = self.format(record)
-            # Strip Rich markup tags so they don't show up literally in the web dashboard
-            msg = re.sub(r'\[/?bold.*?\]', '', msg)
-            
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            log_line = f"[{timestamp}] {record.levelname}: {msg}"
             
             # This is a bit hacky, but lets us grab the active state
             state = ConductorState.load()
-            state.add_log(log_line)
+            state.add_log(msg)
         except Exception:
             pass
 
@@ -244,6 +254,7 @@ if __name__ == "__main__":
 
     logger = logging.getLogger("loom")
     state_handler = StateLogHandler()
+    state_handler.setFormatter(JSONFormatter())
     logger.addHandler(state_handler)
     
     # Perform clean slate BEFORE doctor checks if requested

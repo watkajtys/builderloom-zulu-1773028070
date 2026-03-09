@@ -1,3 +1,4 @@
+import { execSync } from 'child_process';
 import { test, expect } from '@playwright/test';
 
 test('App initializes correctly', async ({ page }) => {
@@ -117,5 +118,38 @@ test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ p
   expect(line1X).toBeGreaterThan(100);
 
   // Capture screenshot of the active feature to evidence.png
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+
+
+test('Python agent logs are structured JSON format', async ({ page }) => {
+  await page.goto('/viewer/index.html?view=zulu');
+  
+  // Since backend outputs JSON to state.live_logs, the viewer UI might fetch and render it.
+  // To verify the structured format, we can run a brief python script locally in playwright using execSync, 
+  // or just assert that if the UI renders logs, they don't crash, and take a screenshot.
+  // But actually we can just invoke the python script and assert its output is valid JSON directly in the Node.js test environment.
+  
+  
+  const stdout = execSync('python3 -c \"import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})\"');
+  const stderrOutput = execSync('python3 -c \"import sys; import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})\" 2>&1');
+  const outputLines = stderrOutput.toString().trim().split('\n');
+  const output = outputLines[outputLines.length - 1]; // get the last line which is the json log
+  
+  // Assert the output is parsable JSON
+  let isJson = false;
+  let parsed: any = {};
+  try {
+    parsed = JSON.parse(output);
+    isJson = true;
+  } catch(e) {}
+  
+  expect(isJson).toBe(true);
+  expect(parsed.logger).toBe('loom');
+  expect(parsed.message).toBe('Integration test log');
+  expect(parsed.level).toBe('INFO');
+  
+  // Screenshot as required by rules
   await page.screenshot({ path: 'evidence.png' });
 });
