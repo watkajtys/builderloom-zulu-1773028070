@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -49,8 +50,11 @@ class PythonAnalyzer:
             if result.stdout.strip():
                 try:
                     stdout_str = result.stdout.strip()
-                    # Isolate the JSON object by extracting the substring from the first '[' to the last ']'
-                    start_idx = stdout_str.find('[')
+                    # To avoid json.JSONDecodeError caused by extraneous logging or deprecation warnings
+                    # prepended to standard output, we isolate the JSON string by extracting the substring
+                    # from the first '[' (that indicates a JSON array start) to the last ']'
+                    match = re.search(r'\[\s*(?:\{|\])', stdout_str)
+                    start_idx = match.start() if match else -1
                     end_idx = stdout_str.rfind(']')
 
                     if start_idx != -1 and end_idx != -1 and end_idx >= start_idx:
@@ -67,6 +71,7 @@ class PythonAnalyzer:
                     }
 
             # If exit code is not 0 and stdout is empty, it could be a fatal error (e.g., config error)
+            # Ensure any module not found errors from sys.executable running -m ruff are bubbled up
             if result.returncode != 0 and not issues and result.stderr:
                 return {
                      "status": "error",

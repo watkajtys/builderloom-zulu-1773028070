@@ -595,6 +595,8 @@ print("---ANALYZER_RESULT---")
 print(json.dumps(result))
 print("---CLEAN_RESULT---")
 print(json.dumps(result_clean))
+print("---ANALYZER_CONFIG---")
+print(json.dumps({"config_path": str(analyzer.config_path)}))
 
 test_file.unlink()
 test_file_clean.unlink()
@@ -628,6 +630,11 @@ test_file_clean.unlink()
   const cleanResultJson = JSON.parse(outputLines[cleanResultIdx + 1]);
   expect(cleanResultJson.status).toBe('success');
   expect(cleanResultJson.issues.length).toBe(0);
+
+  const configIdx = outputLines.indexOf('---ANALYZER_CONFIG---');
+  expect(configIdx).toBeGreaterThan(-1);
+  const configJson = JSON.parse(outputLines[configIdx + 1]);
+  expect(configJson.config_path).toContain('ruff.toml');
 
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
