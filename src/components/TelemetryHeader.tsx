@@ -35,8 +35,7 @@ export function TelemetryHeader({ activeLevels, toggleLevel, searchQuery, setSea
             <span className="text-[11px] font-bold uppercase tracking-wider">Filters</span>
           </button>
           
-          {(isFilterOpen || true) && (
-            <div className="absolute right-0 top-full mt-2 w-72 bg-dark-surface border border-border-muted rounded-xl shadow-2xl p-4 hidden group-hover:block z-50">
+          <div className={`absolute right-0 top-full mt-2 w-72 bg-dark-surface/95 backdrop-blur-md border border-zinc-grey/50 ring-1 ring-electric-blue/30 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] p-4 z-50 transition-all ${isFilterOpen ? 'block' : 'hidden group-hover:block'}`}>
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Filter Config</h4>
                 <Settings size={14} className="text-slate-500" />
@@ -73,8 +72,7 @@ export function TelemetryHeader({ activeLevels, toggleLevel, searchQuery, setSea
                   />
                 </div>
               </div>
-            </div>
-          )}
+          </div>
         </div>
         <button className="p-2 rounded-lg hover:bg-white/5 text-zinc-grey">
           <Download size={20} />

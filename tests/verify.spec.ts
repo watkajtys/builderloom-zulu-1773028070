@@ -236,3 +236,39 @@ test('Load the dashboard and verify that mock JSON logs of different \'event_typ
 
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Elevate the Filter Config popover for better visual hierarchy', async ({ page }) => {
+  await page.goto('/');
+
+  // Wait for the Log Grid header to load
+  await expect(page.locator('text=Log Grid')).toBeVisible();
+
+  // Find the filters button
+  const filterBtn = page.locator('button', { hasText: 'Filters' });
+  await expect(filterBtn).toBeVisible();
+
+  // The popover should initially be hidden (or block if hover group is active, but we test the JS toggle logic)
+  const popover = page.locator('div').filter({ hasText: 'Filter Config' }).nth(1);
+  // Due to structure, we can just find the div containing h4 "Filter Config"
+  const popoverContainer = page.locator('h4:has-text("Filter Config")').locator('..').locator('..');
+  
+  // Click the filters button to explicitly open it
+  await filterBtn.click();
+  
+  // Wait for the popover to be visible
+  await expect(popoverContainer).toBeVisible();
+  
+  // Verify the new visual classes are present
+  await expect(popoverContainer).toHaveClass(/bg-dark-surface\/95/);
+  await expect(popoverContainer).toHaveClass(/backdrop-blur-md/);
+  await expect(popoverContainer).toHaveClass(/border-zinc-grey\/50/);
+  await expect(popoverContainer).toHaveClass(/ring-1/);
+  await expect(popoverContainer).toHaveClass(/ring-electric-blue\/30/);
+  await expect(popoverContainer).toHaveClass(/shadow-\[0_10px_40px_rgba\(0,0,0,0\.8\)\]/);
+  
+  // It should be explicitly block because isFilterOpen is true
+  await expect(popoverContainer).toHaveClass(/block/);
+
+  // Take screenshot as required
+  await page.screenshot({ path: 'evidence.png' });
+});
