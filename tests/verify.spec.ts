@@ -1031,6 +1031,9 @@ if __name__ == '__main__':
   expect(resultJson.target).toBe('test_target');
   expect(resultJson.status).toBe('completed');
   expect(resultJson.result.mock_result).toBe(true);
+  
+  // Also verify that the orchestrator generated a job ID properly
+  expect(resultJson.id).toBeDefined();
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   await page.goto('/');

@@ -1,11 +1,25 @@
+import json
 import logging
 import uuid
+from datetime import datetime
 from typing import Dict, List, Optional
 
 from .execution_engine import BaseExecutionEngine, ExecutionState, Job, JobStatus
 from .execution_store import ExecutionStore
 
 logger = logging.getLogger("loom")
+
+def _emit_json_log(level: str, message: str, node_id: str = "orchestrator"):
+    log_data = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "node_id": node_id,
+        "log_level": level,
+        "message": message
+    }
+    if level == "ERROR":
+        logger.error(json.dumps(log_data))
+    else:
+        logger.info(json.dumps(log_data))
 
 class Orchestrator:
     def __init__(self, store: Optional[ExecutionStore] = None):
@@ -55,7 +69,7 @@ class Orchestrator:
     def run_job(self, job_id: str):
         job = self.get_job(job_id)
         if not job:
-            logger.error(f"Job {job_id} not found.")
+            _emit_json_log("ERROR", f"Job {job_id} not found.")
             return
 
         engine_impl = self.engines.get(job.engine)
@@ -72,7 +86,7 @@ class Orchestrator:
             updated_job = engine_impl.execute(job)
             self._save_job(updated_job)
         except Exception as e:
-            logger.error(f"Error executing job {job_id}: {e}")
+            _emit_json_log("ERROR", f"Error executing job {job_id}: {e}")
             job.status = JobStatus.FAILED
             job.error = str(e)
             self._save_job(job)
