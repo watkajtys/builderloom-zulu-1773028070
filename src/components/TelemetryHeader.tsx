@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getLogLevelConfig } from '../utils/telemetryConfig';
 
 interface TelemetryHeaderProps {
   activeLevels: string[];
@@ -45,14 +46,9 @@ export function TelemetryHeader({ activeLevels, toggleLevel, searchQuery, setSea
                   <div className="flex flex-wrap gap-1.5">
                     {['INFO', 'ERROR', 'WARN', 'DEBUG', 'THOUGHT'].map(level => {
                       const isActive = activeLevels.includes(level);
-                      let colorClass = 'border-slate-500/30 text-slate-400 bg-slate-500/10';
-                      if (isActive) {
-                        if (level === 'ERROR') colorClass = 'border-rose-500/30 text-rose-400 bg-rose-500/10';
-                        else if (level === 'INFO') colorClass = 'border-electric-blue/30 text-electric-blue bg-electric-blue/10';
-                        else if (level === 'WARN') colorClass = 'border-amber-500/30 text-amber-400 bg-amber-500/10';
-                        else if (level === 'THOUGHT') colorClass = 'border-synth-magenta/30 text-neon-purple bg-synth-magenta/10';
-                        else colorClass = 'border-zinc-grey/30 text-zinc-grey bg-zinc-grey/10';
-                      }
+                      const levelConfig = getLogLevelConfig(level);
+                      const colorClass = isActive ? levelConfig.filterClass : 'border-slate-500/30 text-slate-400 bg-slate-500/10';
+                      
                       return (
                         <button 
                           key={level}

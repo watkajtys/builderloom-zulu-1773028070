@@ -1,5 +1,6 @@
 import React from 'react';
 import { TelemetryLog } from '../hooks/useTelemetryLogs';
+import { getLogLevelConfig, formatLogMessage } from '../utils/telemetryConfig';
 
 interface TelemetryStreamProps {
   logs: TelemetryLog[];
@@ -13,62 +14,19 @@ export function TelemetryStream({ logs }: TelemetryStreamProps) {
     const timeMatch = log.timestamp.match(/ (\d{2}:\d{2}:\d{2})/);
     const timeStr = timeMatch ? timeMatch[1] : log.timestamp.split(' ')[1] || log.timestamp;
 
-    // Determine level code and color
-    let levelCode = 'SYS';
-    let color = 'text-electric-blue';
-    let messageColor = '';
-    let isError = false;
-
-    if (log.log_level === 'INFO') {
-      levelCode = 'INF';
-      color = 'text-electric-blue';
-    } else if (log.log_level === 'ERROR') {
-      levelCode = 'ERR';
-      color = 'text-red-500';
-      isError = true;
-    } else if (log.log_level === 'WARN') {
-      levelCode = 'WRN';
-      color = 'text-amber-500';
-      messageColor = 'text-amber-200/80';
-    } else if (log.log_level === 'DEBUG') {
-      levelCode = 'DBG';
-      color = 'text-neon-purple';
-      messageColor = 'text-slate-500';
-    } else if (log.log_level === 'THOUGHT') {
-      levelCode = 'THO';
-      color = 'text-synth-magenta';
-      messageColor = 'text-slate-300';
-    }
+    // Determine level code and color via shared config
+    const levelConfig = getLogLevelConfig(log.log_level);
 
     // Attempt to stringify a readable message out of the payload
-    let message = '';
-    if (log.payload) {
-      if (log.payload.exception) {
-        message = `${log.payload.exception} :: retrying...`;
-      } else if (log.payload.warning) {
-        message = `WARNING: ${log.payload.warning} threshold: ${log.payload.threshold}`;
-      } else if (log.payload.event) {
-        message = `${log.payload.event}: ${log.payload.node}`;
-      } else if (log.payload.type) {
-        message = `${log.payload.type} sync: [${log.payload.status}]`;
-      } else if (log.payload.action) {
-        message = `${log.payload.action} [OK]`;
-      } else if (log.payload.process) {
-        message = `${log.payload.process}`;
-      } else if (log.payload.msg) {
-        message = `${log.payload.msg}`;
-      } else {
-        message = JSON.stringify(log.payload);
-      }
-    }
+    const message = formatLogMessage(log.payload);
 
     return {
       time: timeStr,
-      level: levelCode,
-      color,
+      level: levelConfig.code,
+      color: levelConfig.streamColor,
       message,
-      messageColor,
-      isError
+      messageColor: levelConfig.streamMessageColor,
+      isError: log.log_level === 'ERROR'
     };
   });
 

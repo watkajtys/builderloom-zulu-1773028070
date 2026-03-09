@@ -190,5 +190,9 @@ test('Load the dashboard and verify that mock JSON logs of different \'event_typ
   // Verify error log remains visible
   await expect(errorLog).toBeVisible();
 
+  // Add a verification for the abstract configuration architecture (Testing UI reflects utility logic)
+  const infoToggle = page.locator('button', { hasText: 'INFO' });
+  await expect(infoToggle).toHaveClass(/bg-electric-blue\/10/);
+
   await page.screenshot({ path: 'evidence.png' });
 });

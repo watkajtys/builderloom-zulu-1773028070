@@ -1,5 +1,6 @@
 import React from 'react';
 import { TelemetryLog } from '../hooks/useTelemetryLogs';
+import { getLogLevelConfig } from '../utils/telemetryConfig';
 
 interface TelemetryLogGridProps {
   filteredLogs: TelemetryLog[];
@@ -16,12 +17,8 @@ export function TelemetryLogGrid({ filteredLogs }: TelemetryLogGridProps) {
       
       <div className="flex flex-col">
         {filteredLogs.map((log, i) => {
-          let levelClass = 'bg-zinc-grey/10 text-zinc-grey';
-          if (log.log_level === 'INFO') levelClass = 'bg-electric-blue/10 text-electric-blue';
-          if (log.log_level === 'ERROR') levelClass = 'bg-rose-500/10 text-rose-500';
-          if (log.log_level === 'WARN') levelClass = 'bg-amber-500/10 text-amber-500';
-          if (log.log_level === 'DEBUG') levelClass = 'bg-white/10 text-white';
-          if (log.log_level === 'THOUGHT') levelClass = 'bg-synth-magenta/10 text-neon-purple';
+          const levelConfig = getLogLevelConfig(log.log_level);
+          const levelClass = levelConfig.gridClass;
 
           return (
             <div key={log.id || i} className="flex items-center border-b border-border-muted hover:bg-white/5 transition-colors px-4 py-2 font-mono text-[11px] group">
