@@ -272,3 +272,68 @@ test('Elevate the Filter Config popover for better visual hierarchy', async ({ p
   // Take screenshot as required
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Implement Sub-Agent base architecture and interfaces', async ({ page }) => {
+  // Test that the python BaseAgent and IO models can be imported and instantiated,
+  // and that _log emits the expected JSON format with timestamp, node_id, and log_level.
+  
+  const script = `
+import sys
+import json
+import logging
+from backend.agents.core.base_agent import BaseAgent
+from backend.agents.core.io_models import AgentRequest, AgentResponse
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+class DummyAgent(BaseAgent):
+    def execute(self, request: AgentRequest) -> AgentResponse:
+        self._log("INFO", "Dummy execution")
+        return AgentResponse(status="success", data={"test": True})
+
+agent = DummyAgent(node_id="TEST-NODE")
+req = AgentRequest(task_id="test-123", data={"input": 42})
+res = agent.execute(req)
+
+print("---RESPONSE---")
+print(res.status)
+print(res.data)
+`;
+
+  const combinedOutput = execSync(`python3 -c '${script}' 2>&1`);
+  const outputLines = combinedOutput.toString().trim().split('\n');
+  
+  // Find the log line
+  const logLine = outputLines.find(line => line.includes('Dummy execution'));
+  expect(logLine).toBeDefined();
+
+  // Parse the JSON log. 
+  // Standard logging might output: INFO:loom:{"timestamp":...}
+  // The log line could also contain trailing characters like color codes, so we extract strictly
+  const startIdx = logLine!.indexOf('{');
+  const jsonPartStr = logLine!.substring(startIdx);
+  // There might be unexpected newlines or other logs caught in outputLines. Let's isolate the first valid JSON block
+  
+  let parsedLog;
+  try {
+      parsedLog = JSON.parse(jsonPartStr);
+  } catch (e) {
+      // Fallback: try to find the end of the JSON string
+      const endIdx = jsonPartStr.indexOf('}');
+      const cleanJsonStr = jsonPartStr.substring(0, endIdx + 1);
+      parsedLog = JSON.parse(cleanJsonStr);
+  }
+  
+  expect(parsedLog.log_level).toBe('INFO');
+  expect(parsedLog.node_id).toBe('TEST-NODE');
+  expect(parsedLog.message).toBe('Dummy execution');
+  expect(parsedLog.timestamp).toBeDefined();
+
+  // Find the response
+  const responseIdx = outputLines.indexOf('---RESPONSE---');
+  expect(responseIdx).toBeGreaterThan(-1);
+  expect(outputLines[responseIdx + 1]).toBe('success');
+  expect(outputLines[responseIdx + 2]).toBe("{'test': True}");
+  
+  await page.screenshot({ path: 'evidence.png' });
+});
