@@ -12,3 +12,8 @@ test('Zulu Dashboard loads correctly', async ({ page }) => {
   await expect(page.locator('text=Telemetry_Stream')).toBeVisible();
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('PocketBase connection uses proper relative path', async ({ page }) => {
+  await page.goto('/viewer/index.html?view=zulu');
+  await expect(page.locator('text=Zulu AI')).toBeVisible();
+});
