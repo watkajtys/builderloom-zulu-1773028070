@@ -51,3 +51,31 @@ test('Dashboard uses abstracted reusable components', async ({ page }) => {
   // Verify TelemetryStream component is active
   await expect(page.locator('text=Telemetry_Stream')).toBeVisible();
 });
+
+test('Smooth chart data rendering to feel like a premium, realistic dashboard', async ({ page }) => {
+  await page.goto('/system-health');
+  
+  // Wait for the SVG to load
+  const svg = page.locator('svg').first();
+  await expect(svg).toBeVisible();
+  
+  // Find the primary line stroke path (which we set to stroke="#00F2FF")
+  const primaryPath = svg.locator('path[stroke="#00F2FF"]');
+  await expect(primaryPath).toBeVisible();
+
+  // Wait a moment for dynamic data to start updating
+  await page.waitForTimeout(1100);
+
+  // Get the 'd' attribute
+  const dAttr = await primaryPath.getAttribute('d');
+  expect(dAttr).not.toBeNull();
+  
+  // Verify it contains 'C' commands for cubic bezier smooth curves instead of just lines or Q/T
+  expect(dAttr).toMatch(/C/);
+  
+  // Verify it's not aggressively clipping at the bottom (100)
+  // Our padding logic should keep values above 90, so checking that '100' isn't explicitly reached by the primary data stroke.
+  expect(dAttr).not.toMatch(/,100 /);
+  
+  await page.screenshot({ path: 'evidence.png' });
+});
