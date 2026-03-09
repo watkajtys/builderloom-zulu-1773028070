@@ -11,7 +11,10 @@ from enum import Enum
 from datetime import datetime
 from pathlib import Path
 
-import google.generativeai as genai
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import google.generativeai as genai
 from google.api_core import exceptions
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from dotenv import load_dotenv
