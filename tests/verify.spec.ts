@@ -791,3 +791,82 @@ test_file_clean.unlink()
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Define core interfaces and state models for the unified execution engine', async ({ page }) => {
+  // We write a temporary python script to test the python store and models
+  const testScriptPath = 'backend/tools/test_execution_store_e2e.py';
+  const testScriptContent = `
+import sys
+import os
+import json
+import uuid
+
+# Add the backend root to the path so that imports resolve correctly
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+from backend.tools.execution_engine import Job, JobStatus
+from backend.tools.execution_store import ExecutionStore
+
+def main():
+    store = ExecutionStore("http://loom-pocketbase:8090")
+    job_id = str(uuid.uuid4())
+    job = Job(id=job_id, engine="python_analyzer", target="main.py", status=JobStatus.RUNNING)
+    
+    # Save the job
+    try:
+        store.save_job(job)
+    except Exception as e:
+        print("---ERROR---")
+        print(json.dumps({'status': 'error', 'message': str(e)}))
+        sys.exit(1)
+        
+    # Retrieve the job
+    try:
+        retrieved = store.get_job(job_id)
+        if retrieved:
+            print("---SUCCESS---")
+            print(retrieved.model_dump_json())
+        else:
+            print("---ERROR---")
+            print(json.dumps({'status': 'error', 'message': 'Job not found'}))
+    except Exception as e:
+        print("---ERROR---")
+        print(json.dumps({'status': 'error', 'message': str(e)}))
+
+if __name__ == '__main__':
+    main()
+  `;
+
+  const fs = await import('fs');
+  fs.writeFileSync(testScriptPath, testScriptContent.trim());
+
+  let stdout = '';
+  try {
+    const { execSync } = await import('child_process');
+    stdout = execSync('python3 backend/tools/test_execution_store_e2e.py', { encoding: 'utf-8' });
+  } catch (error: any) {
+    stdout = error.stdout || error.message;
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test failed. Output was:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.engine).toBe('python_analyzer');
+  expect(resultJson.target).toBe('main.py');
+  expect(resultJson.status).toBe('running');
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
