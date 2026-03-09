@@ -845,7 +845,7 @@ class DummyPB:
         return self._collection
 
 def main():
-    store = ExecutionStore("http://dummy")
+    store = ExecutionStore("http://127.0.0.1:8090")
     store.pb = DummyPB()
     job_id = str(uuid.uuid4())
     job = Job(id=job_id, engine="python_analyzer", target="main.py", status=JobStatus.RUNNING)
