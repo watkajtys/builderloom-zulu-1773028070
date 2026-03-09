@@ -610,6 +610,12 @@ print(json.dumps(result_clean))
 print("---ANALYZER_CONFIG---")
 print(json.dumps({"config_path": str(analyzer.config_path)}))
 
+# Add a test case for a fatal crash scenario (invalid config path)
+invalid_analyzer = PythonAnalyzer(config_path="invalid_path.toml")
+result_invalid = invalid_analyzer.analyze_file(str(test_file_clean))
+print("---INVALID_RESULT---")
+print(json.dumps(result_invalid))
+
 test_file.unlink()
 test_file_clean.unlink()
 `;
@@ -659,6 +665,19 @@ test_file_clean.unlink()
   const configJson = JSON.parse(configStr.substring(configStart, configEnd + 1));
 
   expect(configJson.config_path).toContain('ruff.toml');
+
+  const invalidIdx = outputLines.indexOf('---INVALID_RESULT---');
+  expect(invalidIdx).toBeGreaterThan(-1);
+
+  const invalidStr = outputLines[invalidIdx + 1];
+  const invalidStart = invalidStr.indexOf('{');
+  const invalidEnd = invalidStr.lastIndexOf('}');
+  const invalidJson = JSON.parse(invalidStr.substring(invalidStart, invalidEnd + 1));
+
+  // Should NOT be falsely reported as successful despite 0 issues found by parser.
+  expect(invalidJson.status).toBe('error');
+  expect(invalidJson.issues.length).toBe(0);
+  expect(invalidJson.message).toBe('Ruff execution failed');
 
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });

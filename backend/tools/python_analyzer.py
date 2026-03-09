@@ -73,9 +73,9 @@ class PythonAnalyzer:
                         "issues": []
                     }
 
-            # If exit code is not 0 and stdout is empty, it could be a fatal error (e.g., config error)
-            # Ensure any module not found errors from sys.executable running -m ruff are bubbled up
-            if result.returncode != 0 and not issues and result.stderr:
+            # Evaluate success by verifying both that the parsed issues list is empty and the process returncode is 0.
+            # Relying solely on an empty issues list can cause fatal tool crashes with non-zero exit codes to be falsely reported as successful.
+            if result.returncode != 0 and not issues:
                 return {
                      "status": "error",
                      "message": "Ruff execution failed",
@@ -84,7 +84,7 @@ class PythonAnalyzer:
                 }
 
             return {
-                "status": "success" if not issues else "issues_found",
+                "status": "success" if not issues and result.returncode == 0 else "issues_found",
                 "issues": issues
             }
 
