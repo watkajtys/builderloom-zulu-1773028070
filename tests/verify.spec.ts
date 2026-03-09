@@ -470,3 +470,87 @@ print(json.dumps({
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Implement the main execution loop and state orchestrator', async ({ page }) => {
+  const scriptContent = `
+import sys
+import json
+from unittest.mock import MagicMock
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import google.generativeai as genai
+
+from backend.agents.core.chain import Chain, Node, Edge, EdgeType, ExecutionState
+from backend.agents.core.orchestrator import ChainOrchestrator
+from backend.agents.core.node_executor import NodeExecutor
+
+# Setup mocks for LLM to return specific results based on prompt
+def mock_generate_content(prompt, **kwargs):
+    response = MagicMock()
+    if "first node" in prompt.lower():
+        response.text = "Result from node 1"
+    elif "second node" in prompt.lower():
+        response.text = "Result from node 2"
+    else:
+        response.text = "Generic result"
+    return response
+
+mock_model = MagicMock()
+mock_model.generate_content.side_effect = mock_generate_content
+genai.GenerativeModel = MagicMock(return_value=mock_model)
+
+# Define nodes
+node1 = Node(node_id="n1", agent_type="agent", config={"prompt_template": "This is the first node processing {initial_var}."})
+node2 = Node(node_id="n2", agent_type="agent", config={"prompt_template": "This is the second node using {n1_output}."})
+
+# Define chain and edges
+edge = Edge(source="n1", target="n2", edge_type=EdgeType.DIRECT)
+chain = Chain(chain_id="orchestrator_test_chain", nodes=[node1, node2], edges=[edge])
+
+# Initial state
+initial_state = ExecutionState(
+    chain_id=chain.chain_id,
+    current_node="n1",
+    variables={"initial_var": "start_value"}
+)
+
+# Run orchestrator
+orchestrator = ChainOrchestrator(chain)
+final_state = orchestrator.run(initial_state)
+
+print("---ORCHESTRATOR_RESULT---")
+print(json.dumps({
+    "final_node": final_state.current_node,
+    "history_length": len(final_state.history),
+    "variables": final_state.variables
+}))
+`;
+  const filename = 'test_orchestrator_' + crypto.randomBytes(4).toString('hex') + '.py';
+  fs.writeFileSync(filename, scriptContent);
+  
+  const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+  const outputLines = combinedOutput.toString().trim().split('\n');
+  
+  fs.unlinkSync(filename);
+  
+  const resultIdx = outputLines.indexOf('---ORCHESTRATOR_RESULT---');
+  expect(resultIdx).toBeGreaterThan(-1);
+  
+  const resultJson = JSON.parse(outputLines[resultIdx + 1]);
+  
+  // Verify execution completed the chain (current_node becomes None/null)
+  expect(resultJson.final_node).toBeNull();
+  
+  // Verify history length (2 nodes executed)
+  expect(resultJson.history_length).toBe(2);
+  
+  // Verify variables were passed correctly and output captured
+  expect(resultJson.variables.initial_var).toBe("start_value");
+  expect(resultJson.variables.n1_output).toBe("Result from node 1");
+  expect(resultJson.variables.n2_output).toBe("Result from node 2");
+  expect(resultJson.variables.latest_output).toBe("Result from node 2");
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
