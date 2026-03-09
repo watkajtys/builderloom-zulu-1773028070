@@ -806,8 +806,47 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 from backend.tools.execution_engine import Job, JobStatus
 from backend.tools.execution_store import ExecutionStore
 
+class DummyRecord:
+    def __init__(self, data: dict):
+        self.id = data.get("id", "dummy_id")
+        self.job_id = data.get("job_id")
+        self.engine = data.get("engine")
+        self.target = data.get("target")
+        self.status = data.get("status")
+        self.result = data.get("result", "")
+        self.error = data.get("error", "")
+
+class DummyCollection:
+    def __init__(self):
+        self.records = {}
+
+    def get_first_list_item(self, filter_str: str):
+        job_id = filter_str.split("'")[1]
+        for r in self.records.values():
+            if r["job_id"] == job_id:
+                return DummyRecord(r)
+        raise Exception("Not found")
+
+    def update(self, id: str, data: dict):
+        self.records[id] = data
+        return data
+
+    def create(self, data: dict):
+        doc_id = str(uuid.uuid4())
+        data["id"] = doc_id
+        self.records[doc_id] = data
+        return data
+
+class DummyPB:
+    def __init__(self):
+        self._collection = DummyCollection()
+
+    def collection(self, name: str):
+        return self._collection
+
 def main():
-    store = ExecutionStore("http://loom-pocketbase:8090")
+    store = ExecutionStore("http://dummy")
+    store.pb = DummyPB()
     job_id = str(uuid.uuid4())
     job = Job(id=job_id, engine="python_analyzer", target="main.py", status=JobStatus.RUNNING)
     
