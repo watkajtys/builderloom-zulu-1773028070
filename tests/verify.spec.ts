@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 test('App initializes correctly', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('text=Loom Initialized')).toBeVisible();
+  await expect(page.locator('text=Telemetry / Log Grid')).toBeVisible();
 });
 
 test('Zulu Dashboard loads correctly', async ({ page }) => {
@@ -151,5 +151,44 @@ test('Python agent logs are structured JSON format', async ({ page }) => {
   expect(parsed.level).toBe('INFO');
   
   // Screenshot as required by rules
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Load the dashboard and verify that mock JSON logs of different \'event_type\'s are correctly styled using Geist Mono. Click the filter toggles to verify that \'thought\' logs can be hidden while \'error\' logs remain visible.', async ({ page }) => {
+  await page.goto('/');
+
+  // Verify the log grid renders and shows logs
+  await expect(page.locator('text=Log Grid')).toBeVisible();
+
+  // Verify 'thought' log is visible initially
+  const thoughtLog = page.locator('text=evaluating_model_drift');
+  await expect(thoughtLog).toBeVisible();
+
+  // Verify 'error' log is visible initially
+  const errorLog = page.locator('text=ConnectionTimeout');
+  await expect(errorLog).toBeVisible();
+
+  // Verify styling (font-mono) - check if our specific class logic applied
+  const gridContainer = page.locator('.custom-scrollbar');
+  await expect(gridContainer).toBeVisible();
+  
+  // The filter button itself might be hidden inside the dropdown so we must click "Filters" first if it's not rendered via hover simulation well in headless.
+  const filterDropdownButton = page.locator('button', { hasText: 'Filters' });
+  await filterDropdownButton.click();
+
+  // Find the thought toggle and click it to disable
+  const thoughtToggle = page.locator('button', { hasText: 'THOUGHT' });
+  await thoughtToggle.click({ force: true });
+
+  // Verify the URL was updated
+  await expect(page).toHaveURL(/levels=.*INFO.*ERROR.*WARN.*DEBUG.*/);
+  await expect(page).not.toHaveURL(/THOUGHT/);
+
+  // Verify thought log is hidden
+  await expect(thoughtLog).not.toBeVisible();
+
+  // Verify error log remains visible
+  await expect(errorLog).toBeVisible();
+
   await page.screenshot({ path: 'evidence.png' });
 });

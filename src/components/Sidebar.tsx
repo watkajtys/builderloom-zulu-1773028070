@@ -16,7 +16,7 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="flex-1 px-3 space-y-0.5">
-        <NavLink to="/telemetry" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-electric-blue hover:bg-white/5 transition-all group">
+        <NavLink to="/" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded transition-all group ${isActive ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
           <span className="material-symbols-outlined text-[18px]">analytics</span>
           <span className="text-xs font-semibold uppercase tracking-wider">Telemetry</span>
         </NavLink>
