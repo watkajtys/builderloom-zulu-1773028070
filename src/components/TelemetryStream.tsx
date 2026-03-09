@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TelemetryLog } from '../hooks/useTelemetryLogs';
 import { getLogLevelConfig, formatLogMessage } from '../utils/telemetryConfig';
 import { Terminal, SlidersHorizontal } from 'lucide-react';

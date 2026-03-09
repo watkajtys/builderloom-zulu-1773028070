@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TrendingDown } from 'lucide-react';
 
 interface TelemetryStatsProps {

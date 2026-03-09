@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { getLogLevelConfig } from '../utils/telemetryConfig';
 import { Filter, Settings, Download } from 'lucide-react';
 

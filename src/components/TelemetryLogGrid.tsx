@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { TelemetryLog } from '../hooks/useTelemetryLogs';
 import { getLogLevelConfig } from '../utils/telemetryConfig';
 
@@ -30,7 +30,7 @@ export function TelemetryLogGrid({ filteredLogs }: TelemetryLogGridProps) {
                 <span className="text-slate-500">{'{'}</span> 
                 {Object.entries(log.payload || {}).map(([k, v], idx, arr) => (
                   <span key={k}>
-                    <span className="text-electric-blue">"{k}"</span>: 
+                    <span className="text-electric-blue">&quot;{k}&quot;</span>: 
                     <span className={typeof v === 'number' ? 'text-neon-purple' : typeof v === 'string' && log.log_level === 'ERROR' ? 'text-rose-400' : 'text-emerald-400'}>
                       {typeof v === 'string' ? `"${v}"` : v}
                     </span>

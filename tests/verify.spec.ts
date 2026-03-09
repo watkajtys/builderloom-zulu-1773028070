@@ -323,7 +323,7 @@ print(res.data)
   const endIdx = logLine!.lastIndexOf('}');
   const jsonPartStr = logLine!.substring(startIdx, endIdx + 1);
   
-  let parsedLog = JSON.parse(jsonPartStr);
+  const parsedLog = JSON.parse(jsonPartStr);
   
   expect(parsedLog.log_level).toBe('INFO');
   expect(parsedLog.node_id).toBe('TEST-NODE');
@@ -678,6 +678,115 @@ test_file_clean.unlink()
   expect(invalidJson.status).toBe('error');
   expect(invalidJson.issues.length).toBe(0);
   expect(invalidJson.message).toBe('Ruff execution failed');
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Integrate React static analysis execution', async ({ page }) => {
+  const scriptContent = `
+import sys
+import json
+from pathlib import Path
+from backend.tools.react_analyzer import ReactAnalyzer
+
+test_file = Path("test_file_react_dirty.tsx")
+test_file.write_text("""
+import { useState } from 'react';
+
+export function TestComponent() {
+  const [state, setState] = useState(0);
+  const x = 1;
+  return <div>{x}</div>;
+}
+""")
+
+analyzer = ReactAnalyzer(config_path="eslint.config.js")
+result = analyzer.analyze_file(str(test_file))
+
+test_file_clean = Path("test_file_react_clean.tsx")
+test_file_clean.write_text("""
+export function TestComponent() {
+  const x = 1;
+  return <div>{x}</div>;
+}
+""")
+
+result_clean = analyzer.analyze_file(str(test_file_clean))
+
+print("---ANALYZER_RESULT---")
+print(json.dumps(result))
+print("---CLEAN_RESULT---")
+print(json.dumps(result_clean))
+print("---ANALYZER_CONFIG---")
+print(json.dumps({"config_path": str(analyzer.config_path)}))
+
+# Add a test case for a fatal crash scenario (invalid config path)
+invalid_analyzer = ReactAnalyzer(config_path="invalid_path.config.js")
+result_invalid = invalid_analyzer.analyze_file(str(test_file_clean))
+print("---INVALID_RESULT---")
+print(json.dumps(result_invalid))
+
+test_file.unlink()
+test_file_clean.unlink()
+`;
+  const filename = 'test_react_analyzer_integration_' + crypto.randomBytes(4).toString('hex') + '.py';
+  fs.writeFileSync(filename, scriptContent);
+  
+  let outputLines;
+  try {
+    const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+    outputLines = combinedOutput.toString().trim().split('\n');
+  } finally {
+    fs.unlinkSync(filename);
+  }
+  
+  const resultIdx = outputLines.indexOf('---ANALYZER_RESULT---');
+  expect(resultIdx).toBeGreaterThan(-1);
+  
+  const resultStr = outputLines[resultIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+  
+  expect(resultJson.status).toBe('issues_found');
+  expect(resultJson.issues.length).toBeGreaterThan(0);
+  
+  const rules = resultJson.issues.map((i: any) => i.ruleId);
+  expect(rules).toContain('@typescript-eslint/no-unused-vars'); // state or setState is unused
+  
+  const cleanResultIdx = outputLines.indexOf('---CLEAN_RESULT---');
+  expect(cleanResultIdx).toBeGreaterThan(-1);
+  
+  const cleanResultStr = outputLines[cleanResultIdx + 1];
+  const cleanStart = cleanResultStr.indexOf('{');
+  const cleanEnd = cleanResultStr.lastIndexOf('}');
+  const cleanResultJson = JSON.parse(cleanResultStr.substring(cleanStart, cleanEnd + 1));
+
+  expect(cleanResultJson.status).toBe('success');
+  expect(cleanResultJson.issues.length).toBe(0);
+
+  const configIdx = outputLines.indexOf('---ANALYZER_CONFIG---');
+  expect(configIdx).toBeGreaterThan(-1);
+
+  const configStr = outputLines[configIdx + 1];
+  const configStart = configStr.indexOf('{');
+  const configEnd = configStr.lastIndexOf('}');
+  const configJson = JSON.parse(configStr.substring(configStart, configEnd + 1));
+
+  expect(configJson.config_path).toContain('eslint.config.js');
+
+  const invalidIdx = outputLines.indexOf('---INVALID_RESULT---');
+  expect(invalidIdx).toBeGreaterThan(-1);
+
+  const invalidStr = outputLines[invalidIdx + 1];
+  const invalidStart = invalidStr.indexOf('{');
+  const invalidEnd = invalidStr.lastIndexOf('}');
+  const invalidJson = JSON.parse(invalidStr.substring(invalidStart, invalidEnd + 1));
+
+  // Should NOT be falsely reported as successful despite 0 issues found by parser.
+  expect(invalidJson.status).toBe('error');
+  expect(invalidJson.message).toBe('ESLint execution failed');
 
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
