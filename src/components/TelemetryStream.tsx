@@ -36,9 +36,9 @@ export function TelemetryStream() {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 font-mono text-[10px] leading-[1.6] space-y-1 bg-obsidian">
         {logs.map((log, index) => (
           <div key={index} className="flex gap-3 p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group">
-            <span className="text-slate-600 shrink-0 uppercase">{log.time}</span>
-            <span className={`${log.color} shrink-0 font-bold`}>[{log.level}]</span>
-            <span className={`${log.messageColor || 'text-slate-400 group-hover:text-slate-200'} ${log.isError ? 'text-red-400 font-bold underline decoration-red-900' : ''}`}>
+            <span className="text-slate-600 shrink-0 w-16 uppercase">{log.time}</span>
+            <span className={`${log.color} shrink-0 w-10 font-bold`}>[{log.level}]</span>
+            <span className={`flex-1 break-words ${log.messageColor || 'text-slate-400 group-hover:text-slate-200'} ${log.isError ? 'text-red-400 font-bold underline decoration-red-900' : ''}`}>
               {log.message}
             </span>
           </div>

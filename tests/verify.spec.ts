@@ -82,3 +82,40 @@ test('Smooth chart data rendering to feel like a premium, realistic dashboard', 
   
   await page.screenshot({ path: 'evidence.png' });
 });
+test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ page }) => {
+  await page.goto('/system-health');
+  
+  // Wait for the specific multiline error log to be rendered
+  await page.waitForSelector('text=retrying...');
+  
+  // Get the message span of the specific log
+  const errLogMsgSpan = page.locator('span', { hasText: 'VECTOR_STORE_CONNECTION_REFUSED :: retrying...' });
+  const spanBox = await errLogMsgSpan.boundingBox();
+  expect(spanBox).not.toBeNull();
+  
+  // Extract the bounding rects of the individual lines inside the span
+  const rects = await errLogMsgSpan.evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    return Array.from(range.getClientRects()).map(r => ({ x: r.x, y: r.y, w: r.width, h: r.height }));
+  });
+  
+  // Ensure it actually wrapped (more than 1 line)
+  expect(rects.length).toBeGreaterThan(1);
+  
+  // Ensure the second line does not bleed to the left edge of the entire log container
+  // Its x coordinate should match or be very close to the x coordinate of the first line
+  // (which is indented by the timestamp and tag)
+  const line1X = rects[0].x;
+  const line2X = rects[1].x;
+  
+  // Check that the lines are perfectly aligned on the left
+  expect(Math.abs(line1X - line2X)).toBeLessThan(2);
+  
+  // Ensure that line1X is significantly indented (at least past the timestamp and tag width + gaps)
+  // Assuming timestamp ~48px, tag ~30px, gaps ~24px -> should be > 100px
+  expect(line1X).toBeGreaterThan(100);
+
+  // Capture screenshot of the active feature to evidence.png
+  await page.screenshot({ path: 'evidence.png' });
+});
