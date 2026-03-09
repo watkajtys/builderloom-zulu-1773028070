@@ -909,3 +909,130 @@ if __name__ == '__main__':
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Implement core orchestrator dispatcher and routing logic', async ({ page }) => {
+  const testScriptPath = 'backend/tools/test_orchestrator_e2e.py';
+  const testScriptContent = `
+import sys
+import os
+import json
+import uuid
+
+# Add the backend root to the path so that imports resolve correctly
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+from backend.tools.execution_engine import Job, JobStatus, BaseExecutionEngine, ExecutionState
+from backend.tools.orchestrator import Orchestrator
+from backend.tools.execution_store import ExecutionStore
+
+class DummyEngine(BaseExecutionEngine):
+    def execute(self, job: Job) -> Job:
+        job.status = JobStatus.COMPLETED
+        job.result = {"mock_result": True}
+        return job
+    
+    def get_status(self, job_id: str) -> ExecutionState:
+        return ExecutionState(job_id=job_id, progress=50.0, message="Mock running", status=JobStatus.RUNNING)
+
+class DummyRecord:
+    def __init__(self, data: dict):
+        self.id = data.get("id", "dummy_id")
+        self.job_id = data.get("job_id")
+        self.engine = data.get("engine")
+        self.target = data.get("target")
+        self.status = data.get("status")
+        self.result = data.get("result", "")
+        self.error = data.get("error", "")
+
+class DummyCollection:
+    def __init__(self):
+        self.records = {}
+
+    def get_first_list_item(self, filter_str: str):
+        job_id = filter_str.split("'")[1]
+        for r in self.records.values():
+            if r["job_id"] == job_id:
+                rec = DummyRecord(r)
+                rec.id = r["id"] # Restore correct ID
+                return rec
+        raise Exception("Not found")
+
+    def update(self, id: str, data: dict):
+        # The data dict has the old ID we overwrote when creating. We must persist it back
+        data["id"] = id
+        self.records[id] = data
+        return DummyRecord(data)
+
+    def create(self, data: dict):
+        doc_id = str(uuid.uuid4())
+        data["id"] = doc_id
+        self.records[doc_id] = data
+        return DummyRecord(data)
+
+def main():
+    store = ExecutionStore("http://127.0.0.1:8090")
+    dummy_collection = DummyCollection()
+    store.pb.collection = lambda name: dummy_collection
+    
+    orchestrator = Orchestrator(store=store)
+    orchestrator.register_engine("dummy_engine", DummyEngine())
+    
+    # Submit job
+    job_id = orchestrator.submit_job("dummy_engine", "test_target")
+    
+    try:
+        job = orchestrator.get_job(job_id)
+        if not job or job.status != JobStatus.PENDING:
+            print("---ERROR---")
+            sys.exit(1)
+            
+        orchestrator.process_queue()
+        
+        completed_job = orchestrator.get_job(job_id)
+        if completed_job and completed_job.status == JobStatus.COMPLETED:
+            print("---SUCCESS---")
+            print(completed_job.model_dump_json())
+        else:
+            print("---ERROR---")
+            print(json.dumps({'status': 'error', 'message': f'Job did not complete'}))
+    except Exception as e:
+        print("---ERROR---")
+        print(e)
+
+if __name__ == '__main__':
+    main()
+  `;
+
+  fs.writeFileSync(testScriptPath, testScriptContent.trim());
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 backend/tools/test_orchestrator_e2e.py', { encoding: 'utf-8' });
+  } catch (error: any) {
+    stdout = error.stdout || error.message;
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.engine).toBe('dummy_engine');
+  expect(resultJson.target).toBe('test_target');
+  expect(resultJson.status).toBe('completed');
+  expect(resultJson.result.mock_result).toBe(true);
+
+  // Take screenshot of empty app (tests shouldn't fail based on visual rules)
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
