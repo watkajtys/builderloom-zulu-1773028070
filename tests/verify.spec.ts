@@ -50,6 +50,9 @@ test('Dashboard uses abstracted reusable components', async ({ page }) => {
 
   // Verify TelemetryStream component is active
   await expect(page.locator('text=Telemetry_Stream')).toBeVisible();
+
+  // Verify InferenceChart component is active
+  await expect(page.locator('text=Inference Throughput')).toBeVisible();
 });
 
 test('Smooth chart data rendering to feel like a premium, realistic dashboard', async ({ page }) => {
