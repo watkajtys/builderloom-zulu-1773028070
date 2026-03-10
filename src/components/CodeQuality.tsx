@@ -23,7 +23,9 @@ export function CodeQuality() {
       <h2 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex-shrink-0">Repository Pulse</h2>
       <div className="flex p-1 bg-black/40 rounded-lg border border-border-muted">
         <button
-          onClick={() => setSearchParams({ tab: 'system-health' })}
+          onClick={() => {
+            setSearchParams(params => { params.delete('tab'); return params; });
+          }}
           className="flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all relative text-slate-500 hover:text-slate-300"
           data-testid="tab-system-health"
         >
