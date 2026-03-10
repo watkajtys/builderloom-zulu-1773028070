@@ -9,6 +9,7 @@ from backend.agents.python_architect import PythonArchitectAgent
 from backend.agents.executor import ExecutorAgent
 from backend.agents.prompt import PromptAgent
 from backend.agents.router_agent import TaskClassifierAgent
+from backend.agents.backend_agent import BackendAgent
 
 logger = logging.getLogger("loom")
 
@@ -29,6 +30,7 @@ class RouterAgent(BaseAgent):
         self.register_agent("executor", ExecutorAgent(node_id=f"{self.node_id}-EXECUTOR"))
         self.register_agent("prompt", PromptAgent(node_id=f"{self.node_id}-PROMPT"))
         self.register_agent("classifier", TaskClassifierAgent(node_id=f"{self.node_id}-CLASSIFIER"))
+        self.register_agent("backend", BackendAgent(node_id=f"{self.node_id}-BACKEND"))
 
     def register_agent(self, task_type: str, agent: BaseAgent):
         """Registers a sub-agent to handle a specific task_type."""
