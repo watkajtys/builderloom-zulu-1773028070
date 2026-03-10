@@ -18,6 +18,10 @@ def _emit_json_log(level: str, message: str, node_id: str = "orchestrator"):
     }
     if level == "ERROR":
         logger.error(json.dumps(log_data))
+    elif level == "WARN":
+        logger.warning(json.dumps(log_data))
+    elif level == "DEBUG":
+        logger.debug(json.dumps(log_data))
     else:
         logger.info(json.dumps(log_data))
 
@@ -29,7 +33,10 @@ class Orchestrator:
         self.jobs: Dict[str, Job] = {} # In-memory fallback
 
     def register_engine(self, name: str, engine: BaseExecutionEngine):
+        if name in self.engines:
+            _emit_json_log("WARN", f"Engine '{name}' is already registered. Overwriting.")
         self.engines[name] = engine
+        _emit_json_log("INFO", f"Successfully registered engine '{name}'.")
 
     def submit_job(self, engine: str, target: str) -> str:
         if engine not in self.engines:
@@ -76,6 +83,10 @@ class Orchestrator:
             _emit_json_log("ERROR", f"Job {job_id} not found.")
             return
 
+        if job.status in (JobStatus.COMPLETED, JobStatus.FAILED):
+            _emit_json_log("WARN", f"Job {job_id} is already in terminal state '{job.status}'. Skipping execution.")
+            return
+
         # Core routing logic: dispatch the job to the correct registered execution engine
         engine_impl = self.engines.get(job.engine)
         if not engine_impl:
@@ -87,6 +98,7 @@ class Orchestrator:
 
         job.status = JobStatus.RUNNING
         self._save_job(job)
+        _emit_json_log("INFO", f"Job {job_id} is now RUNNING.")
 
         max_retries = 3
         attempt = 0
@@ -103,10 +115,15 @@ class Orchestrator:
                 success = True
             except Exception as e:
                 _emit_json_log("ERROR", f"Error executing job {job_id} on attempt {attempt}: {e}")
-                if attempt >= max_retries:
+                
+                # Check if it's a permanent failure that shouldn't be retried
+                is_permanent = "Temporary Failure" not in str(e)
+                
+                if attempt >= max_retries or is_permanent:
                     job.status = JobStatus.FAILED
                     job.error = str(e)
                     self._save_job(job)
+                    break # Stop retrying on permanent failure or max attempts reached
 
     def _save_job(self, job: Job):
         if self.store:
