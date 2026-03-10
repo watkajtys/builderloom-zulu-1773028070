@@ -25,7 +25,7 @@ export function Sidebar() {
         </NavLink>
         <NavLink to="/system-health" data-testid="sidebar-system-health" className={() => `flex items-center gap-3 px-3 py-2 rounded transition-all ${location.pathname === '/system-health' ? 'bg-electric-blue/10 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
           <LayoutDashboard size={18} className="fill-[1]" />
-          <span className="text-sm font-semibold uppercase tracking-wider">System Control</span>
+          <span className="text-sm font-semibold uppercase tracking-wider">System Health</span>
         </NavLink>
         <NavLink to="/kanban" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-neon-purple hover:bg-white/5 transition-all">
           <Kanban size={18} />

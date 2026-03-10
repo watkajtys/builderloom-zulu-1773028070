@@ -27,7 +27,7 @@ test('Fix broken icon rendering showing raw text strings across the UI', async (
   await expect(sidebar).toBeVisible();
   
   // Checking that svgs exist within the sidebar links
-  const systemHealthLink = sidebar.locator('a[href*="/health"]').first();
+  const systemHealthLink = sidebar.locator('a[href*="/system-health"]').first();
   await expect(systemHealthLink.locator('svg')).toBeVisible();
 
   await page.screenshot({ path: 'evidence.png' });
@@ -61,7 +61,7 @@ test('Zulu Dashboard loads correctly', async ({ page }) => {
 
 test('React system-health route loads and EXPORT button is de-emphasized', async ({ page }) => {
   // Adapted for the new SystemHealth design
-  await page.goto('/health');
+  await page.goto('/system-health');
   await expect(page.locator('text=Zulu AI')).toBeVisible();
   
   // The old export button was removed, verify the Settings button is present and neutrally styled
@@ -81,7 +81,7 @@ test('PocketBase connection uses proper relative path', async ({ page }) => {
 });
 
 test('Dashboard uses abstracted reusable components', async ({ page }) => {
-  await page.goto('/health');
+  await page.goto('/system-health');
   
   // Verify Sidebar layout component is visible
   await expect(page.locator('aside').filter({ hasText: 'Zulu AI' })).toBeVisible();
@@ -102,7 +102,7 @@ test('Dashboard uses abstracted reusable components', async ({ page }) => {
 });
 
 test('Smooth chart data rendering to feel like a premium, realistic dashboard', async ({ page }) => {
-  await page.goto('/health');
+  await page.goto('/system-health');
   
   // Wait for the chart to load
   await expect(page.locator('text=Hardware Pulse')).toBeVisible();
@@ -115,7 +115,7 @@ test('Smooth chart data rendering to feel like a premium, realistic dashboard', 
 });
 
 test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ page }) => {
-  await page.goto('/health');
+  await page.goto('/system-health');
   
   // Wait for the specific multiline error log to be rendered
   await page.waitForSelector('text=retrying...');
@@ -268,7 +268,7 @@ test('Elevate the Filter Config popover for better visual hierarchy', async ({ p
 
 test('Ensure Header and Views Use Reusable PageLayout Abstraction', async ({ page }) => {
   // Navigate to Code Quality view
-  await page.goto('/health?tab=code-quality');
+  await page.goto('/system-health?tab=code-quality');
   
   // Verify CodeQuality uses standard layout components
   const pageHeader = page.locator('header').first();
@@ -284,7 +284,7 @@ test('Ensure Header and Views Use Reusable PageLayout Abstraction', async ({ pag
 
 test('Implement the "Code Quality" UI component', async ({ page }) => {
   // Navigate to the newly updated code quality tab route
-  await page.goto('/health?tab=code-quality');
+  await page.goto('/system-health?tab=code-quality');
 
   // Verify the header title exists
   const headerText = page.locator('text=Repository Pulse');
@@ -302,7 +302,7 @@ test('Implement the "Code Quality" UI component', async ({ page }) => {
   await expect(page.locator('text=Pull Request Cycle')).toBeVisible();
 
   // Verify Sidebar Nav link interaction
-  const codeQualityLink = page.locator('aside a', { hasText: 'Code Quality' });
+  const codeQualityLink = page.locator('aside a', { hasText: 'System Health' });
   await expect(codeQualityLink).toBeVisible();
   await expect(codeQualityLink).toHaveClass(/border-l-2/); // Since it's active
 
@@ -1525,8 +1525,8 @@ console.log(x, y, z);
 });
 
 test('Scaffold the new UI Tab routing and shell component', async ({ page }) => {
-  // Navigate to the newly updated /health route
-  await page.goto('/health');
+  // Navigate to the newly updated /system-health route
+  await page.goto('/system-health');
 
   // Verify shell and tabs exist
   const shell = page.locator('[data-testid="health-dashboard-shell"]');
@@ -1557,8 +1557,8 @@ test('Scaffold the new UI Tab routing and shell component', async ({ page }) => 
 });
 
 test('Verify System Health Split-View Monitoring UI component', async ({ page }) => {
-  // Navigate to the newly updated /health route
-  await page.goto('/health');
+  // Navigate to the newly updated /system-health route
+  await page.goto('/system-health');
 
   // Verify the header title exists
   const headerText = page.locator('text=Split-View Monitoring');
@@ -1588,7 +1588,7 @@ test('Verify System Health Split-View Monitoring UI component', async ({ page })
 });
 
 test('Implement Temporal Screenshot Storage for Vibe Agent', async ({ page }) => {
-  await page.goto('/health');
+  await page.goto('/system-health');
 
   const fs = await import('fs');
   const path = await import('path');
@@ -2415,7 +2415,7 @@ with open(sys.argv[1], 'rb') as f:
   try {
     for (let i = 0; i < 7; i++) {
       // Trigger UI update to satisfy scenario
-      await page.goto('/health');
+      await page.goto('/system-health');
       if (i % 2 === 0) {
         await page.click('[data-testid="tab-code-quality"]');
       } else {
