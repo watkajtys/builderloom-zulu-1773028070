@@ -2277,3 +2277,76 @@ if __name__ == "__main__":
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Utility runs ESLint on a dummy React component with missing prop-types or unused vars, returning parsed violation objects.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+
+  const testScriptPath = path.resolve(process.cwd(), 'temp_react_analyzer_test.py');
+  
+  const testScriptContent = `
+import json
+import sys
+import os
+sys.path.append(os.getcwd())
+from backend.utils.react_analyzer import analyze_react_code
+
+def main():
+    dummy_code = """
+import React, { useState } from 'react';
+
+export function TestComponent() {
+  const [state, setState] = useState(0);
+  const x = 1;
+  return <div>{x}</div>;
+}
+"""
+    result = analyze_react_code(dummy_code)
+    
+    print("---SUCCESS---")
+    print(json.dumps(result))
+
+if __name__ == "__main__":
+    main()
+  `;
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    const { execSync } = await import('child_process');
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.issues).toBeDefined();
+  expect(resultJson.issues.length).toBeGreaterThan(0);
+  
+  const hasEslintUnusedVar = resultJson.issues.some((issue: any) => issue.tool === 'eslint' && issue.symbol === '@typescript-eslint/no-unused-vars');
+  
+  if (!hasEslintUnusedVar) {
+    console.error("Missing ESLint error in:", resultJson.issues);
+  }
+  expect(hasEslintUnusedVar).toBe(true);
+
+  // Take screenshot of active feature
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
