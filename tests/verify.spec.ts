@@ -2620,6 +2620,16 @@ test('Set up the base Code Quality dashboard page, layout, and routing.', async 
   await expect(page.locator('text=Test Coverage (%)')).toBeVisible();
   await expect(page.locator('text=Code Complexity (Cyclomatic)')).toBeVisible();
   
+  // Verify dual Y-axis context labels exist within the chart
+  // Primary axis (Coverage %)
+  await expect(page.locator('text=100%')).toBeVisible();
+  await expect(page.locator('text=75%')).toBeVisible();
+  await expect(page.locator('text=50%')).toBeVisible();
+  // Secondary axis (Complexity)
+  await expect(page.locator('text=1.00')).toBeVisible();
+  await expect(page.locator('text=0.75')).toBeVisible();
+  await expect(page.locator('text=0.50')).toBeVisible();
+  
   // Verify stats cards exist
   await expect(page.locator('text=Maintainability Index')).toBeVisible();
   await expect(page.locator('text=Technical Debt')).toBeVisible();
