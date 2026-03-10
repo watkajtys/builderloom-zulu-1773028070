@@ -1047,3 +1047,148 @@ if __name__ == '__main__':
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Add state tracking, error handling, and retries to the orchestrator', async ({ page }) => {
+  const testScriptPath = 'backend/tools/test_orchestrator_retries_e2e.py';
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'import uuid',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.tools.execution_engine import Job, JobStatus, BaseExecutionEngine, ExecutionState',
+    'from backend.tools.orchestrator import Orchestrator',
+    'from backend.tools.execution_store import ExecutionStore',
+    '',
+    'class FailingThenSucceedingEngine(BaseExecutionEngine):',
+    '    def __init__(self):',
+    '        self.attempts = 0',
+    '',
+    '    def execute(self, job: Job) -> Job:',
+    '        self.attempts += 1',
+    '        if self.attempts < 3:',
+    '            raise Exception("Temporary Failure")',
+    '        job.status = JobStatus.COMPLETED',
+    '        job.result = {"mock_result": True, "attempts": self.attempts}',
+    '        return job',
+    '    ',
+    '    def get_status(self, job_id: str) -> ExecutionState:',
+    '        return ExecutionState(job_id=job_id, progress=50.0, message="Mock running", status=JobStatus.RUNNING)',
+    '',
+    'class PermanentFailingEngine(BaseExecutionEngine):',
+    '    def execute(self, job: Job) -> Job:',
+    '        raise Exception("Permanent Failure")',
+    '    ',
+    '    def get_status(self, job_id: str) -> ExecutionState:',
+    '        return ExecutionState(job_id=job_id, progress=50.0, message="Mock running", status=JobStatus.RUNNING)',
+    '',
+    'class DummyRecord:',
+    '    def __init__(self, data: dict):',
+    '        self.id = data.get("id", "dummy_id")',
+    '        self.job_id = data.get("job_id")',
+    '        self.engine = data.get("engine")',
+    '        self.target = data.get("target")',
+    '        self.status = data.get("status")',
+    '        self.result = data.get("result", "")',
+    '        self.error = data.get("error", "")',
+    '',
+    'class DummyCollection:',
+    '    def __init__(self):',
+    '        self.records = {}',
+    '',
+    '    def get_first_list_item(self, filter_str: str):',
+    '        job_id = filter_str.split("\'")[1]',
+    '        for r in self.records.values():',
+    '            if r["job_id"] == job_id:',
+    '                rec = DummyRecord(r)',
+    '                rec.id = r["id"] # Restore correct ID',
+    '                return rec',
+    '        raise Exception("Not found")',
+    '',
+    '    def update(self, id: str, data: dict):',
+    '        data["id"] = id',
+    '        self.records[id] = data',
+    '        return DummyRecord(data)',
+    '',
+    '    def create(self, data: dict):',
+    '        doc_id = str(uuid.uuid4())',
+    '        data["id"] = doc_id',
+    '        self.records[doc_id] = data',
+    '        return DummyRecord(data)',
+    '',
+    'def main():',
+    '    store = ExecutionStore("http://127.0.0.1:8090")',
+    '    dummy_collection = DummyCollection()',
+    '    store.pb.collection = lambda name: dummy_collection',
+    '    ',
+    '    orchestrator = Orchestrator(store=store)',
+    '    orchestrator.register_engine("flaky_engine", FailingThenSucceedingEngine())',
+    '    orchestrator.register_engine("failing_engine", PermanentFailingEngine())',
+    '    ',
+    '    job1_id = orchestrator.submit_job("flaky_engine", "test_target_1")',
+    '    job2_id = orchestrator.submit_job("failing_engine", "test_target_2")',
+    '    ',
+    '    try:',
+    '        orchestrator.process_queue()',
+    '        ',
+    '        job1 = orchestrator.get_job(job1_id)',
+    '        job2 = orchestrator.get_job(job2_id)',
+    '        ',
+    '        if job1 and job1.status == JobStatus.COMPLETED and job2 and job2.status == JobStatus.FAILED:',
+    '            print("---SUCCESS---")',
+    '            print(json.dumps({',
+    '                "job1": json.loads(job1.model_dump_json()),',
+    '                "job2": json.loads(job2.model_dump_json())',
+    '            }))',
+    '        else:',
+    '            print("---ERROR---")',
+    '            print(json.dumps({"status": "error", "message": f"Jobs did not complete/fail as expected"}))',
+    '    except Exception as e:',
+    '        print("---ERROR---")',
+    '        print(e)',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  const fs = await import('fs');
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    const { execSync } = await import('child_process');
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.job1.engine).toBe('flaky_engine');
+  expect(resultJson.job1.status).toBe('completed');
+  expect(resultJson.job1.result.attempts).toBe(3);
+  
+  expect(resultJson.job2.engine).toBe('failing_engine');
+  expect(resultJson.job2.status).toBe('failed');
+  expect(resultJson.job2.error).toBe('Permanent Failure');
+
+  // Take screenshot of empty app (tests shouldn't fail based on visual rules)
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});

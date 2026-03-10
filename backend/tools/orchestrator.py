@@ -88,16 +88,25 @@ class Orchestrator:
         job.status = JobStatus.RUNNING
         self._save_job(job)
 
-        try:
-            # Dispatch the job execution to the resolved engine
-            updated_job = engine_impl.execute(job)
-            self._save_job(updated_job)
-            _emit_json_log("INFO", f"Job {job_id} completed successfully.")
-        except Exception as e:
-            _emit_json_log("ERROR", f"Error executing job {job_id}: {e}")
-            job.status = JobStatus.FAILED
-            job.error = str(e)
-            self._save_job(job)
+        max_retries = 3
+        attempt = 0
+        success = False
+
+        while attempt < max_retries and not success:
+            attempt += 1
+            try:
+                # Dispatch the job execution to the resolved engine
+                updated_job = engine_impl.execute(job)
+                updated_job.status = JobStatus.COMPLETED
+                self._save_job(updated_job)
+                _emit_json_log("INFO", f"Job {job_id} completed successfully on attempt {attempt}.")
+                success = True
+            except Exception as e:
+                _emit_json_log("ERROR", f"Error executing job {job_id} on attempt {attempt}: {e}")
+                if attempt >= max_retries:
+                    job.status = JobStatus.FAILED
+                    job.error = str(e)
+                    self._save_job(job)
 
     def _save_job(self, job: Job):
         if self.store:
