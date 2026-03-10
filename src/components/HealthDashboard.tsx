@@ -41,15 +41,9 @@ export function HealthDashboard() {
       <div className="flex-1 overflow-hidden">
         {activeTab === 'system-health' ? (
           <div className="h-full w-full flex relative">
-             <div className="absolute inset-0 z-0">
+             <div className="absolute inset-0 z-0 flex" data-testid="placeholder-system-health">
                <SystemHealth />
              </div>
-             <div className="absolute inset-4 z-10 pointer-events-none border-2 border-dashed border-zinc-700/50 rounded-lg flex items-center justify-center bg-black/5" data-testid="placeholder-system-health">
-              <div className="text-zinc-500/50 font-mono text-sm flex flex-col items-center gap-2">
-                <HeartPulse size={32} className="text-zinc-600/50" />
-                <span>[ SYSTEM HEALTH MODULE MOUNTED ]</span>
-              </div>
-            </div>
           </div>
         ) : (
           <div className="h-full w-full border-2 border-dashed border-zinc-700 rounded-lg flex items-center justify-center bg-black/20" data-testid="placeholder-code-quality">
