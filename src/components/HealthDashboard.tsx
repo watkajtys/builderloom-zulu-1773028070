@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { HeartPulse, Code2 } from 'lucide-react';
 import { SystemHealth } from './SystemHealth';
+import { CodeQuality } from './CodeQuality';
 
 type Tab = 'system-health' | 'code-quality';
 
 export function HealthDashboard() {
-  const [activeTab, setActiveTab] = useState<Tab>('system-health');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = (searchParams.get('tab') as Tab) || 'system-health';
 
   return (
     <div className="flex flex-col h-full w-full bg-obsidian text-white" data-testid="health-dashboard-shell">
       {/* Header Tabs */}
       <div className="flex border-b border-border-muted p-4 space-x-4">
         <button
-          onClick={() => setActiveTab('system-health')}
+          onClick={() => setSearchParams({ tab: 'system-health' })}
           data-testid="tab-system-health"
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
             activeTab === 'system-health'
@@ -24,7 +26,7 @@ export function HealthDashboard() {
           <span className="text-sm font-semibold tracking-wide">System Health</span>
         </button>
         <button
-          onClick={() => setActiveTab('code-quality')}
+          onClick={() => setSearchParams({ tab: 'code-quality' })}
           data-testid="tab-code-quality"
           className={`flex items-center gap-2 px-4 py-2 rounded-md transition-colors ${
             activeTab === 'code-quality'
@@ -46,12 +48,10 @@ export function HealthDashboard() {
              </div>
           </div>
         ) : (
-          <div className="h-full w-full border-2 border-dashed border-zinc-700 rounded-lg flex items-center justify-center bg-black/20" data-testid="placeholder-code-quality">
-            <div className="text-zinc-500 font-mono text-sm flex flex-col items-center gap-2">
-              <Code2 size={32} className="text-zinc-600" />
-              <span>[ CODE QUALITY MODULE ]</span>
-              <span className="text-xs">Mount point ready</span>
-            </div>
+          <div className="h-full w-full flex relative" data-testid="placeholder-code-quality">
+             <div className="absolute inset-0 z-0 flex">
+               <CodeQuality />
+             </div>
           </div>
         )}
       </div>

@@ -266,6 +266,34 @@ test('Elevate the Filter Config popover for better visual hierarchy', async ({ p
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('Implement the "Code Quality" UI component', async ({ page }) => {
+  // Navigate to the newly updated code quality tab route
+  await page.goto('/health?tab=code-quality');
+
+  // Verify the header title exists
+  const headerText = page.locator('text=Repository Pulse');
+  await expect(headerText).toBeVisible();
+
+  // Verify list module items
+  await expect(page.locator('text=zulu-factory-core-v2')).toBeVisible();
+  await expect(page.locator('text=gateway-proxy-handler')).toBeVisible();
+  await expect(page.locator('text=neural-weight-distributor')).toBeVisible();
+  await expect(page.locator('text=vector-storage-adapter')).toBeVisible();
+
+  // Verify Stats Cards
+  await expect(page.locator('text=Build Velocity')).toBeVisible();
+  await expect(page.locator('text=Active Vulnerabilities')).toBeVisible();
+  await expect(page.locator('text=Pull Request Cycle')).toBeVisible();
+
+  // Verify Sidebar Nav link interaction
+  const codeQualityLink = page.locator('aside a', { hasText: 'Code Quality' });
+  await expect(codeQualityLink).toBeVisible();
+  await expect(codeQualityLink).toHaveClass(/border-l-2/); // Since it's active
+
+  // Take screenshot as required
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('Implement Sub-Agent base architecture and interfaces', async ({ page }) => {
   // Test that the python BaseAgent and IO models can be imported and instantiated,
   // and that _log emits the expected JSON format with timestamp, node_id, and log_level.
