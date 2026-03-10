@@ -1,6 +1,7 @@
 import { TrendingUp, Verified } from 'lucide-react';
 import { TelemetryStream } from './TelemetryStream';
 import { TelemetryLog } from '../hooks/useTelemetryLogs';
+import { HardwarePulseBar } from './HardwarePulseBar';
 
 interface HardwarePulseProps {
   chartData: { c: number; m: number; s1: boolean; s2: boolean; o: number }[];
@@ -36,19 +37,7 @@ export function HardwarePulse({ chartData, stats, logs }: HardwarePulseProps) {
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
         <div className="flex-1 relative flex items-end justify-between gap-px mb-4">
           {chartData.map((h, i) => (
-            <div key={i} className="flex-1 flex flex-col justify-end gap-[2px]">
-              <div className={`w-full rounded-sm ${h.s2 ? 'shadow-[0_0_15px_#BC13FE44]' : ''} ${
-                h.o === 20 ? 'bg-neon-purple/20' : 
-                h.o === 30 ? 'bg-neon-purple/30' : 
-                h.o === 40 ? 'bg-neon-purple/40' : 
-                h.o === 50 ? 'bg-neon-purple/50' : 
-                h.o === 60 ? 'bg-neon-purple/60' : 
-                h.o === 70 ? 'bg-neon-purple/70' : 
-                h.o === 80 ? 'bg-neon-purple/80' : 
-                h.o === 100 ? 'bg-neon-purple' : 'bg-neon-purple/50'
-              }`} style={{ height: `${h.m}%` }}></div>
-              <div className={`w-full bg-electric-blue rounded-sm ${h.s1 ? 'shadow-[0_0_10px_#00F2FF44]' : ''}`} style={{ height: `${h.c}%` }}></div>
-            </div>
+            <HardwarePulseBar key={i} {...h} />
           ))}
         </div>
         <div className="flex justify-between font-mono text-[9px] text-zinc-grey uppercase">

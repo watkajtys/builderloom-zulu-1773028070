@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Network, Box, Code2, Database, LucideIcon } from 'lucide-react';
 import { pb } from '../services/pocketbase';
 import { ArchitectFinding } from '../types/architect';
+import { mockRepositories } from '../services/mockData';
 
 export interface RepositoryData {
   name: string;
@@ -32,58 +33,5 @@ export function useRepositories(): { repositories: RepositoryData[]; architectFi
     fetchFindings();
   }, []);
 
-  const repositories: RepositoryData[] = [
-    {
-      name: 'zulu-factory-core-v2',
-      type: 'Production / Go-lang',
-      coverage: 98.2,
-      grade: 'A+',
-      lastCommit: '4m ago',
-      author: 'ac-0x2',
-      icon: Network,
-      coverageColorClass: 'bg-electric-blue',
-      coverageShadowClass: 'shadow-[0_0_8px_rgba(0,242,255,0.4)]',
-      lintTrendHeights: ['h-[40%]', 'h-[30%]', 'h-[60%]', 'h-[20%]', 'h-[15%]', 'h-[10%]'],
-      lintTrendColors: ['bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-electric-blue opacity-100'],
-    },
-    {
-      name: 'gateway-proxy-handler',
-      type: 'Infrastructure / Rust',
-      coverage: 84.5,
-      grade: 'B',
-      lastCommit: '18m ago',
-      author: 'jd-0xf',
-      icon: Box,
-      coverageColorClass: 'bg-electric-blue/70',
-      lintTrendHeights: ['h-[80%]', 'h-[90%]', 'h-[70%]', 'h-[75%]', 'h-[60%]', 'h-[55%]'],
-      lintTrendColors: ['bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60'],
-    },
-    {
-      name: 'neural-weight-distributor',
-      type: 'AI Layer / Python',
-      coverage: 91.0,
-      grade: 'A',
-      lastCommit: '1h ago',
-      author: 'system-bot',
-      icon: Code2,
-      coverageColorClass: 'bg-electric-blue',
-      coverageShadowClass: 'shadow-[0_0_4px_rgba(0,242,255,0.2)]',
-      lintTrendHeights: ['h-[20%]', 'h-[25%]', 'h-[15%]', 'h-[10%]', 'h-[12%]', 'h-[8%]'],
-      lintTrendColors: ['bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-electric-blue opacity-100'],
-    },
-    {
-      name: 'vector-storage-adapter',
-      type: 'Persistence / C++',
-      coverage: 72.4,
-      grade: 'C+',
-      lastCommit: '3h ago',
-      author: 'unknown-0x',
-      icon: Database,
-      coverageColorClass: 'bg-zinc-600',
-      lintTrendHeights: ['h-[40%]', 'h-[50%]', 'h-[60%]', 'h-[65%]', 'h-[75%]', 'h-[90%]'],
-      lintTrendColors: ['bg-zinc-500', 'bg-zinc-500', 'bg-zinc-500', 'bg-zinc-500', 'bg-zinc-500', 'bg-neon-purple opacity-100'],
-    },
-  ];
-
-  return { repositories, architectFindings };
+  return { repositories: mockRepositories, architectFindings };
 }

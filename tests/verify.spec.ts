@@ -2647,7 +2647,10 @@ test('CodeQuality empty state displays properly when there are no architect find
   await page.goto('/system-health?tab=code-quality');
   
   // Verify empty state is rendered
-  await expect(page.locator('text=All clear. No active findings.')).toBeVisible();
+  const emptyStateLocator = page.locator('text=All clear. No active findings.');
+  await expect(emptyStateLocator).toBeVisible();
+  await expect(emptyStateLocator).toHaveClass(/font-sans/); // Verify neutral typography
+  await expect(page.locator('text=System is operating within acceptable parameters')).toBeVisible();
   
   // Ensure we still see the metrics blocks around the area
   await expect(page.locator('text=Maintainability Index')).toBeVisible();
