@@ -12,6 +12,7 @@ class AgentRequest:
     task_id: str
     data: Dict[str, Any]
     context: Optional[Dict[str, Any]] = field(default_factory=dict)
+    metadata: Optional[Dict[str, Any]] = field(default_factory=dict)
     
 @dataclass
 class AgentResponse:
@@ -23,3 +24,4 @@ class AgentResponse:
     data: Dict[str, Any]
     errors: Optional[list] = field(default_factory=list)
     timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    metadata: Optional[Dict[str, Any]] = field(default_factory=dict)

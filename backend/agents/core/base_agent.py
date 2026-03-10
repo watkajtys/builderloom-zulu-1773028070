@@ -54,6 +54,17 @@ class BaseAgent(ABC):
         else:
             logger.info(log_str)
 
+    def _emit_json_log(self, level: str, message: str, extra_data: Dict[str, Any] = None, metadata: Dict[str, Any] = None):
+        """
+        Helper method to emit JSON logs while gracefully merging provided metadata.
+        This enables richer error telemetry and task correlation.
+        """
+        payload = extra_data.copy() if extra_data else {}
+        if metadata:
+            # Safely merge metadata under a specific key to prevent top-level collisions
+            payload["metadata"] = metadata
+        
+        self._log(level, message, extra_data=payload)
 
     @abstractmethod
     def execute(self, request: AgentRequest) -> AgentResponse:

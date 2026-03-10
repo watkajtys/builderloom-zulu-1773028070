@@ -1540,3 +1540,78 @@ test('Pass a timeline of 3 images to the VisionAgent where a button is deleted i
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('', async ({ page }) => {
+  const scriptContent = `
+import sys
+import json
+import logging
+from backend.agents.core.base_agent import BaseAgent
+from backend.agents.core.io_models import AgentRequest, AgentResponse
+import dataclasses
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
+class MetadataAgent(BaseAgent):
+    def execute(self, request: AgentRequest) -> AgentResponse:
+        self._emit_json_log("INFO", "Executing with metadata", metadata=request.metadata)
+        return AgentResponse(
+            status="success",
+            data={"echo": request.data},
+            metadata={"response_meta": True}
+        )
+
+agent = MetadataAgent(node_id="META-NODE-1")
+req = AgentRequest(
+    task_id="meta-task-1",
+    data={"input": "test"},
+    metadata={"source": "pytest"}
+)
+res = agent.execute(req)
+
+print("---RESPONSE---")
+print(json.dumps(dataclasses.asdict(res)))
+`;
+
+  const crypto = await import('crypto');
+  const fs = await import('fs');
+  const filename = 'test_metadata_agent_' + crypto.randomBytes(4).toString('hex') + '.py';
+  fs.writeFileSync(filename, scriptContent);
+  
+  let outputLines;
+  try {
+    const { execSync } = await import('child_process');
+    const combinedOutput = execSync('python3 ' + filename + ' 2>&1');
+    outputLines = combinedOutput.toString().trim().split('\n');
+  } finally {
+    fs.unlinkSync(filename);
+  }
+  
+  // Find the log line
+  const logLine = outputLines.find(line => line.includes('Executing with metadata'));
+  expect(logLine).toBeDefined();
+
+  const startIdx = logLine!.indexOf('{');
+  const endIdx = logLine!.lastIndexOf('}');
+  const jsonPartStr = logLine!.substring(startIdx, endIdx + 1);
+  const parsedLog = JSON.parse(jsonPartStr);
+  
+  expect(parsedLog.log_level).toBe('INFO');
+  expect(parsedLog.node_id).toBe('META-NODE-1');
+  expect(parsedLog.message).toBe('Executing with metadata');
+  expect(parsedLog.metadata).toBeDefined();
+  expect(parsedLog.metadata.source).toBe('pytest');
+
+  // Find the response
+  const responseIdx = outputLines.indexOf('---RESPONSE---');
+  expect(responseIdx).toBeGreaterThan(-1);
+  
+  const responseJsonStr = outputLines[responseIdx + 1];
+  const responseJson = JSON.parse(responseJsonStr);
+  expect(responseJson.status).toBe('success');
+  expect(responseJson.metadata).toBeDefined();
+  expect(responseJson.metadata.response_meta).toBe(true);
+  
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
