@@ -1336,6 +1336,10 @@ test('Verify System Health Split-View Monitoring UI component', async ({ page })
   // Ensure tabs exist if we are in the shell, but wait, the health-dashboard-shell mounts it.
   // We should just check the specific elements we added.
   
+  // Verify the Footer component correctly renders and deduplicates Layout logic
+  await expect(page.locator('text=Zone: US-EAST-1-PROD')).toBeVisible();
+  await expect(page.locator('text=System Load: Stable')).toBeVisible();
+
   // Take screenshot as required
   await page.screenshot({ path: 'evidence.png' });
 });
