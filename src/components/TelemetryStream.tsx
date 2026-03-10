@@ -1,36 +1,12 @@
 
-import { TelemetryLog } from '../hooks/useTelemetryLogs';
-import { getLogLevelConfig, formatLogMessage } from '../utils/telemetryConfig';
+import { DisplayLog } from '../hooks/useTelemetryLogs';
 import { Terminal, SlidersHorizontal } from 'lucide-react';
 
 interface TelemetryStreamProps {
-  logs: TelemetryLog[];
+  logs: DisplayLog[];
 }
 
-export function TelemetryStream({ logs }: TelemetryStreamProps) {
-  // Transform the new data structure into what the stream needs to display
-  // We extract 'time', 'level', 'color', 'message', 'messageColor', 'isError'
-  const displayLogs = logs.map(log => {
-    // Extract time (e.g., '14:30:01' from '2023-10-24 14:30:01.042')
-    const timeMatch = log.timestamp.match(/ (\d{2}:\d{2}:\d{2})/);
-    const timeStr = timeMatch ? timeMatch[1] : log.timestamp.split(' ')[1] || log.timestamp;
-
-    // Determine level code and color via shared config
-    const levelConfig = getLogLevelConfig(log.log_level);
-
-    // Attempt to stringify a readable message out of the payload
-    const message = formatLogMessage(log.payload);
-
-    return {
-      time: timeStr,
-      level: levelConfig.code,
-      color: levelConfig.streamColor,
-      message,
-      messageColor: levelConfig.streamMessageColor,
-      isError: log.log_level === 'ERROR'
-    };
-  });
-
+export function TelemetryStream({ logs: displayLogs }: TelemetryStreamProps) {
   return (
     <div className="w-[40%] flex flex-col bg-obsidian border-l border-border-muted overflow-hidden">
       <div className="h-10 px-4 flex items-center justify-between border-b border-border-muted bg-dark-surface/50 flex-shrink-0">

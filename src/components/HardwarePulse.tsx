@@ -1,6 +1,6 @@
 import { TrendingUp, Verified } from 'lucide-react';
 import { TelemetryStream } from './TelemetryStream';
-import { TelemetryLog } from '../hooks/useTelemetryLogs';
+import { DisplayLog } from '../hooks/useTelemetryLogs';
 import { HardwarePulseBar } from './HardwarePulseBar';
 
 interface HardwarePulseProps {
@@ -9,8 +9,9 @@ interface HardwarePulseProps {
     totalLogs: number;
     errorCount?: number;
     warningCount?: number;
+    signalIntegrity?: string;
   };
-  logs: TelemetryLog[];
+  logs: DisplayLog[];
 }
 
 export function HardwarePulse({ chartData, stats, logs }: HardwarePulseProps) {
@@ -60,7 +61,7 @@ export function HardwarePulse({ chartData, stats, logs }: HardwarePulseProps) {
           <p className="text-[9px] font-bold text-zinc-grey uppercase tracking-widest mb-1">Signal Integrity</p>
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-xl font-bold text-electric-blue">
-              {stats.errorCount !== undefined ? Math.max(0, 100 - (stats.errorCount * 0.5)).toFixed(2) : "100.00"}%
+              {stats.signalIntegrity || "100.00"}%
             </span>
             <Verified size={14} className="text-electric-blue" />
           </div>

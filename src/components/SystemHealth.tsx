@@ -9,7 +9,7 @@ import { TopNavUtility } from './TopNavUtility';
 
 export function SystemHealth() {
   const { chartData } = useTelemetry();
-  const { logs, stats } = useTelemetryLogs();
+  const { displayLogs, stats } = useTelemetryLogs();
 
   const statusIndicator = (
     <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export function SystemHealth() {
       containerClassName="bg-[#0d1117]"
     >
       <InfrastructureStack />
-      <HardwarePulse chartData={chartData} stats={stats} logs={logs} />
+      <HardwarePulse chartData={chartData} stats={stats} logs={displayLogs} />
     </PageLayout>
   );
 }

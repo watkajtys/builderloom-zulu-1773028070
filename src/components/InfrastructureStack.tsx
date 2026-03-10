@@ -1,4 +1,4 @@
-import { mockStackData } from '../services/mockData';
+import { mockStackData } from '../services/mockInfrastructureData';
 
 export function InfrastructureStack() {
   return (
