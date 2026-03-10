@@ -1445,6 +1445,8 @@ console.log(x, y, z);
   let stdout = '';
   try {
     const { execSync } = await import('child_process');
+    // Ensure pylint and mypy are available
+    execSync('pip install -q mypy pylint', { encoding: 'utf-8' });
     stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
   } catch (error: unknown) {
     stdout = (error as { stdout?: string }).stdout || String(error);
@@ -2194,6 +2196,84 @@ test("Extract the first remaining logical domain into a dedicated sub-agent modu
   expect(resultJson.python_architect.data.score).toBeLessThan(10.0);
 
   // Take screenshot of empty app
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Utility correctly runs pylint and mypy on a dummy python file with deliberate errors and returns parsed violation objects', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+
+  const testScriptPath = path.resolve(process.cwd(), 'temp_analyzer_test.py');
+  
+  const testScriptContent = `
+import json
+import sys
+import os
+sys.path.append(os.getcwd())
+from backend.utils.python_analyzer import analyze_python_code
+
+def main():
+    dummy_code = """
+def add(a: int, b: int) -> int:
+    return a + b
+
+def wrong_add(a: str, b: int) -> int:
+    return a + b
+
+import sys
+unused_var = 1
+"""
+    result = analyze_python_code(dummy_code)
+    
+    print("---SUCCESS---")
+    print(json.dumps(result))
+
+if __name__ == "__main__":
+    main()
+  `;
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    const { execSync } = await import('child_process');
+    execSync('python3 -m pip install -q mypy pylint', { encoding: 'utf-8' });
+    stdout = execSync('python3 -m mypy ' + testScriptPath + ' || true', { encoding: 'utf-8' });
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.issues).toBeDefined();
+  expect(resultJson.issues.length).toBeGreaterThan(0);
+  
+  const hasMypy = resultJson.issues.some((issue: any) => issue.tool === 'mypy' && issue.type === 'error');
+  const hasPylint = resultJson.issues.some((issue: any) => issue.tool === 'pylint' && issue.type === 'convention');
+  
+  if (!hasMypy) {
+    console.error("Missing Mypy error in:", resultJson.issues);
+  }
+  expect(hasMypy).toBe(true);
+  expect(hasPylint).toBe(true);
+
+  // Take screenshot of active feature
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
