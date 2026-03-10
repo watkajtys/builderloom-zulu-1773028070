@@ -68,7 +68,7 @@ export function CodeQuality() {
         </div>
         
         <div className="flex-1 overflow-y-auto custom-scrollbar bg-obsidian flex flex-col p-8">
-          <div className="flex items-center justify-between mb-8">
+          <div className="shrink-0 flex items-center justify-between mb-8">
             <div>
               <div className="flex items-center gap-3 mb-1">
                 <h2 className="text-xl font-mono font-bold text-white">zulu-factory-core-v2</h2>
@@ -89,7 +89,7 @@ export function CodeQuality() {
             </div>
           </div>
           
-          <div className="flex-1 min-h-[400px] border border-border-muted rounded-xl bg-dark-surface/40 p-6 flex flex-col relative overflow-hidden">
+          <div className="shrink-0 h-[250px] border border-border-muted rounded-xl bg-dark-surface/40 p-6 flex flex-col relative overflow-hidden">
             <div className="absolute inset-0 pointer-events-none opacity-20" style={{ backgroundImage: 'linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
             <div className="flex items-center justify-between mb-10 relative z-10">
               <div className="flex gap-6">
@@ -145,7 +145,7 @@ export function CodeQuality() {
             </div>
           </div>
           
-          <div className="flex-1 flex flex-col min-h-0 bg-dark-surface/30 border border-border-muted rounded-lg overflow-hidden mt-6">
+          <div className="flex-1 flex flex-col min-h-[250px] bg-dark-surface/30 border border-border-muted rounded-lg overflow-hidden mt-6">
             <div className="flex items-center px-4 border-b border-border-muted bg-obsidian/20">
               <button className="border-b-2 border-electric-blue text-electric-blue py-3 px-4 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                 Current Findings
@@ -201,7 +201,7 @@ export function CodeQuality() {
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-6 mt-6">
+          <div className="shrink-0 grid grid-cols-3 gap-6 mt-6">
             <div className="bg-dark-surface/30 border border-border-muted p-4 rounded-lg">
               <p className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest mb-3">Maintainability Index</p>
               <div className="flex items-end gap-3">
