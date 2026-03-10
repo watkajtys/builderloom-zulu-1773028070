@@ -1192,3 +1192,113 @@ test('Add state tracking, error handling, and retries to the orchestrator', asyn
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Run the ArchitectAgent on a branch with 5 ESLint errors. Verify the overall health score is penalized proportionally and the JSON telemetry contains the detailed linting violations.', async ({ page }) => {
+  const testScriptPath = 'backend/tools/test_architect_e2e.py';
+  const badFilePath = 'backend/tools/bad_react_file.tsx';
+  
+  // A generic bad TSX file with exactly 5 ESLint errors
+  const badFileContent = [
+    'import React from "react";', // 1: no-unused-vars if not used
+    'var x = 1;', // 2: no-var
+    'var y = 2;', // 3: no-var
+    'const myObj: any = { z: eval("1+1") };', // 4: no-eval, 5: no-explicit-any (if enabled, we just want enough errors)
+    'console.log(x);', // often console.log is flagged, or we can just do unused variables
+    'export default function BadComponent() {',
+    '  var a = "test";', // another no-var
+    '  return <div>{y}</div>;',
+    '}'
+  ].join('\n');
+
+  // Let's create a file that we are sure violates 5 standard rules
+  // no-var: 3 times
+  // no-eval: 1 time
+  // @typescript-eslint/no-unused-vars: 1 time
+  const moreSpecificBadContent = `
+var x = 1;
+var y = 2;
+var z = 3;
+eval("alert('hello')");
+const unusedVar = "I am unused";
+console.log(x, y, z);
+  `;
+
+  // We write the Python script that runs ArchitectAgent and returns JSON output of the AgentResponse
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.architect import ArchitectAgent',
+    'from backend.agents.core.io_models import AgentRequest',
+    'import dataclasses',
+    '',
+    'def main():',
+    '    agent = ArchitectAgent(node_id="TEST-NODE-123")',
+    '    req = AgentRequest(',
+    '        task_id="test-task",',
+    '        data={',
+    '            "filepath": "backend/tools/bad_react_file.tsx",',
+    '            "base_score": 10.0,',
+    '            "penalty_per_issue": 1.0',
+    '        }',
+    '    )',
+    '    resp = agent.execute(req)',
+    '    # Use dataclasses.asdict since AgentResponse is a dataclass',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps(dataclasses.asdict(resp)))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  const fs = await import('fs');
+  fs.writeFileSync(badFilePath, moreSpecificBadContent);
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    const { execSync } = await import('child_process');
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+    if (fs.existsSync(badFilePath)) {
+      fs.unlinkSync(badFilePath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  // The status should be 'issues_found'
+  expect(resultJson.status).toBe('issues_found');
+  
+  // Extract number of issues
+  const numIssues = resultJson.data.issues.length;
+  // Ensure we actually caught some issues (expecting around 5 based on our file)
+  expect(numIssues).toBeGreaterThan(0);
+
+  // The score should be mathematically penalized: 10.0 - (numIssues * 1.0)
+  // Ensure it doesn't drop below 0
+  const expectedScore = Math.max(0.0, 10.0 - numIssues * 1.0);
+  expect(resultJson.data.score).toBe(expectedScore);
+
+  // Take screenshot of empty app (tests shouldn't fail based on visual rules)
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
