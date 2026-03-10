@@ -445,7 +445,7 @@ with warnings.catch_warnings():
 from unittest.mock import MagicMock
 
 from backend.agents.core.chain import Node, ExecutionState
-from backend.agents.core.node_executor import NodeExecutor
+from backend.agents.router import RouterAgent
 from backend.agents.core.io_models import AgentRequest
 
 # Mock the genai model
@@ -465,7 +465,7 @@ node_config = {
 node = Node(node_id="analyst_node", agent_type="analyzer", config=node_config)
 
 # 2. Create the executor
-executor = NodeExecutor(node)
+router = RouterAgent()
 
 # 3. Create execution state with variables to be interpolated
 state = ExecutionState(
@@ -475,8 +475,12 @@ state = ExecutionState(
 )
 
 # 4. Execute the node
-request = AgentRequest(task_id="task-1", data={"state": state.model_dump()})
-response = executor.execute(request)
+request = AgentRequest(task_id="task-1", data={
+    "task_type": "prompt",
+    "state": state.model_dump(),
+    "node": node.model_dump()
+})
+response = router.execute(request)
 
 # Output results for verification
 print("---RESULT---")
@@ -531,7 +535,6 @@ with warnings.catch_warnings():
 
 from backend.agents.core.chain import Chain, Node, Edge, EdgeType, ExecutionState
 from backend.agents.core.orchestrator import ChainOrchestrator
-from backend.agents.core.node_executor import NodeExecutor
 
 # Setup mocks for LLM to return specific results based on prompt
 def mock_generate_content(prompt, **kwargs):
@@ -1989,6 +1992,104 @@ test('Define the base sub-agent interface and implement routing logic in the mon
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
+});
+
+test("Extract the final remaining logical domain into a dedicated sub-agent module and update routing.", async ({ page }) => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const { execSync } = await import('child_process');
+  
+    const testScriptPath = 'backend/agents/test_prompt_agent_router_e2e.py';
+    
+    // We write a Python script that instantiates RouterAgent and dispatches a prompt task
+    const testScriptContent = [
+      'import sys',
+      'import os',
+      'import json',
+      'import dataclasses',
+      'import uuid',
+      'import warnings',
+      '',
+      'with warnings.catch_warnings():',
+      '    warnings.simplefilter("ignore")',
+      '    import google.generativeai as genai',
+      'from unittest.mock import MagicMock',
+      'mock_model = MagicMock()',
+      'mock_response = MagicMock()',
+      'mock_response.text = "Prompt Agent Response"',
+      'mock_model.generate_content.return_value = mock_response',
+      'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+      '',
+      'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+      'from backend.agents.router import RouterAgent',
+      'from backend.agents.core.io_models import AgentRequest',
+      'from backend.agents.core.chain import ExecutionState, Node',
+      '',
+      'def main():',
+      '    agent = RouterAgent(node_id="ROUTER-TEST-PROMPT-NODE")',
+      '    ',
+      '    node = Node(',
+      '        node_id="test_prompt_node",',
+      '        agent_type="prompt",',
+      '        config={"prompt_template": "Hello {name}", "model": "gemini-2.5-flash"}',
+      '    )',
+      '    state = ExecutionState(',
+      '        chain_id="chain-prompt-xyz",',
+      '        current_node="test_prompt_node",',
+      '        variables={"name": "Zulu"}',
+      '    )',
+      '    ',
+      '    req = AgentRequest(',
+      '        task_id="task-prompt",',
+      '        data={',
+      '            "task_type": "prompt",',
+      '            "state": state.model_dump(),',
+      '            "node": node.model_dump()',
+      '        }',
+      '    )',
+      '    resp = agent.execute(req)',
+      '    ',
+      '    print("---SUCCESS---")',
+      '    print(json.dumps({',
+      '        "prompt": dataclasses.asdict(resp)',
+      '    }))',
+      '',
+      'if __name__ == "__main__":',
+      '    main()'
+    ].join('\n');
+  
+    fs.writeFileSync(testScriptPath, testScriptContent);
+  
+    let stdout = '';
+    try {
+      stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+    } catch (error: unknown) {
+      stdout = (error as { stdout?: string }).stdout || String(error);
+    } finally {
+      if (fs.existsSync(testScriptPath)) {
+        fs.unlinkSync(testScriptPath);
+      }
+    }
+  
+    const outputLines = stdout.split('\n').map(l => l.trim());
+    
+    const successIdx = outputLines.indexOf('---SUCCESS---');
+    if (successIdx === -1) {
+      console.error("Test execution failed. Stdout:", stdout);
+    }
+    expect(successIdx).toBeGreaterThan(-1);
+  
+    const resultStr = outputLines[successIdx + 1];
+    const startIdx = resultStr.indexOf('{');
+    const endIdx = resultStr.lastIndexOf('}');
+    const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+  
+    expect(resultJson.prompt.status).toBe('success');
+    expect(resultJson.prompt.data.result).toBe('Prompt Agent Response');
+  
+    // Take screenshot of empty app
+    await page.goto('/');
+    await page.screenshot({ path: 'evidence.png' });
 });
 
 test("Extract the first remaining logical domain into a dedicated sub-agent module and update imports/routing.", async ({ page }) => {

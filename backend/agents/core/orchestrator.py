@@ -3,8 +3,8 @@ import uuid
 import logging
 from .chain import Chain, ExecutionState, EdgeType
 from .chain_store import ChainStore
-from .node_executor import NodeExecutor
 from .io_models import AgentRequest, AgentResponse
+from backend.agents.router import RouterAgent
 import dataclasses
 
 logger = logging.getLogger("loom")
@@ -29,13 +29,18 @@ class ChainOrchestrator:
                 logger.error(f"Node {state.current_node} not found in chain {self.chain.chain_id}")
                 break
 
-            executor = NodeExecutor(current_node)
+            # Dispatch execution to PromptAgent through RouterAgent to maintain standardized IO
+            router = RouterAgent()
             request = AgentRequest(
                 task_id=str(uuid.uuid4()),
-                data={"state": state.model_dump()}
+                data={
+                    "task_type": "prompt",
+                    "state": state.model_dump(),
+                    "node": current_node.model_dump()
+                }
             )
             
-            response = executor.execute(request)
+            response = router.execute(request)
             
             # Store history
             state.history.append({
