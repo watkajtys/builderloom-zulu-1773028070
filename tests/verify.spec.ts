@@ -179,8 +179,8 @@ test('Python agent logs are structured JSON format', async ({ page }) => {
   // But actually we can just invoke the python script and assert its output is valid JSON directly in the Node.js test environment.
   
   
-  const stdout = execSync('python3 -c \"import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})\"');
-  const stderrOutput = execSync('python3 -c \"import sys; import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})\" 2>&1');
+  // const stdout = execSync('python3 -c "import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})"');
+  const stderrOutput = execSync('python3 -c "import sys; import logging; from main import logger, StateLogHandler; logger.info(\'Integration test log\', extra={\'markup\': True})" 2>&1');
   const outStr = stderrOutput.toString().trim();
   const startIdx = outStr.indexOf('{');
   const endIdx = outStr.lastIndexOf('}');
@@ -192,11 +192,13 @@ test('Python agent logs are structured JSON format', async ({ page }) => {
   
   // Assert the output is parsable JSON
   let isJson = false;
-  let parsed: any = {};
+  let parsed: Record<string, unknown> = {};
   try {
     parsed = JSON.parse(jsonStr);
     isJson = true;
-  } catch(e) {}
+  } catch(e) {
+    // Ignore parse error
+  }
   
   expect(isJson).toBe(true);
   expect(parsed.logger).toBe('loom');
@@ -261,7 +263,7 @@ test('Elevate the Filter Config popover for better visual hierarchy', async ({ p
   await expect(filterBtn).toBeVisible();
 
   // The popover should initially be hidden (or block if hover group is active, but we test the JS toggle logic)
-  const popover = page.locator('div').filter({ hasText: 'Filter Config' }).nth(1);
+  // const popover = page.locator('div').filter({ hasText: 'Filter Config' }).nth(1);
   // Due to structure, we can just find the div containing h4 "Filter Config"
   const popoverContainer = page.locator('h4:has-text("Filter Config")').locator('..').locator('..');
   
@@ -646,7 +648,7 @@ test_file_clean.unlink()
   expect(resultJson.status).toBe('issues_found');
   expect(resultJson.issues.length).toBeGreaterThan(0);
   
-  const codes = resultJson.issues.map((i: any) => i.code);
+  const codes = resultJson.issues.map((i: { code: string }) => i.code);
   expect(codes).toContain('E402'); // Module level import not at top of file
   expect(codes).toContain('F401'); // os imported but unused
   
@@ -757,7 +759,7 @@ test_file_clean.unlink()
   expect(resultJson.status).toBe('issues_found');
   expect(resultJson.issues.length).toBeGreaterThan(0);
   
-  const rules = resultJson.issues.map((i: any) => i.ruleId);
+  const rules = resultJson.issues.map((i: { ruleId: string }) => i.ruleId);
   expect(rules).toContain('@typescript-eslint/no-unused-vars'); // state or setState is unused
   
   const cleanResultIdx = outputLines.indexOf('---CLEAN_RESULT---');
@@ -887,8 +889,8 @@ if __name__ == '__main__':
   try {
     const { execSync } = await import('child_process');
     stdout = execSync('python3 backend/tools/test_execution_store_e2e.py', { encoding: 'utf-8' });
-  } catch (error: any) {
-    stdout = error.stdout || error.message;
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string, message?: string }).stdout || (error as { message?: string }).message || String(error);
   } finally {
     if (fs.existsSync(testScriptPath)) {
       fs.unlinkSync(testScriptPath);
@@ -1012,8 +1014,8 @@ if __name__ == '__main__':
   let stdout = '';
   try {
     stdout = execSync('python3 backend/tools/test_orchestrator_e2e.py', { encoding: 'utf-8' });
-  } catch (error: any) {
-    stdout = error.stdout || error.message;
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string, message?: string }).stdout || (error as { message?: string }).message || String(error);
   } finally {
     if (fs.existsSync(testScriptPath)) {
       fs.unlinkSync(testScriptPath);

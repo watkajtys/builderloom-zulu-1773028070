@@ -32,6 +32,8 @@ class Orchestrator:
         self.engines[name] = engine
 
     def submit_job(self, engine: str, target: str) -> str:
+        if engine not in self.engines:
+            _emit_json_log("ERROR", f"Engine '{engine}' not registered.")
         job_id = str(uuid.uuid4())
         job = Job(id=job_id, engine=engine, target=target, status=JobStatus.PENDING)
 
@@ -48,6 +50,7 @@ class Orchestrator:
     def get_job_status(self, job_id: str) -> Optional[ExecutionState]:
         job = self.get_job(job_id)
         if not job:
+            _emit_json_log("ERROR", f"Job {job_id} not found.")
             return None
 
         engine_impl = self.engines.get(job.engine)
