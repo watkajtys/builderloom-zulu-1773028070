@@ -1460,3 +1460,83 @@ with open(sys.argv[1], 'rb') as f:
 
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Pass a timeline of 3 images to the VisionAgent where a button is deleted in the final frame. Verify the agent detects the regression ("Bulldozer Problem") and flags a critical failure.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  // We write the Python script that runs VisionAgent and returns JSON output
+  const testScriptPath = 'backend/tools/test_vision_agent_e2e.py';
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'from unittest.mock import MagicMock',
+    'import warnings',
+    '',
+    'with warnings.catch_warnings():',
+    '    warnings.simplefilter("ignore")',
+    '    import google.generativeai as genai',
+    '',
+    '# Mock the genai model',
+    'mock_model = MagicMock()',
+    'mock_response = MagicMock()',
+    'mock_response.text = """{"regression_detected": true, "reason": "Button was deleted in the final frame."}"""',
+    'mock_model.generate_content.return_value = mock_response',
+    '',
+    'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.vision import VisionAgent',
+    'from backend.agents.core.io_models import AgentRequest',
+    'import dataclasses',
+    '',
+    'def main():',
+    '    agent = VisionAgent(node_id="TEST-VISION-123")',
+    '    req = AgentRequest(',
+    '        task_id="test-vision",',
+    '        data={',
+    '            "images": [b"frame_1", b"frame_2", b"frame_3"]',
+    '        }',
+    '    )',
+    '    resp = agent.execute(req)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps(dataclasses.asdict(resp)))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  // Verify the agent detected the regression
+  expect(resultJson.status).toBe('issues_found');
+  expect(resultJson.data.regression_detected).toBe(true);
+  expect(resultJson.data.reason).toContain('deleted');
+  expect(resultJson.data.frames_analyzed).toBe(3);
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
