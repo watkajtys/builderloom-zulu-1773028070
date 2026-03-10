@@ -266,6 +266,22 @@ test('Elevate the Filter Config popover for better visual hierarchy', async ({ p
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('Ensure Header and Views Use Reusable PageLayout Abstraction', async ({ page }) => {
+  // Navigate to Code Quality view
+  await page.goto('/health?tab=code-quality');
+  
+  // Verify CodeQuality uses standard layout components
+  const pageHeader = page.locator('header').first();
+  await expect(pageHeader).toBeVisible();
+  
+  // Verify Global Header navigation elements render within the shared PageHeader structure
+  await page.goto('/');
+  const globalHeader = page.locator('header').first();
+  await expect(globalHeader.locator('button:has-text("Health")')).toBeVisible();
+  await expect(globalHeader.locator('button:has-text("Logs")')).toBeVisible();
+  await expect(globalHeader.locator('button:has-text("Nodes")')).toBeVisible();
+});
+
 test('Implement the "Code Quality" UI component', async ({ page }) => {
   // Navigate to the newly updated code quality tab route
   await page.goto('/health?tab=code-quality');

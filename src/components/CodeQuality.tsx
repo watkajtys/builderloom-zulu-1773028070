@@ -1,68 +1,67 @@
-import { Network, Box, Code2, Database } from 'lucide-react';
-import { CodeQualityHeader } from './CodeQualityHeader';
+import { CheckCircle2, Filter } from 'lucide-react';
+import { useRepositories } from '../hooks/useRepositories';
 import { RepositoryRow } from './RepositoryRow';
 import { CodeQualityStats } from './CodeQualityStats';
-import { Footer } from './Footer';
+import { PageLayout } from './PageLayout';
 
 export function CodeQuality() {
-  const repositories = [
-    {
-      name: 'zulu-factory-core-v2',
-      type: 'Production / Go-lang',
-      coverage: 98.2,
-      grade: 'A+',
-      lastCommit: '4m ago',
-      author: 'ac-0x2',
-      icon: Network,
-      coverageColorClass: 'bg-electric-blue',
-      coverageShadowClass: 'shadow-[0_0_8px_rgba(0,242,255,0.4)]',
-      lintTrendHeights: ['h-[40%]', 'h-[30%]', 'h-[60%]', 'h-[20%]', 'h-[15%]', 'h-[10%]'],
-      lintTrendColors: ['bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-electric-blue opacity-100'],
-    },
-    {
-      name: 'gateway-proxy-handler',
-      type: 'Infrastructure / Rust',
-      coverage: 84.5,
-      grade: 'B',
-      lastCommit: '18m ago',
-      author: 'jd-0xf',
-      icon: Box,
-      coverageColorClass: 'bg-electric-blue/70',
-      lintTrendHeights: ['h-[80%]', 'h-[90%]', 'h-[70%]', 'h-[75%]', 'h-[60%]', 'h-[55%]'],
-      lintTrendColors: ['bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60'],
-    },
-    {
-      name: 'neural-weight-distributor',
-      type: 'AI Layer / Python',
-      coverage: 91.0,
-      grade: 'A',
-      lastCommit: '1h ago',
-      author: 'system-bot',
-      icon: Code2,
-      coverageColorClass: 'bg-electric-blue',
-      coverageShadowClass: 'shadow-[0_0_4px_rgba(0,242,255,0.2)]',
-      lintTrendHeights: ['h-[20%]', 'h-[25%]', 'h-[15%]', 'h-[10%]', 'h-[12%]', 'h-[8%]'],
-      lintTrendColors: ['bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-neon-purple opacity-60', 'bg-electric-blue opacity-100'],
-    },
-    {
-      name: 'vector-storage-adapter',
-      type: 'Persistence / C++',
-      coverage: 72.4,
-      grade: 'C+',
-      lastCommit: '3h ago',
-      author: 'unknown-0x',
-      icon: Database,
-      coverageColorClass: 'bg-zinc-600',
-      lintTrendHeights: ['h-[40%]', 'h-[50%]', 'h-[60%]', 'h-[65%]', 'h-[75%]', 'h-[90%]'],
-      lintTrendColors: ['bg-zinc-500', 'bg-zinc-500', 'bg-zinc-500', 'bg-zinc-500', 'bg-zinc-500', 'bg-neon-purple opacity-100'],
-    },
-  ];
+  const { repositories } = useRepositories();
+
+  const statusIndicator = (
+    <div className="flex items-center gap-2">
+      <div className="w-2 h-2 rounded-full bg-electric-blue shadow-[0_0_8px_#00F2FF]"></div>
+      <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">
+        Scanning Repositories...
+      </span>
+    </div>
+  );
+
+  const rightContent = (
+    <>
+      <div className="flex items-center gap-4 border-r border-border-muted pr-6">
+        <div className="flex flex-col items-end">
+          <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">
+            Global Health
+          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-mono font-bold text-white tracking-tighter">
+              94.2<span className="text-electric-blue">%</span>
+            </span>
+            <div
+              className="w-8 h-8 rounded-full p-[2px]"
+              style={{ background: 'conic-gradient(from 0deg, #00F2FF 94.2%, #111111 0%)' }}
+            >
+              <div className="w-full h-full rounded-full bg-dark-surface flex items-center justify-center">
+                <CheckCircle2 size={14} className="text-electric-blue" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="bg-electric-blue/20 hover:bg-electric-blue/30 text-electric-blue text-[10px] font-bold px-3 py-1.5 rounded border border-electric-blue/30 uppercase tracking-widest transition-all">
+          Manual Scan
+        </button>
+        <button className="p-2 rounded hover:bg-white/5 text-zinc-grey">
+          <Filter size={20} />
+        </button>
+      </div>
+    </>
+  );
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-obsidian text-white font-sans h-full w-full">
-      <CodeQualityHeader />
-      
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+    <PageLayout
+      titlePrimary="Code Quality"
+      titleSecondary="Repository Pulse"
+      statusIndicator={statusIndicator}
+      rightContent={rightContent}
+      transparentBackground={true}
+      footerZone="CLOUD-NATIVE-X86"
+      footerLoadOrCpu="Automated Linting: Enabled"
+      footerVersion="V2.4.1-Stable"
+      footerTransparentBackground={true}
+      contentClassName="flex-1 overflow-y-auto custom-scrollbar p-6"
+    >
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-white mb-1">Active Repositories</h3>
@@ -88,14 +87,6 @@ export function CodeQuality() {
         </div>
         
         <CodeQualityStats />
-      </div>
-      
-      <Footer 
-        zone="CLOUD-NATIVE-X86"
-        loadOrCpu="Automated Linting: Enabled"
-        version="V2.4.1-Stable"
-        transparentBackground={true}
-      />
-    </div>
+    </PageLayout>
   );
 }
