@@ -290,6 +290,10 @@ test('Implement the "Code Quality" UI component', async ({ page }) => {
   await expect(codeQualityLink).toBeVisible();
   await expect(codeQualityLink).toHaveClass(/border-l-2/); // Since it's active
 
+  // Verify the Footer component correctly renders and deduplicates Layout logic
+  await expect(page.locator('text=Zone: CLOUD-NATIVE-X86')).toBeVisible();
+  await expect(page.locator('text=Automated Linting: Enabled')).toBeVisible();
+
   // Take screenshot as required
   await page.screenshot({ path: 'evidence.png' });
 });
