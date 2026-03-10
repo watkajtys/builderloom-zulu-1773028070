@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { Network, Box, Code2, Database, LucideIcon } from 'lucide-react';
+import { pb } from '../services/pocketbase';
+import { ArchitectFinding } from '../types/architect';
 
 export interface RepositoryData {
   name: string;
@@ -14,7 +17,21 @@ export interface RepositoryData {
   lintTrendColors: string[];
 }
 
-export function useRepositories(): { repositories: RepositoryData[] } {
+export function useRepositories(): { repositories: RepositoryData[]; architectFindings: ArchitectFinding[] } {
+  const [architectFindings, setArchitectFindings] = useState<ArchitectFinding[]>([]);
+
+  useEffect(() => {
+    const fetchFindings = async () => {
+      try {
+        const records = await pb.collection('architect_findings').getFullList<ArchitectFinding>();
+        setArchitectFindings(records);
+      } catch (error) {
+        console.error("Failed to fetch architect findings:", error);
+      }
+    };
+    fetchFindings();
+  }, []);
+
   const repositories: RepositoryData[] = [
     {
       name: 'zulu-factory-core-v2',
@@ -68,5 +85,5 @@ export function useRepositories(): { repositories: RepositoryData[] } {
     },
   ];
 
-  return { repositories };
+  return { repositories, architectFindings };
 }

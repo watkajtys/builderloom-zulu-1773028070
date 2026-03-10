@@ -6,7 +6,7 @@ import { PageLayout } from './PageLayout';
 import { ViewTabs } from './ViewTabs';
 
 export function CodeQuality() {
-  const { repositories } = useRepositories();
+  const { repositories, architectFindings } = useRepositories();
 
   const statusIndicator = (
     <div className="flex items-center gap-2">
@@ -38,6 +38,9 @@ export function CodeQuality() {
                 <CheckCircle2 size={14} className="text-electric-blue" />
               </div>
             </div>
+          </div>
+          <div data-testid="architect-findings-count" className="text-[10px] text-zinc-grey mt-2 uppercase tracking-widest font-mono">
+            Architect Findings: {architectFindings?.length || 0}
           </div>
         </div>
       </div>

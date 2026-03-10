@@ -2455,6 +2455,31 @@ with open(sys.argv[1], 'rb') as f:
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('Define the data models and implement the API service/fetching logic for the Architect\'s static analysis findings.', async ({ page }) => {
+  await page.route('**/api/collections/architect_findings/records*', async route => {
+    const json = {
+      items: [
+        {
+          id: "mock1",
+          filepath: "src/App.tsx",
+          score: 9.0,
+          issues: [{tool: "eslint", type: "error", line: 1, symbol: "no-unused-vars", message: "unused"}],
+          static_violations: [{tool: "eslint", type: "error", line: 1, symbol: "no-unused-vars", message: "unused"}]
+        }
+      ]
+    };
+    await route.fulfill({ json });
+  });
+
+  await page.goto('/system-health?tab=code-quality');
+  
+  const findingsCount = page.locator('[data-testid="architect-findings-count"]');
+  await expect(findingsCount).toBeVisible();
+  await expect(findingsCount).toContainText('Architect Findings: 1');
+  
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('VisionAgent processes T-2, T-1, and Current screenshots, correctly identifying UI elements that were unintentionally deleted (resolving the Bulldozer Problem).', async ({ page }) => {
   const fs = await import('fs');
   const path = await import('path');
