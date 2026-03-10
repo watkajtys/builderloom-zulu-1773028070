@@ -2,10 +2,10 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Zulu OS: Health Split-View Monitoring</title>
+<title>Zulu OS: Repository Pulse Variant</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
@@ -36,23 +36,19 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full; }
-        .status-ring {
-            position: relative;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, var(--tw-color-cyber-cyan) 85%, transparent 0%);
+        .sparkline-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-end;
+            gap: 2px;
+            height: 20px;
         }
-        .status-ring::after {
-            content: '';
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: #161b22;
-            border-radius: 50%;
+        .spark-bar {
+            width: 3px;
+            background-color: theme('colors.synth-magenta');
+            opacity: 0.6;
+        }
+        .health-score-ring {
+            background: conic-gradient(from 0deg, #00f3ff 94.2%, #161b22 0%);
         }
     </style>
 </head>
@@ -76,23 +72,23 @@
 <span class="text-sm font-medium">Telemetry</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary transition-colors" href="#">
-<span class="material-symbols-outlined text-[20px] fill-[1]">monitor_heart</span>
-<span class="text-sm font-semibold">System Health</span>
+<span class="material-symbols-outlined text-[20px] fill-[1]">code_blocks</span>
+<span class="text-sm font-semibold">Code Quality</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 transition-colors" href="#">
 <span class="material-symbols-outlined text-[20px]">view_kanban</span>
 <span class="text-sm font-medium">Workflow</span>
 </a>
 <div class="pt-6 pb-2">
-<p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Infrastructure</p>
+<p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Development</p>
 </div>
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 transition-colors" href="#">
-<span class="material-symbols-outlined text-[20px]">memory</span>
-<span class="text-sm font-medium">Compute Clusters</span>
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+<span class="text-sm font-medium">CI/CD Pipelines</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 transition-colors" href="#">
-<span class="material-symbols-outlined text-[20px]">database</span>
-<span class="text-sm font-medium">Vector Storage</span>
+<span class="material-symbols-outlined text-[20px]">folder_managed</span>
+<span class="text-sm font-medium">Repository Sync</span>
 </a>
 </nav>
 <div class="p-4 border-t border-carbon-border">
@@ -100,7 +96,7 @@
 <img alt="User Profile" class="w-8 h-8 rounded-full border border-carbon-border" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAohT0ubD4Qde6VECGKoF3XCR65xEc7pUJdplqowaXAV7_DP2DpXs9nCl1JR2lovzUMyB55BYJAciQdGEClhBW9Zu-4HubkSiJA__VM4LvDmkqSEx36e1P02DjmEVYr7SD1XypUxgSdKoE5IAv5YsCaiuNMupYrzf9GQHtfjyeluhXXfk6XCt8IHqDwBsvvqcbaNoAuK-NVaRgKyRLH32gj9jmpcc-BaPRnZ6DTa8Ob3nWlJREX6XDatQ8WZh7Cd93QwoJrvw8zqUh3"/>
 <div class="flex-1 min-w-0">
 <p class="text-xs font-semibold truncate">Alex Chen</p>
-<p class="text-[10px] text-slate-500 truncate uppercase">Admin Access</p>
+<p class="text-[10px] text-slate-500 truncate uppercase">Lead Engineer</p>
 </div>
 <span class="material-symbols-outlined text-slate-500 text-sm">unfold_more</span>
 </div>
@@ -109,247 +105,224 @@
 <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-[#0d1117]">
 <header class="h-14 border-b border-carbon-border bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-20">
 <div class="flex items-center gap-6">
-<h2 class="text-xs font-bold text-slate-500 uppercase tracking-[0.2em]">System Health / <span class="text-white">Split-View Monitoring</span></h2>
+<h2 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Code Quality / <span class="text-white">Repository Pulse</span></h2>
 <div class="h-4 w-px bg-carbon-border"></div>
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2">
-<div class="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse shadow-[0_0_8px_#00f3ff]"></div>
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time Pulse Active</span>
+<div class="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_#00f3ff]"></div>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Scanning Repositories...</span>
 </div>
 </div>
 </div>
-<div class="flex items-center gap-4">
-<div class="flex items-center gap-3 px-3 py-1.5 rounded bg-carbon-surface border border-carbon-border">
-<span class="text-[10px] font-bold text-slate-500 uppercase">Refresh rate:</span>
-<span class="font-mono text-[11px] text-cyber-cyan">500ms</span>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 border-r border-carbon-border pr-6">
+<div class="flex flex-col items-end">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Health</span>
+<div class="flex items-center gap-2">
+<span class="text-xl font-mono font-bold text-white tracking-tighter">94.2<span class="text-cyber-cyan">%</span></span>
+<div class="w-8 h-8 rounded-full health-score-ring p-[2px]">
+<div class="w-full h-full rounded-full bg-carbon-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-cyber-cyan">verified</span>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="bg-primary/20 hover:bg-primary/30 text-primary text-[10px] font-bold px-3 py-1.5 rounded border border-primary/30 uppercase tracking-widest transition-all">Manual Scan</button>
 <button class="p-2 rounded hover:bg-white/5 text-slate-500">
-<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
 </button>
 </div>
+</div>
 </header>
-<div class="flex-1 flex overflow-hidden">
-<div class="w-[40%] border-r border-carbon-border flex flex-col overflow-y-auto custom-scrollbar p-6 space-y-4 bg-background-dark/40">
-<div class="flex items-center justify-between mb-2">
-<h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Infrastructure Stack</h3>
-<span class="text-[10px] font-mono text-cyber-cyan bg-cyber-cyan/10 px-2 py-0.5 rounded">3 ACTIVE</span>
-</div>
-<div class="p-5 bg-carbon-surface border border-carbon-border rounded-lg hover:border-slate-600 transition-colors group">
-<div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3">
-<div class="status-ring">
-<span class="material-symbols-outlined text-cyber-cyan z-10 text-lg">memory</span>
-</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+<div class="mb-6 flex items-center justify-between">
 <div>
-<h4 class="text-sm font-bold text-white tracking-tight">Compute Clusters</h4>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">NV-A100 Series</p>
+<h3 class="text-sm font-bold text-white mb-1">Active Repositories</h3>
+<p class="text-[10px] text-slate-500 uppercase tracking-widest">Tracking 14 production modules across 3 regions</p>
+</div>
+<div class="flex gap-2">
+<span class="px-2 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-mono text-slate-400 rounded">SORT: COVERAGE DESC</span>
 </div>
 </div>
-<div class="text-right">
-<span class="font-mono text-lg font-bold text-cyber-cyan">85%</span>
-<p class="text-[9px] text-slate-500 uppercase font-bold">utilization</p>
+<div class="grid grid-cols-1 gap-2">
+<div class="grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-carbon-border mb-2">
+<div class="col-span-4">Module Name</div>
+<div class="col-span-3">Test Coverage</div>
+<div class="col-span-2 text-center">Lint Trend</div>
+<div class="col-span-1 text-right">Complexity</div>
+<div class="col-span-2 text-right">Last Commit</div>
 </div>
-</div>
-<div class="space-y-3">
-<div class="flex items-center gap-2">
-<div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-<div class="w-[85%] h-full bg-cyber-cyan shadow-[0_0_8px_#00f3ff]"></div>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div class="bg-black/20 p-2 rounded">
-<p class="text-[9px] text-slate-500 uppercase font-bold">Node Count</p>
-<p class="font-mono text-xs text-white">128 Total</p>
-</div>
-<div class="bg-black/20 p-2 rounded">
-<p class="text-[9px] text-slate-500 uppercase font-bold">Avg Temp</p>
-<p class="font-mono text-xs text-white">42Â°C</p>
-</div>
-</div>
-</div>
-</div>
-<div class="p-5 bg-carbon-surface border border-carbon-border rounded-lg hover:border-slate-600 transition-colors">
-<div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3">
-<div class="status-ring" style="background: conic-gradient(from 0deg, var(--tw-color-cyber-cyan) 62%, transparent 0%);">
-<span class="material-symbols-outlined text-cyber-cyan z-10 text-lg">database</span>
-</div>
+<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center group">
+<div class="col-span-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500 group-hover:text-cyber-cyan transition-colors">hub</span>
 <div>
-<h4 class="text-sm font-bold text-white tracking-tight">Vector Storage</h4>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Distributed NVMe</p>
+<p class="text-xs font-bold text-white font-mono">zulu-factory-core-v2</p>
+<p class="text-[9px] text-slate-500 uppercase">Production / Go-lang</p>
 </div>
 </div>
-<div class="text-right">
-<span class="font-mono text-lg font-bold text-cyber-cyan">62%</span>
-<p class="text-[9px] text-slate-500 uppercase font-bold">capacity</p>
+<div class="col-span-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
+<div class="w-[98%] h-full bg-cyber-cyan shadow-[0_0_8px_rgba(0,243,255,0.4)]"></div>
+</div>
+<span class="text-[11px] font-mono font-bold text-cyber-cyan">98.2%</span>
+</div>
+<div class="col-span-2 flex justify-center">
+<div class="sparkline-container">
+<div class="spark-bar h-[40%]"></div>
+<div class="spark-bar h-[30%]"></div>
+<div class="spark-bar h-[60%]"></div>
+<div class="spark-bar h-[20%]"></div>
+<div class="spark-bar h-[15%]"></div>
+<div class="spark-bar h-[10%] bg-cyber-cyan opacity-100"></div>
 </div>
 </div>
-<div class="space-y-3">
-<div class="flex items-center gap-2">
-<div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-<div class="w-[62%] h-full bg-cyber-cyan/60"></div>
+<div class="col-span-1 text-right">
+<span class="text-[11px] font-mono text-slate-300">A+</span>
+</div>
+<div class="col-span-2 text-right">
+<p class="text-[10px] font-mono text-slate-400">4m ago</p>
+<p class="text-[9px] text-slate-600 uppercase">by ac-0x2</p>
 </div>
 </div>
-<div class="grid grid-cols-2 gap-4">
-<div class="bg-black/20 p-2 rounded">
-<p class="text-[9px] text-slate-500 uppercase font-bold">Latency</p>
-<p class="font-mono text-xs text-white">0.8ms</p>
-</div>
-<div class="bg-black/20 p-2 rounded">
-<p class="text-[9px] text-slate-500 uppercase font-bold">IOPS</p>
-<p class="font-mono text-xs text-white">1.2M</p>
-</div>
-</div>
-</div>
-</div>
-<div class="p-5 bg-carbon-surface border border-carbon-border rounded-lg hover:border-slate-600 transition-colors">
-<div class="flex items-center justify-between mb-4">
-<div class="flex items-center gap-3">
-<div class="status-ring" style="background: conic-gradient(from 0deg, var(--tw-color-cyber-cyan) 94%, transparent 0%);">
-<span class="material-symbols-outlined text-cyber-cyan z-10 text-lg">lan</span>
-</div>
+<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center">
+<div class="col-span-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500">api</span>
 <div>
-<h4 class="text-sm font-bold text-white tracking-tight">API Gateway</h4>
-<p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">High Availability</p>
+<p class="text-xs font-bold text-white font-mono">gateway-proxy-handler</p>
+<p class="text-[9px] text-slate-500 uppercase">Infrastructure / Rust</p>
 </div>
 </div>
-<div class="text-right">
-<span class="font-mono text-lg font-bold text-cyber-cyan">94%</span>
-<p class="text-[9px] text-slate-500 uppercase font-bold">uptime</p>
+<div class="col-span-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
+<div class="w-[84%] h-full bg-cyber-cyan/70"></div>
+</div>
+<span class="text-[11px] font-mono font-bold text-slate-300">84.5%</span>
+</div>
+<div class="col-span-2 flex justify-center">
+<div class="sparkline-container">
+<div class="spark-bar h-[80%]"></div>
+<div class="spark-bar h-[90%]"></div>
+<div class="spark-bar h-[70%]"></div>
+<div class="spark-bar h-[75%]"></div>
+<div class="spark-bar h-[60%]"></div>
+<div class="spark-bar h-[55%]"></div>
 </div>
 </div>
-<div class="space-y-3">
-<div class="flex items-center gap-2">
-<div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-<div class="w-[94%] h-full bg-cyber-cyan shadow-[0_0_4px_#00f3ff]"></div>
+<div class="col-span-1 text-right">
+<span class="text-[11px] font-mono text-slate-300">B</span>
+</div>
+<div class="col-span-2 text-right">
+<p class="text-[10px] font-mono text-slate-400">18m ago</p>
+<p class="text-[9px] text-slate-600 uppercase">by jd-0xf</p>
 </div>
 </div>
-<div class="grid grid-cols-2 gap-4">
-<div class="bg-black/20 p-2 rounded">
-<p class="text-[9px] text-slate-500 uppercase font-bold">Throughput</p>
-<p class="font-mono text-xs text-white">45k req/s</p>
-</div>
-<div class="bg-black/20 p-2 rounded">
-<p class="text-[9px] text-slate-500 uppercase font-bold">Active Conn</p>
-<p class="font-mono text-xs text-white">8.4k</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="w-[60%] flex flex-col p-6 space-y-6">
-<div class="flex items-center justify-between">
+<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center">
+<div class="col-span-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500">model_training</span>
 <div>
-<h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Hardware Pulse</h3>
-<p class="text-[10px] text-slate-500 font-mono mt-1">STREAMING://hard-pulse-node-01.local</p>
-</div>
-<div class="flex gap-4">
-<div class="flex items-center gap-1.5">
-<div class="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_#00f3ff]"></div>
-<span class="text-[9px] font-bold text-slate-400 uppercase">Input Buffer</span>
-</div>
-<div class="flex items-center gap-1.5">
-<div class="w-2 h-2 rounded-full bg-synth-magenta shadow-[0_0_8px_#ff00ff]"></div>
-<span class="text-[9px] font-bold text-slate-400 uppercase">Process Load</span>
+<p class="text-xs font-bold text-white font-mono">neural-weight-distributor</p>
+<p class="text-[9px] text-slate-500 uppercase">AI Layer / Python</p>
 </div>
 </div>
+<div class="col-span-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
+<div class="w-[91%] h-full bg-cyber-cyan shadow-[0_0_4px_rgba(0,243,255,0.2)]"></div>
 </div>
-<div class="flex-1 bg-carbon-surface border border-carbon-border rounded-xl p-6 relative overflow-hidden flex flex-col">
-<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 40px 40px;"></div>
-<div class="flex-1 relative flex items-end justify-between gap-px mb-4">
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/30 h-[40%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[20%] rounded-sm"></div>
+<span class="text-[11px] font-mono font-bold text-cyber-cyan">91.0%</span>
 </div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/30 h-[45%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[25%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/40 h-[38%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[22%] rounded-sm shadow-[0_0_10px_#00f3ff44]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/50 h-[55%] rounded-sm shadow-[0_0_10px_#ff00ff22]"></div>
-<div class="w-full bg-cyber-cyan h-[30%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/40 h-[65%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[45%] rounded-sm shadow-[0_0_10px_#00f3ff33]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/60 h-[80%] rounded-sm shadow-[0_0_15px_#ff00ff44]"></div>
-<div class="w-full bg-cyber-cyan h-[60%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta h-[92%] rounded-sm shadow-[0_0_20px_#ff00ff66]"></div>
-<div class="w-full bg-cyber-cyan h-[75%] rounded-sm shadow-[0_0_20px_#00f3ff55]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/70 h-[85%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[65%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/50 h-[60%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[40%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/40 h-[50%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[35%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/30 h-[42%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[28%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/20 h-[35%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[22%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/30 h-[48%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[30%] rounded-sm"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/40 h-[55%] rounded-sm shadow-[0_0_10px_#ff00ff22]"></div>
-<div class="w-full bg-cyber-cyan h-[38%] rounded-sm shadow-[0_0_10px_#00f3ff22]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/60 h-[75%] rounded-sm shadow-[0_0_15px_#ff00ff33]"></div>
-<div class="w-full bg-cyber-cyan h-[50%] rounded-sm shadow-[0_0_15px_#00f3ff33]"></div>
-</div>
-<div class="flex-1 flex flex-col justify-end gap-[2px]">
-<div class="w-full bg-synth-magenta/50 h-[65%] rounded-sm"></div>
-<div class="w-full bg-cyber-cyan h-[45%] rounded-sm"></div>
+<div class="col-span-2 flex justify-center">
+<div class="sparkline-container">
+<div class="spark-bar h-[20%]"></div>
+<div class="spark-bar h-[25%]"></div>
+<div class="spark-bar h-[15%]"></div>
+<div class="spark-bar h-[10%]"></div>
+<div class="spark-bar h-[12%]"></div>
+<div class="spark-bar h-[8%] bg-cyber-cyan opacity-100"></div>
 </div>
 </div>
-<div class="flex justify-between font-mono text-[9px] text-slate-500 uppercase">
-<span>T-300ms</span>
-<span>T-200ms</span>
-<span>T-100ms</span>
-<span class="text-cyber-cyan font-bold">Now</span>
+<div class="col-span-1 text-right">
+<span class="text-[11px] font-mono text-slate-300">A</span>
+</div>
+<div class="col-span-2 text-right">
+<p class="text-[10px] font-mono text-slate-400">1h ago</p>
+<p class="text-[9px] text-slate-600 uppercase">by system-bot</p>
 </div>
 </div>
-<div class="grid grid-cols-3 gap-6">
-<div class="bg-carbon-surface border border-carbon-border p-4 rounded-lg">
-<p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Compute Volatility</p>
+<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center">
+<div class="col-span-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-500">database</span>
+<div>
+<p class="text-xs font-bold text-white font-mono">vector-storage-adapter</p>
+<p class="text-[9px] text-slate-500 uppercase">Persistence / C++</p>
+</div>
+</div>
+<div class="col-span-3 flex items-center gap-3">
+<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
+<div class="w-[72%] h-full bg-slate-600"></div>
+</div>
+<span class="text-[11px] font-mono font-bold text-slate-500">72.4%</span>
+</div>
+<div class="col-span-2 flex justify-center">
+<div class="sparkline-container">
+<div class="spark-bar h-[40%] bg-slate-500"></div>
+<div class="spark-bar h-[50%] bg-slate-500"></div>
+<div class="spark-bar h-[60%] bg-slate-500"></div>
+<div class="spark-bar h-[65%] bg-slate-500"></div>
+<div class="spark-bar h-[75%] bg-slate-500"></div>
+<div class="spark-bar h-[90%] bg-synth-magenta opacity-100"></div>
+</div>
+</div>
+<div class="col-span-1 text-right">
+<span class="text-[11px] font-mono text-slate-500">C+</span>
+</div>
+<div class="col-span-2 text-right">
+<p class="text-[10px] font-mono text-slate-400">3h ago</p>
+<p class="text-[9px] text-slate-600 uppercase">by unknown-0x</p>
+</div>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-3 gap-6">
+<div class="bg-carbon-surface/40 border border-carbon-border p-5 rounded-lg">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-cyber-cyan text-sm">history_toggle_off</span>
+<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Build Velocity</h4>
+</div>
 <div class="flex items-baseline gap-2">
-<span class="font-mono text-xl font-bold text-synth-magenta">Â±0.42%</span>
-<span class="material-symbols-outlined text-xs text-synth-magenta">trending_up</span>
+<span class="text-2xl font-mono font-bold text-white">4.2</span>
+<span class="text-[10px] text-slate-500 uppercase font-bold">commits/day/dev</span>
+</div>
+<div class="mt-4 flex gap-1 items-end h-8">
+<div class="w-full bg-white/5 h-[40%]"></div>
+<div class="w-full bg-white/5 h-[60%]"></div>
+<div class="w-full bg-white/5 h-[55%]"></div>
+<div class="w-full bg-white/5 h-[80%]"></div>
+<div class="w-full bg-primary/40 h-[90%]"></div>
 </div>
 </div>
-<div class="bg-carbon-surface border border-carbon-border p-4 rounded-lg">
-<p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Signal Integrity</p>
+<div class="bg-carbon-surface/40 border border-carbon-border p-5 rounded-lg">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-synth-magenta text-sm">warning</span>
+<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Vulnerabilities</h4>
+</div>
 <div class="flex items-baseline gap-2">
-<span class="font-mono text-xl font-bold text-cyber-cyan">99.98%</span>
-<span class="material-symbols-outlined text-xs text-cyber-cyan">verified</span>
+<span class="text-2xl font-mono font-bold text-white">0</span>
+<span class="text-[10px] text-cyber-cyan uppercase font-bold">Critical</span>
 </div>
+<p class="mt-2 text-[10px] text-slate-500 uppercase">3 low-level dependencies outdated</p>
 </div>
-<div class="bg-carbon-surface border border-carbon-border p-4 rounded-lg">
-<p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Queue Depth</p>
+<div class="bg-carbon-surface/40 border border-carbon-border p-5 rounded-lg">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-sm">checklist</span>
+<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pull Request Cycle</h4>
+</div>
 <div class="flex items-baseline gap-2">
-<span class="font-mono text-xl font-bold text-white">12ms</span>
-<span class="text-[10px] text-slate-500 uppercase">optimal</span>
+<span class="text-2xl font-mono font-bold text-white">2.4h</span>
+<span class="text-[10px] text-slate-500 uppercase font-bold">avg review</span>
 </div>
+<div class="mt-4 w-full h-1 bg-black/40 rounded-full overflow-hidden">
+<div class="w-[85%] h-full bg-primary"></div>
 </div>
 </div>
 </div>
@@ -357,12 +330,12 @@
 <footer class="h-10 border-t border-carbon-border bg-background-dark/80 flex items-center justify-between px-6 flex-shrink-0 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
 <div class="flex items-center gap-6">
 <div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">database</span>
-<span>Zone: US-EAST-1-PROD</span>
+<span class="material-symbols-outlined text-sm">terminal</span>
+<span>Runtime: CLOUD-NATIVE-X86</span>
 </div>
 <div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-sm">memory</span>
-<span>System Load: Stable</span>
+<span class="material-symbols-outlined text-sm">bug_report</span>
+<span>Automated Linting: Enabled</span>
 </div>
 </div>
 <div class="flex items-center gap-4">
