@@ -7,10 +7,15 @@ from loom.agents.base import AgentProxy
 
 logger = logging.getLogger("loom")
 
-class JulesClient(AgentProxy):
+from backend.agents.core.base_agent import BaseAgent
+from backend.agents.core.io_models import AgentRequest, AgentResponse
+
+class JulesAgent(BaseAgent, AgentProxy):
     BASE_URL = "https://jules.googleapis.com/v1alpha"
 
-    def __init__(self):
+    def __init__(self, node_id: str = None):
+        super().__init__(node_id=node_id)
+
         self.api_key = os.getenv("JULES_API_KEY")
         if not self.api_key:
             logger.warning("JULES_API_KEY missing. Jules tasks will fail.")
@@ -218,3 +223,37 @@ class JulesClient(AgentProxy):
             raise
         
         return "Code Implemented via Jules Patch"
+
+    def execute(self, request: AgentRequest) -> AgentResponse:
+        """
+        Executes the Jules API task to generate a patch.
+        Matches the BaseAgent interface.
+        """
+        try:
+            self._emit_json_log("INFO", "Starting JulesAgent execution", metadata=request.metadata)
+            
+            prompt = request.data.get("prompt")
+            repo_owner = request.data.get("repo_owner")
+            repo_name = request.data.get("repo_name")
+            branch = request.data.get("branch")
+            resume_session_name = request.data.get("resume_session_name")
+            
+            if not prompt or not repo_owner or not repo_name or not branch:
+                error_msg = "Missing required fields for Jules execution"
+                self._emit_json_log("ERROR", error_msg, metadata=request.metadata)
+                return AgentResponse(status="failure", data={}, errors=[error_msg], metadata=request.metadata)
+
+            result_msg = self.run_task(
+                prompt=prompt,
+                repo_owner=repo_owner,
+                repo_name=repo_name,
+                branch=branch,
+                resume_session_name=resume_session_name
+            )
+
+            self._emit_json_log("INFO", f"JulesAgent execution successful: {result_msg}", metadata=request.metadata)
+            return AgentResponse(status="success", data={"result": result_msg}, metadata=request.metadata)
+
+        except Exception as e:
+            self._emit_json_log("ERROR", f"JulesAgent execution failed: {str(e)}", metadata=request.metadata)
+            return AgentResponse(status="failure", data={}, errors=[str(e)], metadata=request.metadata)
