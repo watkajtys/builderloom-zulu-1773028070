@@ -1747,3 +1747,90 @@ console.log(x, y, z);
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Define the base sub-agent interface and implement routing logic in the monolithic agent', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = 'backend/agents/test_dynamic_router_e2e.py';
+  
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'import dataclasses',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.router import RouterAgent',
+    'from backend.agents.core.base_agent import BaseAgent',
+    'from backend.agents.core.io_models import AgentRequest, AgentResponse',
+    '',
+    'class MockAgent(BaseAgent):',
+    '    def execute(self, request: AgentRequest) -> AgentResponse:',
+    '        return AgentResponse(',
+    '            status="success",',
+    '            data={"mock_executed": True, "received_data": request.data},',
+    '            metadata=request.metadata',
+    '        )',
+    '',
+    'def main():',
+    '    agent = RouterAgent(node_id="ROUTER-TEST-NODE")',
+    '    mock_agent = MockAgent(node_id="MOCK-AGENT-NODE")',
+    '    ',
+    '    # Dynamically register the custom agent',
+    '    agent.register_agent("custom_task", mock_agent)',
+    '    ',
+    '    req_custom = AgentRequest(',
+    '        task_id="task-custom",',
+    '        data={',
+    '            "task_type": "custom_task",',
+    '            "payload": "hello world"',
+    '        }',
+    '    )',
+    '    resp_custom = agent.execute(req_custom)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps({',
+    '        "custom": dataclasses.asdict(resp_custom)',
+    '    }))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  // Verify custom
+  expect(resultJson.custom.status).toBe('success');
+  expect(resultJson.custom.data.mock_executed).toBe(true);
+  expect(resultJson.custom.data.received_data.payload).toBe('hello world');
+
+  // Take screenshot of empty app (tests shouldn't fail based on visual rules)
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});

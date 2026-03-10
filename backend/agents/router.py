@@ -11,13 +11,20 @@ logger = logging.getLogger("loom")
 class RouterAgent(BaseAgent):
     """
     RouterAgent dispatches tasks to the appropriate sub-agents based on the task_type.
+    Uses Schema-Validated Intent Routing to dispatch tasks to dynamically registered sub-agents.
     """
     def __init__(self, node_id: str = None):
         super().__init__(node_id=node_id)
-        # We can instantiate sub-agents lazily or upfront. For simplicity, we can do it lazily
-        # or just instantiate them here.
-        self.vision_agent = VisionAgent(node_id=f"{self.node_id}-VISION")
-        self.architect_agent = ArchitectAgent(node_id=f"{self.node_id}-ARCHITECT")
+        # Registry for decoupled capability registration
+        self._registry: Dict[str, BaseAgent] = {}
+        
+        # Pre-register default agents
+        self.register_agent("vision", VisionAgent(node_id=f"{self.node_id}-VISION"))
+        self.register_agent("architect", ArchitectAgent(node_id=f"{self.node_id}-ARCHITECT"))
+
+    def register_agent(self, task_type: str, agent: BaseAgent):
+        """Registers a sub-agent to handle a specific task_type."""
+        self._registry[task_type] = agent
 
     def execute(self, request: AgentRequest) -> AgentResponse:
         task_type = request.data.get("task_type")
@@ -34,10 +41,9 @@ class RouterAgent(BaseAgent):
                 metadata=request.metadata
             )
 
-        if task_type == "vision":
-            return self.vision_agent.execute(request)
-        elif task_type == "architect":
-            return self.architect_agent.execute(request)
+        target_agent = self._registry.get(task_type)
+        if target_agent:
+            return target_agent.execute(request)
         else:
             error_msg = f"Unknown task_type '{task_type}'."
             self._emit_json_log("ERROR", error_msg, metadata=request.metadata)
