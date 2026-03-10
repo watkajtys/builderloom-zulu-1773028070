@@ -268,6 +268,10 @@ if __name__ == "__main__":
     if not git_doctor() or not db_doctor(pb_host) or not doctor():
         import sys
         sys.exit(1)
+
+    # Initialize core state collections in PocketBase
+    from backend.init_db import init_core_collections
+    init_core_collections()
     
     # Seed the state if arguments provided
     if args.name or args.goal or args.data_model:

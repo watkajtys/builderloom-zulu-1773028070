@@ -3058,3 +3058,64 @@ test('The Overseer successfully routes a task, executes the Frontend Agent, vali
   // Take screenshot evidence
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('PocketBase API successfully returns the newly created conductor_state and repo_memory collections, accepting a test record insertion via standard REST requests.', async ({ page, request }) => {
+  // Use http://loom-pocketbase:8090 because tests run inside a Docker network
+  const pbUrl = 'http://loom-pocketbase:8090';
+
+  // 1. Insert a test record into conductor_state to verify structure/permissions
+  const testStateRecord = {
+    active_phase: "Test Phase",
+    status: "Testing",
+    current_task_id: "test-task-123",
+    iteration: 1
+  };
+  
+  const insertConductorRes = await request.post(`${pbUrl}/api/collections/conductor_state/records`, {
+    data: testStateRecord
+  });
+  expect(insertConductorRes.status()).toBe(200);
+  const insertedConductorData = await insertConductorRes.json();
+  expect(insertedConductorData.active_phase).toBe("Test Phase");
+  expect(insertedConductorData.id).toBeDefined();
+
+  // 2. Insert a test record into repo_memory to verify structure/permissions
+  const testRepoRecord = {
+    type: "Test Type",
+    content: { key: "value" },
+    is_compressed: false
+  };
+  
+  const insertRepoRes = await request.post(`${pbUrl}/api/collections/repo_memory/records`, {
+    data: testRepoRecord
+  });
+  expect(insertRepoRes.status()).toBe(200);
+  const insertedRepoData = await insertRepoRes.json();
+  expect(insertedRepoData.type).toBe("Test Type");
+  expect(insertedRepoData.id).toBeDefined();
+
+  // 3. Render a visual confirmation for the evidence screenshot
+  await page.setContent(`
+    <html>
+      <head>
+        <style>
+          body { font-family: "Geist Sans", sans-serif; background: #050505; color: #71717a; padding: 2rem; }
+          .log { font-family: "Geist Mono", monospace; color: #00F2FF; margin-bottom: 0.5rem; }
+          .success { color: #BC13FE; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <h2>Data Model Persistence Verification</h2>
+        <div class="log">[INFO] Attempting to insert test record into 'conductor_state'...</div>
+        <div class="log success">[OK] Record successfully inserted with ID: ${insertedConductorData.id}</div>
+        <div class="log">[INFO] Attempting to insert test record into 'repo_memory'...</div>
+        <div class="log success">[OK] Record successfully inserted with ID: ${insertedRepoData.id}</div>
+      </body>
+    </html>
+  `);
+  
+  await page.waitForTimeout(500);
+
+  // 4. Capture screenshot
+  await page.screenshot({ path: 'evidence.png' });
+});
