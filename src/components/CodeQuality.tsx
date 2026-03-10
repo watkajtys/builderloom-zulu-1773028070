@@ -1,13 +1,12 @@
-import { CheckCircle2, Filter, Activity, Code2 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { CheckCircle2, Filter } from 'lucide-react';
 import { useRepositories } from '../hooks/useRepositories';
 import { RepositoryRow } from './RepositoryRow';
 import { CodeQualityStats } from './CodeQualityStats';
 import { PageLayout } from './PageLayout';
+import { ViewTabs } from './ViewTabs';
 
 export function CodeQuality() {
   const { repositories } = useRepositories();
-  const [, setSearchParams] = useSearchParams();
 
   const statusIndicator = (
     <div className="flex items-center gap-2">
@@ -18,31 +17,7 @@ export function CodeQuality() {
     </div>
   );
 
-  const leftContent = (
-    <div className="flex items-center gap-6">
-      <h2 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex-shrink-0">Repository Pulse</h2>
-      <div className="flex p-1 bg-black/40 rounded-lg border border-border-muted">
-        <button
-          onClick={() => {
-            setSearchParams(params => { params.delete('tab'); return params; });
-          }}
-          className="flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all relative text-slate-500 hover:text-slate-300"
-          data-testid="tab-system-health"
-        >
-          <Activity size={14} />
-          System Health
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-neon-purple rounded-full border-2 border-obsidian animate-pulse shadow-[0_0_8px_#BC13FE]"></span>
-        </button>
-        <button
-          className="flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all relative bg-dark-surface text-white shadow-sm border border-border-muted"
-          data-testid="tab-code-quality"
-        >
-          <Code2 size={14} />
-          Code Quality
-        </button>
-      </div>
-    </div>
-  );
+  const leftContent = <ViewTabs activeTab="code-quality" title="Repository Pulse" />;
 
   const rightContent = (
     <>
