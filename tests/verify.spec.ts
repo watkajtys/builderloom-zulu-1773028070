@@ -2849,3 +2849,88 @@ test('Create a specialized Backend Sub-Agent with a strictly scoped system promp
   // Skip goto since we might not have a running frontend locally to hit
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Provide a script with an unused import violation; the Refactor Sub-Agent outputs the exact code change to remove it.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = 'backend/agents/test_refactor_agent_e2e.py';
+  
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'import dataclasses',
+    'from unittest.mock import MagicMock',
+    'import warnings',
+    '',
+    'with warnings.catch_warnings():',
+    '    warnings.simplefilter("ignore")',
+    '    import google.generativeai as genai',
+    '',
+    '# Mock the genai model to simulate returning fixed code (without unused import)',
+    'def mock_generate_content(prompt, **kwargs):',
+    '    response = MagicMock()',
+    '    response.text = "def my_func():\\n    print(\\"Hello World\\")"',
+    '    return response',
+    '',
+    'mock_model = MagicMock()',
+    'mock_model.generate_content.side_effect = mock_generate_content',
+    'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.refactor_agent import RefactorAgent',
+    'from backend.agents.core.io_models import AgentRequest',
+    '',
+    'def main():',
+    '    agent = RefactorAgent(node_id="TEST-REFACTOR-AGENT")',
+    '    ',
+    '    code_with_violation = "import sys\\n\\ndef my_func():\\n    print(\\"Hello World\\")"',
+    '    issues = [{"tool": "pylint", "type": "warning", "message": "Unused import sys"}]',
+    '    ',
+    '    req = AgentRequest(',
+    '        task_id="task-1",',
+    '        data={"task_type": "refactor", "code": code_with_violation, "issues": issues}',
+    '    )',
+    '    resp = agent.execute(req)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps(dataclasses.asdict(resp)))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const resultJson = JSON.parse(resultStr);
+
+  expect(resultJson.status).toBe('success');
+  // Confirm the resulting code doesn't have the `import sys` line.
+  expect(resultJson.data.result).not.toContain('import sys');
+  expect(resultJson.data.result).toContain('def my_func():');
+
+  // Take the screenshot required by verification rules
+  await page.screenshot({ path: 'evidence.png' });
+});
