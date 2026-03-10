@@ -5,15 +5,18 @@ import google.generativeai as genai
 from google.api_core import exceptions
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from loom.agents.base import AgentProxy
+from backend.agents.core.base_agent import BaseAgent
+from backend.agents.core.io_models import AgentRequest, AgentResponse
 
 logger = logging.getLogger("loom")
 
-class MockJulesClient(AgentProxy):
+class MockJulesClient(BaseAgent, AgentProxy):
     """
     Simulates the Jules Agent using Gemini Pro.
     Reads the Stitch HTML and the App File Structure, then generates React Code directly.
     """
-    def __init__(self):
+    def __init__(self, node_id: str = None):
+        super().__init__(node_id=node_id)
         self.api_key = os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             logger.warning("GEMINI_API_KEY missing for MockJules. Code generation will fail.")
@@ -40,7 +43,13 @@ class MockJulesClient(AgentProxy):
             logger.warning(f"Mock Jules Gemini call failed (attempting retry): {e}")
             raise e
 
-    def run_task(self, prompt: str, repo_owner: str = None, repo_name: str = None, branch: str = None, activity_callback=None) -> str:
+    def execute(self, request: AgentRequest) -> AgentResponse:
+        prompt = request.data.get("prompt")
+        
+        activity_callback = None
+        if request.context:
+            activity_callback = request.context.get("activity_callback")
+
         logger.info(f"Tasking Mock Jules (Gemini): {prompt}")
         
         if activity_callback:
@@ -116,8 +125,21 @@ Example:
                 with open(fpath, "w", encoding="utf-8") as f:
                     f.write(content)
             
-            return "Code Implemented via Mock Jules"
+            self._log("INFO", "Code Implemented via Mock Jules", extra_data={"metadata": request.metadata})
+            return AgentResponse(
+                status="success",
+                data={"result": "Code Implemented via Mock Jules"},
+                metadata=request.metadata
+            )
             
         except Exception as e:
-            logger.error(f"Mock Jules Coding Failed: {e}")
-            raise
+            error_msg = f"Mock Jules Coding Failed: {e}"
+            logger.error(error_msg)
+            self._log("ERROR", error_msg, extra_data={"metadata": request.metadata})
+            return AgentResponse(
+                status="failure",
+                data={},
+                errors=[error_msg],
+                metadata=request.metadata
+            )
+
