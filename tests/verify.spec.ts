@@ -27,7 +27,7 @@ test('Fix broken icon rendering showing raw text strings across the UI', async (
   await expect(sidebar).toBeVisible();
   
   // Checking that svgs exist within the sidebar links
-  const systemHealthLink = sidebar.locator('a[href="/health"]');
+  const systemHealthLink = sidebar.locator('a[href*="/health"]').first();
   await expect(systemHealthLink.locator('svg')).toBeVisible();
 
   await page.screenshot({ path: 'evidence.png' });
