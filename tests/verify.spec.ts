@@ -1615,3 +1615,135 @@ print(json.dumps(dataclasses.asdict(res)))
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Implement the Orchestrator/Router component to dispatch tasks to appropriate sub-agents', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = 'backend/agents/test_router_agent_e2e.py';
+  const badFilePath = 'backend/agents/bad_react_file_router_test.tsx';
+  
+  const moreSpecificBadContent = `
+var x = 1;
+var y = 2;
+var z = 3;
+eval("alert('hello')");
+const unusedVar = "I am unused";
+console.log(x, y, z);
+  `;
+  
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'from unittest.mock import MagicMock',
+    'import warnings',
+    '',
+    'with warnings.catch_warnings():',
+    '    warnings.simplefilter("ignore")',
+    '    import google.generativeai as genai',
+    '',
+    '# Mock the genai model for vision',
+    'mock_model = MagicMock()',
+    'mock_response = MagicMock()',
+    'mock_response.text = """{"regression_detected": true, "reason": "Button was deleted in the final frame."}"""',
+    'mock_model.generate_content.return_value = mock_response',
+    'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.router import RouterAgent',
+    'from backend.agents.core.io_models import AgentRequest',
+    'import dataclasses',
+    '',
+    'def main():',
+    '    agent = RouterAgent(node_id="ROUTER-TEST-NODE")',
+    '    ',
+    '    # Test Architect Task',
+    '    req_architect = AgentRequest(',
+    '        task_id="task-architect",',
+    '        data={',
+    '            "task_type": "architect",',
+    '            "filepath": "backend/agents/bad_react_file_router_test.tsx",',
+    '            "base_score": 10.0,',
+    '            "penalty_per_issue": 1.0',
+    '        }',
+    '    )',
+    '    resp_architect = agent.execute(req_architect)',
+    '    ',
+    '    # Test Vision Task',
+    '    req_vision = AgentRequest(',
+    '        task_id="task-vision",',
+    '        data={',
+    '            "task_type": "vision",',
+    '            "images": [b"frame_1", b"frame_2"]',
+    '        }',
+    '    )',
+    '    resp_vision = agent.execute(req_vision)',
+    '    ',
+    '    # Test Unknown Task',
+    '    req_unknown = AgentRequest(',
+    '        task_id="task-unknown",',
+    '        data={',
+    '            "task_type": "unknown_type"',
+    '        }',
+    '    )',
+    '    resp_unknown = agent.execute(req_unknown)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps({',
+    '        "architect": dataclasses.asdict(resp_architect),',
+    '        "vision": dataclasses.asdict(resp_vision),',
+    '        "unknown": dataclasses.asdict(resp_unknown)',
+    '    }))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(badFilePath, moreSpecificBadContent);
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+    if (fs.existsSync(badFilePath)) {
+      fs.unlinkSync(badFilePath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  // Verify architect
+  expect(resultJson.architect.status).toBe('issues_found');
+  expect(resultJson.architect.data.issues.length).toBeGreaterThan(0);
+
+  // Verify vision
+  expect(resultJson.vision.status).toBe('issues_found');
+  expect(resultJson.vision.data.regression_detected).toBe(true);
+
+  // Verify unknown
+  expect(resultJson.unknown.status).toBe('failure');
+  expect(resultJson.unknown.errors[0]).toContain('Unknown task_type');
+
+  // Take screenshot of empty app (tests shouldn't fail based on visual rules)
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
