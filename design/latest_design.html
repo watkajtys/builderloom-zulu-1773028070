@@ -2,7 +2,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Zulu OS: Code Quality Analytical Split Variant</title>
+<title>Zulu OS: Tabbed Metrics &amp; Findings Variant</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -53,6 +53,12 @@
             background-image: linear-gradient(to right, rgba(48, 54, 61, 0.2) 1px, transparent 1px),
                               linear-gradient(to bottom, rgba(48, 54, 61, 0.2) 1px, transparent 1px);
             background-size: 40px 40px;
+        }
+        .tab-active {
+            @apply border-b-2 border-cyber-cyan text-cyber-cyan;
+        }
+        .tab-inactive {
+            @apply border-b-2 border-transparent text-slate-500 hover:text-slate-300;
         }
     </style>
 </head>
@@ -125,7 +131,7 @@
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_#00f3ff]"></div>
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Deep Audit Mode Active</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Static Analysis Active</span>
 </div>
 </div>
 </div>
@@ -184,44 +190,6 @@
 </div>
 </div>
 </div>
-<div class="p-4 border-b border-carbon-border hover:bg-white/5 cursor-pointer group">
-<div class="flex items-start justify-between">
-<div>
-<h3 class="text-xs font-bold text-slate-300 font-mono group-hover:text-white">neural-weight-dist</h3>
-<p class="text-[9px] text-slate-500 uppercase mt-1">Python â¢ AI Layer</p>
-</div>
-<span class="material-symbols-outlined text-cyber-cyan text-sm">verified</span>
-</div>
-<div class="mt-3 flex items-center gap-4">
-<div class="flex flex-col">
-<span class="text-[9px] text-slate-500 font-bold uppercase">Cov</span>
-<span class="text-xs font-mono font-bold text-cyber-cyan">91.0%</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[9px] text-slate-500 font-bold uppercase">Cmplx</span>
-<span class="text-xs font-mono font-bold text-slate-400">A</span>
-</div>
-</div>
-</div>
-<div class="p-4 border-b border-carbon-border hover:bg-white/5 cursor-pointer group">
-<div class="flex items-start justify-between">
-<div>
-<h3 class="text-xs font-bold text-slate-300 font-mono group-hover:text-white">vector-storage-adapter</h3>
-<p class="text-[9px] text-slate-500 uppercase mt-1">C++ â¢ Persistence</p>
-</div>
-<span class="material-symbols-outlined text-synth-magenta text-sm">warning</span>
-</div>
-<div class="mt-3 flex items-center gap-4">
-<div class="flex flex-col">
-<span class="text-[9px] text-slate-500 font-bold uppercase">Cov</span>
-<span class="text-xs font-mono font-bold text-slate-500">72.4%</span>
-</div>
-<div class="flex flex-col">
-<span class="text-[9px] text-slate-500 font-bold uppercase">Cmplx</span>
-<span class="text-xs font-mono font-bold text-synth-magenta">C+</span>
-</div>
-</div>
-</div>
 </div>
 </div>
 <div class="flex-1 overflow-y-auto custom-scrollbar bg-deep-obsidian flex flex-col p-8">
@@ -231,7 +199,7 @@
 <h2 class="text-xl font-mono font-bold text-white">zulu-factory-core-v2</h2>
 <span class="px-2 py-0.5 bg-cyber-cyan/10 border border-cyber-cyan/30 text-[9px] text-cyber-cyan font-bold rounded">ACTIVE AUDIT</span>
 </div>
-<p class="text-xs text-slate-400">Analyzing historical trend data for 30-day development cycle</p>
+<p class="text-xs text-slate-400">Analyzing historical trend data and static analysis findings</p>
 </div>
 <div class="flex gap-3">
 <div class="flex flex-col items-end">
@@ -245,9 +213,9 @@
 </div>
 </div>
 </div>
-<div class="flex-1 min-h-[400px] border border-carbon-border rounded-xl bg-background-dark/40 p-6 flex flex-col relative overflow-hidden">
+<div class="h-72 border border-carbon-border rounded-xl bg-background-dark/40 p-6 flex flex-col relative overflow-hidden mb-6">
 <div class="chart-grid absolute inset-0 pointer-events-none opacity-20"></div>
-<div class="flex items-center justify-between mb-10 relative z-10">
+<div class="flex items-center justify-between mb-6 relative z-10">
 <div class="flex gap-6">
 <div class="flex items-center gap-2">
 <div class="w-3 h-3 rounded-full bg-cyber-cyan"></div>
@@ -255,71 +223,104 @@
 </div>
 <div class="flex items-center gap-2">
 <div class="w-3 h-3 rounded-full bg-synth-magenta"></div>
-<span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Code Complexity (Cyclomatic)</span>
+<span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Complexity</span>
 </div>
 </div>
 <div class="flex gap-2">
 <button class="px-3 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-bold rounded hover:bg-carbon-border">1W</button>
 <button class="px-3 py-1 bg-primary text-[9px] font-bold rounded">1M</button>
-<button class="px-3 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-bold rounded hover:bg-carbon-border">3M</button>
 </div>
 </div>
 <div class="flex-1 relative z-10">
-<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
-<path d="M0,150 L100,140 L200,145 L300,120 L400,110 L500,105 L600,90 L700,95 L800,85 L900,82 L1000,80" fill="none" stroke="#00f3ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
-<path d="M0,150 L100,140 L200,145 L300,120 L400,110 L500,105 L600,90 L700,95 L800,85 L900,82 L1000,80 V300 H0 Z" fill="url(#gradient-cyan)" fill-opacity="0.1"></path>
-<path d="M0,250 L100,245 L200,230 L300,220 L400,225 L500,210 L600,190 L700,185 L800,170 L900,165 L1000,160" fill="none" stroke="#ff00ff" stroke-dasharray="8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
-<circle cx="900" cy="82" fill="#00f3ff" r="5"></circle>
-<circle cx="900" cy="165" fill="#ff00ff" r="5"></circle>
-<defs>
-<linearGradient id="gradient-cyan" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" stop-color="#00f3ff" stop-opacity="1"></stop>
-<stop offset="100%" stop-color="#00f3ff" stop-opacity="0"></stop>
-</linearGradient>
-</defs>
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 150">
+<path d="M0,100 L100,90 L200,95 L300,70 L400,60 L500,55 L600,40 L700,45 L800,35 L900,32 L1000,30" fill="none" stroke="#00f3ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+<path d="M0,140 L100,135 L200,120 L300,110 L400,115 L500,100 L600,80 L700,75 L800,60 L900,55 L1000,50" fill="none" stroke="#ff00ff" stroke-dasharray="4 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
 </svg>
-<div class="absolute top-[82px] left-[90%] -translate-x-1/2 -translate-y-full mb-4 bg-carbon-surface border border-carbon-border p-3 rounded shadow-xl z-20 min-w-[140px]">
-<div class="text-[9px] font-bold text-slate-500 uppercase mb-2">24 Oct 2023</div>
-<div class="flex items-center justify-between mb-1">
-<span class="text-[10px] text-slate-300">Coverage</span>
-<span class="text-xs font-mono font-bold text-cyber-cyan">98.2%</span>
-</div>
-<div class="flex items-center justify-between">
-<span class="text-[10px] text-slate-300">Complexity</span>
-<span class="text-xs font-mono font-bold text-synth-magenta">0.42</span>
 </div>
 </div>
-</div>
-<div class="mt-4 flex justify-between px-2">
-<span class="text-[9px] font-mono text-slate-600">SEP 24</span>
-<span class="text-[9px] font-mono text-slate-600">OCT 01</span>
-<span class="text-[9px] font-mono text-slate-600">OCT 08</span>
-<span class="text-[9px] font-mono text-slate-600">OCT 15</span>
-<span class="text-[9px] font-mono text-slate-600">OCT 22</span>
-<span class="text-[9px] font-mono text-slate-300">TODAY</span>
-</div>
-</div>
-<div class="grid grid-cols-3 gap-6 mt-6">
-<div class="bg-carbon-surface/30 border border-carbon-border p-4 rounded-lg">
-<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Maintainability Index</p>
-<div class="flex items-end gap-3">
-<span class="text-3xl font-mono font-bold text-white">88</span>
-<span class="text-[10px] text-cyber-cyan font-bold uppercase mb-1">â 2.4%</span>
+<div class="flex-1 flex flex-col min-h-0 bg-carbon-surface/30 border border-carbon-border rounded-lg overflow-hidden">
+<div class="flex items-center px-4 border-b border-carbon-border bg-background-dark/20">
+<button class="tab-active py-3 px-4 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                            Current Findings
+                            <span class="bg-synth-magenta text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-[0_0_8px_#ff00ff]">12</span>
+</button>
+<button class="tab-inactive py-3 px-4 text-[10px] font-bold uppercase tracking-widest">Metrics Overview</button>
+<button class="tab-inactive py-3 px-4 text-[10px] font-bold uppercase tracking-widest">Historical Debt</button>
+<div class="ml-auto flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Maintainability</span>
+<span class="text-xs font-mono font-bold text-cyber-cyan">88%</span>
 </div>
 </div>
-<div class="bg-carbon-surface/30 border border-carbon-border p-4 rounded-lg">
-<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Technical Debt</p>
-<div class="flex items-end gap-3">
-<span class="text-3xl font-mono font-bold text-white">4.2d</span>
-<span class="text-[10px] text-synth-magenta font-bold uppercase mb-1">â 0.5d</span>
 </div>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-0">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-carbon-border/50 bg-black/10">
+<th class="px-6 py-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest">Issue / Component</th>
+<th class="px-6 py-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-24 text-center">Severity</th>
+<th class="px-6 py-3 text-[9px] font-bold text-slate-500 uppercase tracking-widest w-32 text-right">Debt Impact</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-carbon-border/30 font-mono">
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold text-white">Potential race condition in buffer allocation</span>
+<span class="text-[10px] text-slate-500">internal/transport/buffer_manager.go:L142</span>
 </div>
-<div class="bg-carbon-surface/30 border border-carbon-border p-4 rounded-lg">
-<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Duplication</p>
-<div class="flex items-end gap-3">
-<span class="text-3xl font-mono font-bold text-white">1.8%</span>
-<span class="text-[10px] text-slate-500 font-bold uppercase mb-1">STABLE</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-0.5 border border-synth-magenta/40 bg-synth-magenta/10 text-synth-magenta text-[9px] font-bold rounded">CRITICAL</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-xs font-bold text-slate-300">4.5h</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold text-white">Inefficient memory copy in neural forward pass</span>
+<span class="text-[10px] text-slate-500">pkg/ml/engine/forward.py:L88</span>
 </div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-0.5 border border-orange-500/40 bg-orange-500/10 text-orange-500 text-[9px] font-bold rounded">HIGH</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-xs font-bold text-slate-300">2.0h</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold text-white">Unused error return from factory initialization</span>
+<span class="text-[10px] text-slate-500">cmd/zulu-core/main.go:L34</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-0.5 border border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan text-[9px] font-bold rounded">LOW</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-xs font-bold text-slate-300">0.5h</span>
+</td>
+</tr>
+<tr class="hover:bg-white/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex flex-col gap-1">
+<span class="text-xs font-semibold text-white">Cyclomatic complexity (24) exceeds threshold (15)</span>
+<span class="text-[10px] text-slate-500">internal/api/router.go:L210</span>
+</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="px-2 py-0.5 border border-yellow-500/40 bg-yellow-500/10 text-yellow-500 text-[9px] font-bold rounded">MEDIUM</span>
+</td>
+<td class="px-6 py-4 text-right">
+<span class="text-xs font-bold text-slate-300">1.2h</span>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </div>
