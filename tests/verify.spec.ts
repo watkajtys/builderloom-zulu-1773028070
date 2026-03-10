@@ -2637,3 +2637,20 @@ test('Set up the base Code Quality dashboard page, layout, and routing.', async 
 
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('CodeQuality empty state displays properly when there are no architect findings', async ({ page }) => {
+  await page.route('**/api/collections/architect_findings/records*', async route => {
+    const json = { items: [] };
+    await route.fulfill({ json });
+  });
+
+  await page.goto('/system-health?tab=code-quality');
+  
+  // Verify empty state is rendered
+  await expect(page.locator('text=All clear. No active findings.')).toBeVisible();
+  
+  // Ensure we still see the metrics blocks around the area
+  await expect(page.locator('text=Maintainability Index')).toBeVisible();
+
+  await page.screenshot({ path: 'evidence.png' });
+});
