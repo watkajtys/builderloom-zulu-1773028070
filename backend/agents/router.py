@@ -5,6 +5,7 @@ from backend.agents.core.base_agent import BaseAgent
 from backend.agents.core.io_models import AgentRequest, AgentResponse
 from backend.agents.vision import VisionAgent
 from backend.agents.architect import ArchitectAgent
+from backend.agents.python_architect import PythonArchitectAgent
 from backend.agents.executor import ExecutorAgent
 
 logger = logging.getLogger("loom")
@@ -22,6 +23,7 @@ class RouterAgent(BaseAgent):
         # Pre-register default agents
         self.register_agent("vision", VisionAgent(node_id=f"{self.node_id}-VISION"))
         self.register_agent("architect", ArchitectAgent(node_id=f"{self.node_id}-ARCHITECT"))
+        self.register_agent("python_architect", PythonArchitectAgent(node_id=f"{self.node_id}-PYTHON-ARCHITECT"))
         self.register_agent("executor", ExecutorAgent(node_id=f"{self.node_id}-EXECUTOR"))
 
     def register_agent(self, task_type: str, agent: BaseAgent):

@@ -1990,3 +1990,109 @@ test('Define the base sub-agent interface and implement routing logic in the mon
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test("Extract the first remaining logical domain into a dedicated sub-agent module and update imports/routing.", async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = 'backend/agents/test_python_architect_router_e2e.py';
+  const badFilePath = 'backend/agents/bad_python_file.py';
+  
+  // A generic bad Python file that will fail Ruff static analysis
+  const badFileContent = [
+    'import os',
+    'import sys', // F401 imported but unused
+    'def test_func():',
+    '    x = 1', // F841 local variable assigned but never used
+    '    y = 2', // F841
+    '    z = eval("1+1")', // W0122 use of eval
+    '    pass',
+  ].join('\n');
+
+  // We write a Python script that instantiates RouterAgent and dispatches a python_architect task
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'from unittest.mock import MagicMock',
+    'import warnings',
+    '',
+    'with warnings.catch_warnings():',
+    '    warnings.simplefilter("ignore")',
+    '    import google.generativeai as genai',
+    '',
+    '# Mock the genai model for vision',
+    'mock_model = MagicMock()',
+    'mock_response = MagicMock()',
+    'mock_response.text = """{"regression_detected": true, "reason": "Button was deleted in the final frame."}"""',
+    'mock_model.generate_content.return_value = mock_response',
+    'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.router import RouterAgent',
+    'from backend.agents.core.io_models import AgentRequest',
+    'import dataclasses',
+    '',
+    'def main():',
+    '    agent = RouterAgent(node_id="ROUTER-TEST-NODE")',
+    '    ',
+    '    req = AgentRequest(',
+    '        task_id="task-python-architect",',
+    '        data={',
+    '            "task_type": "python_architect",',
+    '            "filepath": "backend/agents/bad_python_file.py",',
+    '            "base_score": 10.0,',
+    '            "penalty_per_issue": 1.0',
+    '        }',
+    '    )',
+    '    resp = agent.execute(req)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps({',
+    '        "python_architect": dataclasses.asdict(resp)',
+    '    }))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(badFilePath, badFileContent);
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+    if (fs.existsSync(badFilePath)) {
+      fs.unlinkSync(badFilePath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  // The status should be 'issues_found'
+  expect(resultJson.python_architect.status).toBe('issues_found');
+  expect(resultJson.python_architect.data.issues.length).toBeGreaterThan(0);
+  expect(resultJson.python_architect.data.score).toBeLessThan(10.0);
+
+  // Take screenshot of empty app
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
