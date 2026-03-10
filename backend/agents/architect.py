@@ -1,20 +1,20 @@
 import logging
+import os
 from typing import Dict, Any, List
 from backend.agents.core.base_agent import BaseAgent
 from backend.agents.core.io_models import AgentRequest, AgentResponse
-from backend.tools.react_analyzer import ReactAnalyzer
+from backend.utils.react_analyzer import analyze_react_code
 
 logger = logging.getLogger("loom")
 
 class ArchitectAgent(BaseAgent):
     """
-    ArchitectAgent runs static analysis on a given file using ReactAnalyzer
+    ArchitectAgent runs static analysis on a given file using analyze_react_code utility wrapper
     and penalizes an initial base score based on the number of linting issues found.
     """
 
     def __init__(self, node_id: str = None):
         super().__init__(node_id=node_id)
-        self.analyzer = ReactAnalyzer()
 
     def execute(self, request: AgentRequest) -> AgentResponse:
         """
@@ -39,21 +39,21 @@ class ArchitectAgent(BaseAgent):
 
         self._log("INFO", f"Starting static analysis on {filepath}")
         
-        # Run ReactAnalyzer
-        analysis_result = self.analyzer.analyze_file(filepath)
-        
-        status = analysis_result.get("status", "error")
-        issues = analysis_result.get("issues", [])
-        
-        # Emit telemetry
-        if status == "error":
-            error_msg = analysis_result.get("message", "Unknown error during static analysis.")
-            self._log("ERROR", f"Static analysis failed: {error_msg}", extra_data={"issues": issues})
+        if not os.path.exists(filepath):
+            self._log("ERROR", f"File not found: {filepath}")
             return AgentResponse(
                 status="failure",
                 data={"score": base_score},
-                errors=[error_msg]
+                errors=[f"File not found: {filepath}"]
             )
+
+        with open(filepath, "r", encoding="utf-8") as f:
+            code_str = f.read()
+        
+        # Run analyze_react_code wrapper
+        analysis_result = analyze_react_code(code_str)
+        
+        issues = analysis_result.get("issues", [])
         
         # Calculate new score
         num_issues = len(issues)
@@ -71,6 +71,7 @@ class ArchitectAgent(BaseAgent):
             data={
                 "score": final_score,
                 "issues": issues,
+                "static_violations": issues,
                 "filepath": filepath
             }
         )

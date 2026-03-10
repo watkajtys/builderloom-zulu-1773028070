@@ -1378,7 +1378,7 @@ test('Extract the Orchestrator domain into a specialized ExecutorAgent sub-agent
   await page.screenshot({ path: 'evidence.png' });
 });
 
-test('Run the ArchitectAgent on a branch with 5 ESLint errors. Verify the overall health score is penalized proportionally and the JSON telemetry contains the detailed linting violations.', async ({ page }) => {
+test('ArchitectAgent receives code with linting errors, runs analysis, appends violations to its payload, and reduces the confidence score.', async ({ page }) => {
   const testScriptPath = 'backend/tools/test_architect_e2e.py';
   const badFilePath = 'backend/tools/bad_react_file.tsx';
   
@@ -1479,6 +1479,10 @@ console.log(x, y, z);
   const numIssues = resultJson.data.issues.length;
   // Ensure we actually caught some issues (expecting around 5 based on our file)
   expect(numIssues).toBeGreaterThan(0);
+  
+  // Verify static_violations is added
+  expect(resultJson.data.static_violations).toBeDefined();
+  expect(resultJson.data.static_violations.length).toBe(numIssues);
 
   // The score should be mathematically penalized: 10.0 - (numIssues * 1.0)
   // Ensure it doesn't drop below 0
