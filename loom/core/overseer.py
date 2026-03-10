@@ -1463,6 +1463,56 @@ Example output:
                 response = self.router.execute(request)
                 if response.status != "success":
                     raise Exception(f"Jules execution failed: {response.errors}")
+                
+                # Check for architect validation and refactor chaining
+                try:
+                    patch_path = "app/jules.patch"
+                    if os.path.exists(patch_path):
+                        modified_files = []
+                        with open(patch_path, "r", encoding="utf-8") as f:
+                            for line in f:
+                                if line.startswith("+++ b/"):
+                                    modified_files.append(os.path.join("app", line[6:].strip()))
+                        
+                        for filepath in modified_files:
+                            if not os.path.exists(filepath) or not filepath.endswith((".js", ".jsx", ".ts", ".tsx")):
+                                continue
+                                
+                            logger.info(f"ArchitectAgent validating... {filepath}")
+                            arch_req = AgentRequest(
+                                task_id=str(uuid.uuid4()),
+                                data={
+                                    "task_type": "architect",
+                                    "filepath": filepath,
+                                    "base_score": 10.0,
+                                    "penalty_per_issue": 1.0
+                                }
+                            )
+                            arch_resp = self.router.execute(arch_req)
+                            
+                            if arch_resp.status == "issues_found" and arch_resp.data.get("issues"):
+                                logger.warning("Architect found violations. Chaining to Refactor Agent...")
+                                issues = arch_resp.data.get("issues")
+                                with open(filepath, "r", encoding="utf-8") as file_obj:
+                                    code_to_fix = file_obj.read()
+                                    
+                                refactor_req = AgentRequest(
+                                    task_id=str(uuid.uuid4()),
+                                    data={
+                                        "task_type": "refactor",
+                                        "code": code_to_fix,
+                                        "issues": issues
+                                    }
+                                )
+                                refactor_resp = self.router.execute(refactor_req)
+                                if refactor_resp.status == "success" and refactor_resp.data.get("result"):
+                                    fixed_code = refactor_resp.data["result"]
+                                    with open(filepath, "w", encoding="utf-8") as file_obj:
+                                        file_obj.write(fixed_code)
+                                    logger.info("Refactor Agent applied schema-driven remediation.")
+                except Exception as chain_e:
+                    logger.warning(f"Architect/Refactor chain failed: {chain_e}")
+
                 self._check_shutdown()
                 self.git.commit(f"feat: implementation attempt {current_attempt}")
                 self.git.push_branch(branch_name)
