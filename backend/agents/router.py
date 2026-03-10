@@ -11,6 +11,7 @@ from backend.agents.prompt import PromptAgent
 from backend.agents.router_agent import TaskClassifierAgent
 from backend.agents.backend_agent import BackendAgent
 from backend.agents.refactor_agent import RefactorAgent
+from backend.agents.frontend_agent import FrontendAgent
 
 logger = logging.getLogger("loom")
 
@@ -33,6 +34,7 @@ class RouterAgent(BaseAgent):
         self.register_agent("classifier", TaskClassifierAgent(node_id=f"{self.node_id}-CLASSIFIER"))
         self.register_agent("backend", BackendAgent(node_id=f"{self.node_id}-BACKEND"))
         self.register_agent("refactor", RefactorAgent(node_id=f"{self.node_id}-REFACTOR"))
+        self.register_agent("frontend", FrontendAgent(node_id=f"{self.node_id}-FRONTEND"))
 
     def register_agent(self, task_type: str, agent: BaseAgent):
         """Registers a sub-agent to handle a specific task_type."""

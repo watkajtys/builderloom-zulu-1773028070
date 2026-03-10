@@ -51,6 +51,87 @@ test('Implement dynamic UI components to render the static analysis findings.', 
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('Invoke the Frontend Sub-Agent with a UI prompt. It generates valid React code without hallucinating backend Python scripts.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = 'backend/agents/test_frontend_agent_e2e.py';
+  
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'import dataclasses',
+    'from unittest.mock import MagicMock',
+    'import warnings',
+    '',
+    'with warnings.catch_warnings():',
+    '    warnings.simplefilter("ignore")',
+    '    import google.generativeai as genai',
+    '',
+    '# Mock the genai model to simulate returning React code',
+    'def mock_generate_content(prompt, **kwargs):',
+    '    response = MagicMock()',
+    '    response.text = """import React from "react";\\n\\nexport function Dashboard() {\\n  return <div className="bg-[#050505] text-[#00F2FF] font-sans">Dashboard</div>;\\n}"""',
+    '    return response',
+    '',
+    'mock_model = MagicMock()',
+    'mock_model.generate_content.side_effect = mock_generate_content',
+    'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.frontend_agent import FrontendAgent',
+    'from backend.agents.core.io_models import AgentRequest',
+    '',
+    'def main():',
+    '    agent = FrontendAgent(node_id="TEST-FRONTEND-AGENT")',
+    '    ',
+    '    req = AgentRequest(',
+    '        task_id="task-frontend-1",',
+    '        data={"task_type": "frontend", "task": "Create a dashboard component"}',
+    '    )',
+    '    resp = agent.execute(req)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps(dataclasses.asdict(resp)))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const resultJson = JSON.parse(resultStr);
+
+  expect(resultJson.status).toBe('success');
+  expect(resultJson.data.result).toContain('import React from "react"');
+  expect(resultJson.data.result).not.toContain('def ');
+
+  // Take the screenshot required by verification rules
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('App initializes correctly', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('text=Telemetry / Log Grid')).toBeVisible();
