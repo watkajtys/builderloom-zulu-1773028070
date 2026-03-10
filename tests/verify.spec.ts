@@ -1183,7 +1183,6 @@ test('Add state tracking, error handling, and retries to the orchestrator', asyn
 
   let stdout = '';
   try {
-    const { execSync } = await import('child_process');
     stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
   } catch (error: unknown) {
     stdout = (error as { stdout?: string }).stdout || String(error);
@@ -1213,6 +1212,163 @@ test('Add state tracking, error handling, and retries to the orchestrator', asyn
   expect(resultJson.job2.engine).toBe('failing_engine');
   expect(resultJson.job2.status).toBe('failed');
   expect(resultJson.job2.error).toBe('Permanent Failure');
+
+  // Take screenshot of empty app (tests shouldn't fail based on visual rules)
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Extract the Orchestrator domain into a specialized ExecutorAgent sub-agent module', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = 'backend/agents/test_executor_agent_e2e.py';
+  
+  const testScriptContent = [
+    'import sys',
+    'import os',
+    'import json',
+    'import dataclasses',
+    'import uuid',
+    'import warnings',
+    '',
+    'with warnings.catch_warnings():',
+    '    warnings.simplefilter("ignore")',
+    '    import google.generativeai as genai',
+    'from unittest.mock import MagicMock',
+    'mock_model = MagicMock()',
+    'genai.GenerativeModel = MagicMock(return_value=mock_model)',
+    '',
+    'sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))',
+    'from backend.agents.router import RouterAgent',
+    'from backend.agents.executor import ExecutorAgent',
+    'from backend.agents.core.io_models import AgentRequest, AgentResponse',
+    'from backend.tools.execution_engine import BaseExecutionEngine, Job, JobStatus, ExecutionState',
+    '',
+    'class MockEngine(BaseExecutionEngine):',
+    '    def execute(self, job: Job) -> Job:',
+    '        job.status = JobStatus.COMPLETED',
+    '        job.result = {"mock_executed_via_agent": True}',
+    '        return job',
+    '    ',
+    '    def get_status(self, job_id: str) -> ExecutionState:',
+    '        return ExecutionState(job_id=job_id, progress=50.0, message="Mock running", status=JobStatus.RUNNING)',
+    '',
+    'class DummyRecord:',
+    '    def __init__(self, data: dict):',
+    '        self.id = data.get("id", "dummy_id")',
+    '        self.job_id = data.get("job_id")',
+    '        self.engine = data.get("engine")',
+    '        self.target = data.get("target")',
+    '        self.status = data.get("status")',
+    '        self.result = data.get("result", "")',
+    '        self.error = data.get("error", "")',
+    '',
+    'class DummyCollection:',
+    '    def __init__(self):',
+    '        self.records = {}',
+    '',
+    '    def get_first_list_item(self, filter_str: str):',
+    '        job_id = filter_str.split("\'")[1]',
+    '        for r in self.records.values():',
+    '            if r["job_id"] == job_id:',
+    '                rec = DummyRecord(r)',
+    '                rec.id = r["id"] # Restore correct ID',
+    '                return rec',
+    '        raise Exception("Not found")',
+    '',
+    '    def update(self, id: str, data: dict):',
+    '        data["id"] = id',
+    '        self.records[id] = data',
+    '        return DummyRecord(data)',
+    '',
+    '    def create(self, data: dict):',
+    '        doc_id = str(uuid.uuid4())',
+    '        data["id"] = doc_id',
+    '        self.records[doc_id] = data',
+    '        return DummyRecord(data)',
+    '',
+    'def main():',
+    '    router = RouterAgent(node_id="ROUTER-TEST-NODE")',
+    '    executor_agent = router._registry.get("executor")',
+    '    ',
+    '    # Inject a dummy PB collection to avoid actual DB requirements',
+    '    dummy_collection = DummyCollection()',
+    '    executor_agent.store.pb.collection = lambda name: dummy_collection',
+    '    ',
+    '    # Register a mock engine via the ExecutorAgent',
+    '    executor_agent.register_engine("mock_engine", MockEngine())',
+    '    ',
+    '    # Submit Job via AgentRequest routed through RouterAgent',
+    '    req_submit = AgentRequest(',
+    '        task_id="task-submit",',
+    '        data={',
+    '            "task_type": "executor",',
+    '            "command": "submit_job",',
+    '            "engine": "mock_engine",',
+    '            "target": "dummy_target.py"',
+    '        }',
+    '    )',
+    '    resp_submit = router.execute(req_submit)',
+    '    job_id = resp_submit.data.get("job_id")',
+    '    ',
+    '    # Directly process the queue so it actually executes',
+    '    executor_agent.orchestrator.process_queue()',
+    '    ',
+    '    # Get Job Status via AgentRequest',
+    '    req_status = AgentRequest(',
+    '        task_id="task-status",',
+    '        data={',
+    '            "task_type": "executor",',
+    '            "command": "get_status",',
+    '            "job_id": job_id',
+    '        }',
+    '    )',
+    '    resp_status = router.execute(req_status)',
+    '    ',
+    '    print("---SUCCESS---")',
+    '    print(json.dumps({',
+    '        "submit": dataclasses.asdict(resp_submit),',
+    '        "status": dataclasses.asdict(resp_status)',
+    '    }))',
+    '',
+    'if __name__ == "__main__":',
+    '    main()'
+  ].join('\n');
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.submit.status).toBe('success');
+  expect(typeof resultJson.submit.data.job_id).toBe('string');
+  
+  expect(resultJson.status.status).toBe('success');
+  expect(resultJson.status.data.execution_state.status).toBe('completed');
+  expect(resultJson.status.data.execution_state.job_id).toBe(resultJson.submit.data.job_id);
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   await page.goto('/');
