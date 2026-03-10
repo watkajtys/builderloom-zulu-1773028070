@@ -29,7 +29,7 @@ def init_core_collections():
             "type": "base",
             "schema": [
                 { "name": "type", "type": "text" },
-                { "name": "content", "type": "json" },
+                { "name": "content", "type": "json", "options": {"maxSize": 2000000} },
                 { "name": "is_compressed", "type": "bool" }
             ],
             "listRule": "",
