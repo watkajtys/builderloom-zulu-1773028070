@@ -2,7 +2,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Zulu OS: Segmented Header Control Variant</title>
+<title>Zulu OS: Code Quality Analytical Split Variant</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -32,25 +32,11 @@
     </script>
 <style type="text/tailwindcss">
         @layer base {
-            body { @apply font-sans bg-background-dark; }
+            body { @apply font-sans bg-background-dark text-slate-100; }
         }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full; }
-        .sparkline-container {
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 20px;
-        }
-        .spark-bar {
-            width: 3px;
-            background-color: theme('colors.synth-magenta');
-            opacity: 0.6;
-        }
-        .health-score-ring {
-            background: conic-gradient(from 0deg, #00f3ff 94.2%, #161b22 0%);
-        }
         .segmented-control {
             @apply flex p-1 bg-black/40 rounded-lg border border-carbon-border;
         }
@@ -63,9 +49,14 @@
         .segment-btn-inactive {
             @apply text-slate-500 hover:text-slate-300;
         }
+        .chart-grid {
+            background-image: linear-gradient(to right, rgba(48, 54, 61, 0.2) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(48, 54, 61, 0.2) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
     </style>
 </head>
-<body class="text-slate-100 h-screen overflow-hidden">
+<body class="h-screen overflow-hidden">
 <div class="flex h-full overflow-hidden">
 <aside class="w-64 border-r border-carbon-border flex flex-col bg-background-dark flex-shrink-0">
 <div class="p-6">
@@ -106,7 +97,7 @@
 </nav>
 <div class="p-4 border-t border-carbon-border">
 <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer">
-<img alt="User Profile" class="w-8 h-8 rounded-full border border-carbon-border" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAohT0ubD4Qde6VECGKoF3XCR65xEc7pUJdplqowaXAV7_DP2DpXs9nCl1JR2lovzUMyB55BYJAciQdGEClhBW9Zu-4HubkSiJA__VM4LvDmkqSEx36e1P02DjmEVYr7SD1XypUxgSdKoE5IAv5YsCaiuNMupYrzf9GQHtfjyeluhXXfk6XCt8IHqDwBsvvqcbaNoAuK-NVaRgKyRLH32gj9jmpcc-BaPRnZ6DTa8Ob3nWlJREX6XDatQ8WZh7Cd93QwoJrvw8zqUh3"/>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-carbon-border" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDiIecjzA_ZbzPm0y-ve4JgplGBAbct31EXG_e5o1sw3uQbQpPXPlaP_GW-65SbAPjKVFbaUYZRZvJOFjG_mMCIk35nbfUPDqZM5QFAkxz9WFPjkWRE9-Nbq0mRz2T871zXXPCHk3wEd0qvXpWF21R2bYRcsAK-jNKkrl3IV_kz6LWoF6r5l-GuyWweqw62RKLwnylgvYjbS0VrKVmgu7H-243WswuB9S2KkZbeFVpkYnuPsq5dEyBL2MZwO3JCh3VAalhid5q6w23h"/>
 <div class="flex-1 min-w-0">
 <p class="text-xs font-semibold truncate">Alex Chen</p>
 <p class="text-[10px] text-slate-500 truncate uppercase">Lead Engineer</p>
@@ -123,7 +114,7 @@
 <button class="segment-btn segment-btn-inactive">
 <span class="material-symbols-outlined text-sm">monitor_heart</span>
                         System Health
-<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-synth-magenta rounded-full border-2 border-background-dark animate-pulse shadow-[0_0_8px_#ff00ff]"></span>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-synth-magenta rounded-full border-2 border-background-dark shadow-[0_0_8px_#ff00ff]"></span>
 </button>
 <button class="segment-btn segment-btn-active">
 <span class="material-symbols-outlined text-sm">code_blocks</span>
@@ -134,219 +125,201 @@
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2">
 <div class="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_#00f3ff]"></div>
-<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Scanning Repositories...</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Deep Audit Mode Active</span>
 </div>
 </div>
 </div>
-<div class="flex items-center gap-6">
-<div class="flex items-center gap-4 border-r border-carbon-border pr-6">
+<div class="flex items-center gap-4">
 <div class="flex flex-col items-end">
-<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Health</span>
-<div class="flex items-center gap-2">
-<span class="text-xl font-mono font-bold text-white tracking-tighter">94.2<span class="text-cyber-cyan">%</span></span>
-<div class="w-8 h-8 rounded-full health-score-ring p-[2px]">
-<div class="w-full h-full rounded-full bg-carbon-surface flex items-center justify-center">
-<span class="material-symbols-outlined text-[14px] text-cyber-cyan">verified</span>
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Coverage</span>
+<span class="text-lg font-mono font-bold text-white tracking-tighter">91.4<span class="text-cyber-cyan">%</span></span>
 </div>
-</div>
-</div>
-</div>
-</div>
-<div class="flex items-center gap-2">
-<button class="bg-primary/20 hover:bg-primary/30 text-primary text-[10px] font-bold px-3 py-1.5 rounded border border-primary/30 uppercase tracking-widest transition-all">Manual Scan</button>
 <button class="p-2 rounded hover:bg-white/5 text-slate-500">
-<span class="material-symbols-outlined text-[20px]">filter_list</span>
+<span class="material-symbols-outlined text-[20px]">settings</span>
 </button>
 </div>
-</div>
 </header>
-<div class="flex-1 overflow-y-auto custom-scrollbar p-6">
-<div class="mb-6 flex items-center justify-between">
+<div class="flex-1 flex overflow-hidden">
+<div class="w-[30%] border-r border-carbon-border flex flex-col bg-background-dark/30">
+<div class="p-4 border-b border-carbon-border flex items-center justify-between">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Modules (14)</span>
+<span class="material-symbols-outlined text-sm text-slate-500">search</span>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<div class="p-4 border-b border-carbon-border bg-primary/5 border-l-2 border-l-primary cursor-pointer">
+<div class="flex items-start justify-between">
 <div>
-<h3 class="text-sm font-bold text-white mb-1 font-mono">Active Repositories</h3>
-<p class="text-[10px] text-slate-500 uppercase tracking-widest">Tracking 14 production modules across 3 regions</p>
+<h3 class="text-xs font-bold text-white font-mono">zulu-factory-core-v2</h3>
+<p class="text-[9px] text-slate-500 uppercase mt-1">Go-lang â¢ Production</p>
+</div>
+<span class="material-symbols-outlined text-cyber-cyan text-sm">check_circle</span>
+</div>
+<div class="mt-3 flex items-center gap-4">
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cov</span>
+<span class="text-xs font-mono font-bold text-cyber-cyan">98.2%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cmplx</span>
+<span class="text-xs font-mono font-bold text-slate-300">A+</span>
+</div>
+</div>
+</div>
+<div class="p-4 border-b border-carbon-border hover:bg-white/5 cursor-pointer group">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-xs font-bold text-slate-300 font-mono group-hover:text-white">gateway-proxy-handler</h3>
+<p class="text-[9px] text-slate-500 uppercase mt-1">Rust â¢ Infrastructure</p>
+</div>
+<span class="material-symbols-outlined text-slate-500 text-sm">trending_down</span>
+</div>
+<div class="mt-3 flex items-center gap-4">
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cov</span>
+<span class="text-xs font-mono font-bold text-slate-400">84.5%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cmplx</span>
+<span class="text-xs font-mono font-bold text-slate-400">B</span>
+</div>
+</div>
+</div>
+<div class="p-4 border-b border-carbon-border hover:bg-white/5 cursor-pointer group">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-xs font-bold text-slate-300 font-mono group-hover:text-white">neural-weight-dist</h3>
+<p class="text-[9px] text-slate-500 uppercase mt-1">Python â¢ AI Layer</p>
+</div>
+<span class="material-symbols-outlined text-cyber-cyan text-sm">verified</span>
+</div>
+<div class="mt-3 flex items-center gap-4">
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cov</span>
+<span class="text-xs font-mono font-bold text-cyber-cyan">91.0%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cmplx</span>
+<span class="text-xs font-mono font-bold text-slate-400">A</span>
+</div>
+</div>
+</div>
+<div class="p-4 border-b border-carbon-border hover:bg-white/5 cursor-pointer group">
+<div class="flex items-start justify-between">
+<div>
+<h3 class="text-xs font-bold text-slate-300 font-mono group-hover:text-white">vector-storage-adapter</h3>
+<p class="text-[9px] text-slate-500 uppercase mt-1">C++ â¢ Persistence</p>
+</div>
+<span class="material-symbols-outlined text-synth-magenta text-sm">warning</span>
+</div>
+<div class="mt-3 flex items-center gap-4">
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cov</span>
+<span class="text-xs font-mono font-bold text-slate-500">72.4%</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[9px] text-slate-500 font-bold uppercase">Cmplx</span>
+<span class="text-xs font-mono font-bold text-synth-magenta">C+</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar bg-deep-obsidian flex flex-col p-8">
+<div class="flex items-center justify-between mb-8">
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h2 class="text-xl font-mono font-bold text-white">zulu-factory-core-v2</h2>
+<span class="px-2 py-0.5 bg-cyber-cyan/10 border border-cyber-cyan/30 text-[9px] text-cyber-cyan font-bold rounded">ACTIVE AUDIT</span>
+</div>
+<p class="text-xs text-slate-400">Analyzing historical trend data for 30-day development cycle</p>
+</div>
+<div class="flex gap-3">
+<div class="flex flex-col items-end">
+<span class="text-[9px] font-bold text-slate-500 uppercase">Lines of Code</span>
+<span class="text-sm font-mono font-bold text-white">142,809</span>
+</div>
+<div class="w-px h-8 bg-carbon-border"></div>
+<div class="flex flex-col items-end">
+<span class="text-[9px] font-bold text-slate-500 uppercase">Unit Tests</span>
+<span class="text-sm font-mono font-bold text-white">1,402</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-h-[400px] border border-carbon-border rounded-xl bg-background-dark/40 p-6 flex flex-col relative overflow-hidden">
+<div class="chart-grid absolute inset-0 pointer-events-none opacity-20"></div>
+<div class="flex items-center justify-between mb-10 relative z-10">
+<div class="flex gap-6">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-cyber-cyan"></div>
+<span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Test Coverage (%)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-synth-magenta"></div>
+<span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Code Complexity (Cyclomatic)</span>
+</div>
 </div>
 <div class="flex gap-2">
-<span class="px-2 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-mono text-slate-400 rounded">SORT: COVERAGE DESC</span>
+<button class="px-3 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-bold rounded hover:bg-carbon-border">1W</button>
+<button class="px-3 py-1 bg-primary text-[9px] font-bold rounded">1M</button>
+<button class="px-3 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-bold rounded hover:bg-carbon-border">3M</button>
 </div>
 </div>
-<div class="grid grid-cols-1 gap-2 font-mono">
-<div class="grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-carbon-border mb-2">
-<div class="col-span-4">Module Name</div>
-<div class="col-span-3">Test Coverage</div>
-<div class="col-span-2 text-center">Lint Trend</div>
-<div class="col-span-1 text-right">Complexity</div>
-<div class="col-span-2 text-right">Last Commit</div>
+<div class="flex-1 relative z-10">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
+<path d="M0,150 L100,140 L200,145 L300,120 L400,110 L500,105 L600,90 L700,95 L800,85 L900,82 L1000,80" fill="none" stroke="#00f3ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<path d="M0,150 L100,140 L200,145 L300,120 L400,110 L500,105 L600,90 L700,95 L800,85 L900,82 L1000,80 V300 H0 Z" fill="url(#gradient-cyan)" fill-opacity="0.1"></path>
+<path d="M0,250 L100,245 L200,230 L300,220 L400,225 L500,210 L600,190 L700,185 L800,170 L900,165 L1000,160" fill="none" stroke="#ff00ff" stroke-dasharray="8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<circle cx="900" cy="82" fill="#00f3ff" r="5"></circle>
+<circle cx="900" cy="165" fill="#ff00ff" r="5"></circle>
+<defs>
+<linearGradient id="gradient-cyan" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#00f3ff" stop-opacity="1"></stop>
+<stop offset="100%" stop-color="#00f3ff" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+</svg>
+<div class="absolute top-[82px] left-[90%] -translate-x-1/2 -translate-y-full mb-4 bg-carbon-surface border border-carbon-border p-3 rounded shadow-xl z-20 min-w-[140px]">
+<div class="text-[9px] font-bold text-slate-500 uppercase mb-2">24 Oct 2023</div>
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] text-slate-300">Coverage</span>
+<span class="text-xs font-mono font-bold text-cyber-cyan">98.2%</span>
 </div>
-<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center group">
-<div class="col-span-4 flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-500 group-hover:text-cyber-cyan transition-colors">hub</span>
-<div>
-<p class="text-xs font-bold text-white">zulu-factory-core-v2</p>
-<p class="text-[9px] text-slate-500 uppercase">Production / Go-lang</p>
-</div>
-</div>
-<div class="col-span-3 flex items-center gap-3">
-<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
-<div class="w-[98%] h-full bg-cyber-cyan shadow-[0_0_8px_rgba(0,243,255,0.4)]"></div>
-</div>
-<span class="text-[11px] font-bold text-cyber-cyan">98.2%</span>
-</div>
-<div class="col-span-2 flex justify-center">
-<div class="sparkline-container">
-<div class="spark-bar h-[40%]"></div>
-<div class="spark-bar h-[30%]"></div>
-<div class="spark-bar h-[60%]"></div>
-<div class="spark-bar h-[20%]"></div>
-<div class="spark-bar h-[15%]"></div>
-<div class="spark-bar h-[10%] bg-cyber-cyan opacity-100"></div>
-</div>
-</div>
-<div class="col-span-1 text-right">
-<span class="text-[11px] text-slate-300">A+</span>
-</div>
-<div class="col-span-2 text-right">
-<p class="text-[10px] text-slate-400">4m ago</p>
-<p class="text-[9px] text-slate-600 uppercase">by ac-0x2</p>
-</div>
-</div>
-<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center">
-<div class="col-span-4 flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-500">api</span>
-<div>
-<p class="text-xs font-bold text-white">gateway-proxy-handler</p>
-<p class="text-[9px] text-slate-500 uppercase">Infrastructure / Rust</p>
-</div>
-</div>
-<div class="col-span-3 flex items-center gap-3">
-<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
-<div class="w-[84%] h-full bg-cyber-cyan/70"></div>
-</div>
-<span class="text-[11px] font-bold text-slate-300">84.5%</span>
-</div>
-<div class="col-span-2 flex justify-center">
-<div class="sparkline-container">
-<div class="spark-bar h-[80%]"></div>
-<div class="spark-bar h-[90%]"></div>
-<div class="spark-bar h-[70%]"></div>
-<div class="spark-bar h-[75%]"></div>
-<div class="spark-bar h-[60%]"></div>
-<div class="spark-bar h-[55%]"></div>
-</div>
-</div>
-<div class="col-span-1 text-right">
-<span class="text-[11px] text-slate-300">B</span>
-</div>
-<div class="col-span-2 text-right">
-<p class="text-[10px] text-slate-400">18m ago</p>
-<p class="text-[9px] text-slate-600 uppercase">by jd-0xf</p>
-</div>
-</div>
-<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center">
-<div class="col-span-4 flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-500">model_training</span>
-<div>
-<p class="text-xs font-bold text-white">neural-weight-distributor</p>
-<p class="text-[9px] text-slate-500 uppercase">AI Layer / Python</p>
-</div>
-</div>
-<div class="col-span-3 flex items-center gap-3">
-<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
-<div class="w-[91%] h-full bg-cyber-cyan shadow-[0_0_4px_rgba(0,243,255,0.2)]"></div>
-</div>
-<span class="text-[11px] font-bold text-cyber-cyan">91.0%</span>
-</div>
-<div class="col-span-2 flex justify-center">
-<div class="sparkline-container">
-<div class="spark-bar h-[20%]"></div>
-<div class="spark-bar h-[25%]"></div>
-<div class="spark-bar h-[15%]"></div>
-<div class="spark-bar h-[10%]"></div>
-<div class="spark-bar h-[12%]"></div>
-<div class="spark-bar h-[8%] bg-cyber-cyan opacity-100"></div>
-</div>
-</div>
-<div class="col-span-1 text-right">
-<span class="text-[11px] text-slate-300">A</span>
-</div>
-<div class="col-span-2 text-right">
-<p class="text-[10px] text-slate-400">1h ago</p>
-<p class="text-[9px] text-slate-600 uppercase">by system-bot</p>
-</div>
-</div>
-<div class="grid grid-cols-12 gap-4 px-4 py-3 bg-carbon-surface border border-carbon-border rounded hover:border-slate-600 transition-colors items-center">
-<div class="col-span-4 flex items-center gap-3">
-<span class="material-symbols-outlined text-slate-500">database</span>
-<div>
-<p class="text-xs font-bold text-white">vector-storage-adapter</p>
-<p class="text-[9px] text-slate-500 uppercase">Persistence / C++</p>
-</div>
-</div>
-<div class="col-span-3 flex items-center gap-3">
-<div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
-<div class="w-[72%] h-full bg-slate-600"></div>
-</div>
-<span class="text-[11px] font-bold text-slate-500">72.4%</span>
-</div>
-<div class="col-span-2 flex justify-center">
-<div class="sparkline-container">
-<div class="spark-bar h-[40%] bg-slate-500"></div>
-<div class="spark-bar h-[50%] bg-slate-500"></div>
-<div class="spark-bar h-[60%] bg-slate-500"></div>
-<div class="spark-bar h-[65%] bg-slate-500"></div>
-<div class="spark-bar h-[75%] bg-slate-500"></div>
-<div class="spark-bar h-[90%] bg-synth-magenta opacity-100"></div>
-</div>
-</div>
-<div class="col-span-1 text-right">
-<span class="text-[11px] text-slate-500">C+</span>
-</div>
-<div class="col-span-2 text-right">
-<p class="text-[10px] text-slate-400">3h ago</p>
-<p class="text-[9px] text-slate-600 uppercase">by unknown-0x</p>
+<div class="flex items-center justify-between">
+<span class="text-[10px] text-slate-300">Complexity</span>
+<span class="text-xs font-mono font-bold text-synth-magenta">0.42</span>
 </div>
 </div>
 </div>
-<div class="mt-8 grid grid-cols-3 gap-6">
-<div class="bg-carbon-surface/40 border border-carbon-border p-5 rounded-lg">
-<div class="flex items-center gap-2 mb-4">
-<span class="material-symbols-outlined text-cyber-cyan text-sm">history_toggle_off</span>
-<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Build Velocity</h4>
-</div>
-<div class="flex items-baseline gap-2">
-<span class="text-2xl font-mono font-bold text-white">4.2</span>
-<span class="text-[10px] text-slate-500 uppercase font-bold">commits/day/dev</span>
-</div>
-<div class="mt-4 flex gap-1 items-end h-8">
-<div class="w-full bg-white/5 h-[40%]"></div>
-<div class="w-full bg-white/5 h-[60%]"></div>
-<div class="w-full bg-white/5 h-[55%]"></div>
-<div class="w-full bg-white/5 h-[80%]"></div>
-<div class="w-full bg-primary/40 h-[90%]"></div>
+<div class="mt-4 flex justify-between px-2">
+<span class="text-[9px] font-mono text-slate-600">SEP 24</span>
+<span class="text-[9px] font-mono text-slate-600">OCT 01</span>
+<span class="text-[9px] font-mono text-slate-600">OCT 08</span>
+<span class="text-[9px] font-mono text-slate-600">OCT 15</span>
+<span class="text-[9px] font-mono text-slate-600">OCT 22</span>
+<span class="text-[9px] font-mono text-slate-300">TODAY</span>
 </div>
 </div>
-<div class="bg-carbon-surface/40 border border-carbon-border p-5 rounded-lg">
-<div class="flex items-center gap-2 mb-4">
-<span class="material-symbols-outlined text-synth-magenta text-sm">warning</span>
-<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Vulnerabilities</h4>
+<div class="grid grid-cols-3 gap-6 mt-6">
+<div class="bg-carbon-surface/30 border border-carbon-border p-4 rounded-lg">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Maintainability Index</p>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-mono font-bold text-white">88</span>
+<span class="text-[10px] text-cyber-cyan font-bold uppercase mb-1">â 2.4%</span>
 </div>
-<div class="flex items-baseline gap-2">
-<span class="text-2xl font-mono font-bold text-white">0</span>
-<span class="text-[10px] text-cyber-cyan uppercase font-bold">Critical</span>
 </div>
-<p class="mt-2 text-[10px] text-slate-500 uppercase">3 low-level dependencies outdated</p>
+<div class="bg-carbon-surface/30 border border-carbon-border p-4 rounded-lg">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Technical Debt</p>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-mono font-bold text-white">4.2d</span>
+<span class="text-[10px] text-synth-magenta font-bold uppercase mb-1">â 0.5d</span>
 </div>
-<div class="bg-carbon-surface/40 border border-carbon-border p-5 rounded-lg">
-<div class="flex items-center gap-2 mb-4">
-<span class="material-symbols-outlined text-primary text-sm">checklist</span>
-<h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pull Request Cycle</h4>
 </div>
-<div class="flex items-baseline gap-2">
-<span class="text-2xl font-mono font-bold text-white">2.4h</span>
-<span class="text-[10px] text-slate-500 uppercase font-bold">avg review</span>
+<div class="bg-carbon-surface/30 border border-carbon-border p-4 rounded-lg">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Duplication</p>
+<div class="flex items-end gap-3">
+<span class="text-3xl font-mono font-bold text-white">1.8%</span>
+<span class="text-[10px] text-slate-500 font-bold uppercase mb-1">STABLE</span>
 </div>
-<div class="mt-4 w-full h-1 bg-black/40 rounded-full overflow-hidden">
-<div class="w-[85%] h-full bg-primary"></div>
 </div>
 </div>
 </div>
