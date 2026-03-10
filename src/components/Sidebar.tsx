@@ -6,46 +6,42 @@ export function Sidebar() {
   const location = useLocation();
 
   return (
-    <aside className="w-60 border-r border-border-muted flex flex-col bg-obsidian flex-shrink-0">
-      <div className="p-5">
+    <aside className="w-64 border-r border-border-muted flex flex-col bg-obsidian flex-shrink-0">
+      <div className="p-6">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-electric-blue flex items-center justify-center text-obsidian rounded-sm">
-            <Webhook size={18} className="font-bold" />
+          <div className="w-8 h-8 rounded-lg bg-electric-blue flex items-center justify-center text-obsidian shadow-lg shadow-electric-blue/20">
+            <Webhook size={20} />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-xs font-black leading-tight uppercase tracking-tighter text-white">Zulu <span className="text-electric-blue">AI</span></h1>
-            <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">Factory OS</p>
+            <h1 className="text-sm font-bold leading-tight uppercase tracking-tight text-white">Zulu AI</h1>
+            <p className="text-[10px] text-zinc-grey uppercase tracking-widest font-semibold">Factory OS</p>
           </div>
         </div>
       </div>
-      <nav className="flex-1 px-3 space-y-0.5">
-        <NavLink to="/" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded transition-all group ${isActive ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
-          <Activity size={18} />
-          <span className="text-xs font-semibold uppercase tracking-wider">Telemetry</span>
+      <nav className="flex-1 px-4 space-y-1">
+        <NavLink to="/" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+          <Activity size={20} />
+          <span className="text-sm font-medium">Telemetry</span>
         </NavLink>
-        <NavLink to="/system-health" data-testid="sidebar-system-health" className={() => `flex items-center gap-3 px-3 py-2 rounded transition-all ${location.pathname === '/system-health' ? 'bg-electric-blue/10 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
-          <LayoutDashboard size={18} className="fill-[1]" />
-          <span className="text-sm font-semibold uppercase tracking-wider">System Health</span>
+        <NavLink to="/system-health" data-testid="sidebar-system-health" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+          <LayoutDashboard size={20} className={location.pathname === '/system-health' ? 'fill-[1]' : ''} />
+          <span className="text-sm font-semibold">System Control</span>
         </NavLink>
-        <NavLink to="/kanban" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-neon-purple hover:bg-white/5 transition-all">
-          <Kanban size={18} />
-          <span className="text-xs font-semibold uppercase tracking-wider">Kanban</span>
-        </NavLink>
-        <NavLink to="/roadmap" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-          <Map size={18} />
-          <span className="text-xs font-semibold uppercase tracking-wider">Roadmap</span>
+        <NavLink to="/workflow" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+          <Kanban size={20} />
+          <span className="text-sm font-medium">Workflow</span>
         </NavLink>
 
         <div className="pt-6 pb-2">
-          <p className="px-3 text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">Infrastructure</p>
+          <p className="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Development</p>
         </div>
-        <NavLink to="/clusters" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-          <Cpu size={18} />
-          <span className="text-xs font-semibold uppercase tracking-wider">Clusters</span>
+        <NavLink to="/ci-cd" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+          <Activity size={20} />
+          <span className="text-sm font-medium">CI/CD Pipelines</span>
         </NavLink>
-        <NavLink to="/vectors" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-          <Database size={18} />
-          <span className="text-xs font-semibold uppercase tracking-wider">Vectors</span>
+        <NavLink to="/repo-sync" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+          <Database size={20} />
+          <span className="text-sm font-medium">Repository Sync</span>
         </NavLink>
       </nav>
 

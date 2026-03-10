@@ -1,5 +1,5 @@
 import { ComponentType } from 'react';
-import { LucideProps } from 'lucide-react';
+import { LucideProps, CheckCircle, TrendingDown, BadgeCheck, AlertTriangle } from 'lucide-react';
 
 interface RepositoryRowProps {
   name: string;
@@ -11,8 +11,9 @@ interface RepositoryRowProps {
   icon: ComponentType<LucideProps>;
   coverageColorClass: string;
   coverageShadowClass?: string;
-  lintTrendHeights: string[]; // array of strings like "h-[40%]"
-  lintTrendColors: string[]; // array of classes like "bg-neon-purple opacity-60"
+  lintTrendHeights: string[];
+  lintTrendColors: string[];
+  isActive?: boolean;
 }
 
 export function RepositoryRow({
@@ -20,61 +21,47 @@ export function RepositoryRow({
   type,
   coverage,
   grade,
-  lastCommit,
-  author,
-  icon: Icon,
-  coverageColorClass,
-  coverageShadowClass,
-  lintTrendHeights,
-  lintTrendColors,
+  isActive = false
 }: RepositoryRowProps) {
-  const coverageWidth = `${coverage}%`;
+  let statusIcon = <CheckCircle size={14} className="text-electric-blue" />;
+  if (grade === 'B') {
+    statusIcon = <TrendingDown size={14} className="text-zinc-500" />;
+  } else if (grade === 'A') {
+    statusIcon = <BadgeCheck size={14} className="text-electric-blue" />;
+  } else if (grade.startsWith('C')) {
+    statusIcon = <AlertTriangle size={14} className="text-neon-purple" />;
+  }
+  
+  const containerClasses = isActive
+    ? "p-4 border-b border-border-muted bg-[#135bec]/5 border-l-2 border-l-[#135bec] cursor-pointer"
+    : "p-4 border-b border-border-muted hover:bg-white/5 cursor-pointer group";
+    
+  const textNameClasses = isActive
+    ? "text-xs font-bold text-white font-mono"
+    : "text-xs font-bold text-zinc-300 font-mono group-hover:text-white transition-colors";
+
   return (
-    <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-dark-surface border border-border-muted rounded hover:border-zinc-grey transition-colors items-center group">
-      <div className="col-span-4 flex items-center gap-3">
-        <Icon size={20} className="text-zinc-grey group-hover:text-electric-blue transition-colors" />
+    <div className={containerClasses}>
+      <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-bold text-white font-mono">{name}</p>
-          <p className="text-[9px] text-zinc-grey uppercase">{type}</p>
+          <h3 className={textNameClasses}>{name}</h3>
+          <p className="text-[9px] text-zinc-500 uppercase mt-1">{type}</p>
         </div>
+        {statusIcon}
       </div>
-      <div className="col-span-3 flex items-center gap-3">
-        <div className="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
-          <div
-            className={`h-full ${coverageColorClass} ${coverageShadowClass || ''}`}
-            style={{ width: coverageWidth }}
-          ></div>
+      <div className="mt-3 flex items-center gap-4">
+        <div className="flex flex-col">
+          <span className="text-[9px] text-zinc-500 font-bold uppercase">Cov</span>
+          <span className={`text-xs font-mono font-bold ${coverage > 90 ? 'text-electric-blue' : coverage > 80 ? 'text-zinc-400' : 'text-zinc-500'}`}>
+            {coverage.toFixed(1)}%
+          </span>
         </div>
-        <span
-          className={`text-[11px] font-mono font-bold ${
-            coverage > 90 ? 'text-electric-blue' : coverage > 80 ? 'text-zinc-300' : 'text-zinc-500'
-          }`}
-        >
-          {coverage.toFixed(1)}%
-        </span>
-      </div>
-      <div className="col-span-2 flex justify-center">
-        <div className="flex items-end gap-[2px] h-[20px]">
-          {lintTrendHeights.map((heightClass, idx) => (
-            <div
-              key={idx}
-              className={`w-[3px] ${lintTrendColors[idx]} ${heightClass}`}
-            ></div>
-          ))}
+        <div className="flex flex-col">
+          <span className="text-[9px] text-zinc-500 font-bold uppercase">Cmplx</span>
+          <span className={`text-xs font-mono font-bold ${grade.startsWith('A') ? (isActive ? 'text-zinc-300' : 'text-zinc-400') : grade.startsWith('B') ? 'text-zinc-400' : 'text-neon-purple'}`}>
+            {grade}
+          </span>
         </div>
-      </div>
-      <div className="col-span-1 text-right">
-        <span
-          className={`text-[11px] font-mono ${
-            grade.startsWith('A') ? 'text-zinc-300' : grade.startsWith('B') ? 'text-zinc-300' : 'text-zinc-500'
-          }`}
-        >
-          {grade}
-        </span>
-      </div>
-      <div className="col-span-2 text-right">
-        <p className="text-[10px] font-mono text-zinc-400">{lastCommit}</p>
-        <p className="text-[9px] text-zinc-500 uppercase">by {author}</p>
       </div>
     </div>
   );

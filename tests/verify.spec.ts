@@ -291,20 +291,20 @@ test('Implement the "Code Quality" UI component', async ({ page }) => {
   await expect(headerText).toBeVisible();
 
   // Verify list module items
-  await expect(page.locator('text=zulu-factory-core-v2')).toBeVisible();
+  await expect(page.locator('text=zulu-factory-core-v2').first()).toBeVisible();
   await expect(page.locator('text=gateway-proxy-handler')).toBeVisible();
   await expect(page.locator('text=neural-weight-distributor')).toBeVisible();
   await expect(page.locator('text=vector-storage-adapter')).toBeVisible();
 
   // Verify Stats Cards
-  await expect(page.locator('text=Build Velocity')).toBeVisible();
-  await expect(page.locator('text=Active Vulnerabilities')).toBeVisible();
-  await expect(page.locator('text=Pull Request Cycle')).toBeVisible();
+  await expect(page.locator('text=Maintainability Index')).toBeVisible();
+  await expect(page.locator('text=Technical Debt')).toBeVisible();
+  await expect(page.locator('text=Duplication')).toBeVisible();
 
   // Verify Sidebar Nav link interaction
-  const codeQualityLink = page.locator('aside a', { hasText: 'System Health' });
+  const codeQualityLink = page.locator('aside a', { hasText: 'System Control' });
   await expect(codeQualityLink).toBeVisible();
-  await expect(codeQualityLink).toHaveClass(/border-l-2/); // Since it's active
+  await expect(codeQualityLink).toHaveClass(/bg-electric-blue\/10/); // Since it's active
 
   // Verify the Footer component correctly renders and deduplicates Layout logic
   await expect(page.locator('text=Zone: CLOUD-NATIVE-X86')).toBeVisible();
@@ -457,7 +457,7 @@ test('User clicks the System Health tab in the sidebar and navigates to the new 
   
   // Verify URL updated and Code Quality renders
   await expect(page).toHaveURL(/.*tab=code-quality/);
-  const codeQualityPlaceholder = page.getByText('Scanning Repositories...', { exact: true });
+  const codeQualityPlaceholder = page.getByText('Deep Audit Mode Active', { exact: true });
   await expect(codeQualityPlaceholder).toBeVisible();
 
   // Capture evidence screenshot of active feature
@@ -2562,5 +2562,25 @@ if __name__ == "__main__":
   expect(resultJson.vision.data.frames_analyzed).toBe(3);
 
   await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Set up the base Code Quality dashboard page, layout, and routing.', async ({ page }) => {
+  await page.goto('/system-health?tab=code-quality');
+  
+  // Verify modules exist
+  await expect(page.locator('text=zulu-factory-core-v2').first()).toBeVisible();
+  await expect(page.locator('text=Modules (14)')).toBeVisible();
+
+  // Verify the layout has the correct split logic components by looking for new text elements
+  await expect(page.locator('text=ACTIVE AUDIT')).toBeVisible();
+  await expect(page.locator('text=Test Coverage (%)')).toBeVisible();
+  await expect(page.locator('text=Code Complexity (Cyclomatic)')).toBeVisible();
+  
+  // Verify stats cards exist
+  await expect(page.locator('text=Maintainability Index')).toBeVisible();
+  await expect(page.locator('text=Technical Debt')).toBeVisible();
+  await expect(page.locator('text=Duplication')).toBeVisible();
+
   await page.screenshot({ path: 'evidence.png' });
 });
