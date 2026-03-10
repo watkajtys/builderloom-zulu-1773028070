@@ -2657,3 +2657,14 @@ test('CodeQuality empty state displays properly when there are no architect find
 
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Unify the display format for the \'Complexity\' metric', async ({ page }) => {
+  await page.goto('/system-health?tab=code-quality');
+  
+  // Find the text '0.42 - Grade A+' and verify it is visible
+  const complexityTooltipText = page.locator('text=0.42 - Grade A+');
+  await expect(complexityTooltipText).toBeVisible();
+
+  // Capture screenshot as required
+  await page.screenshot({ path: 'evidence.png' });
+});

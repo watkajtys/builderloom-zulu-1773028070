@@ -50,7 +50,7 @@ export function CodeQualityChart() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-zinc-300">Complexity</span>
-              <span className="text-xs font-mono font-bold text-neon-purple">0.42</span>
+              <span className="text-xs font-mono font-bold text-neon-purple">0.42 - Grade A+</span>
             </div>
           </div>
         </div>
