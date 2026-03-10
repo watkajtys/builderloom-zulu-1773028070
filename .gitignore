@@ -12,3 +12,4 @@ jules.patch
 *.log
 __pycache__/
 backend/vision/storage/
+backend/utils/storage/

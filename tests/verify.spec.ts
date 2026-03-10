@@ -2354,3 +2354,73 @@ if __name__ == "__main__":
   await page.goto('/');
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Playwright capture utility saves multiple sequential screenshots, correctly cycling out images older than T-5.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+  
+  // Set up storage directory and ensure it's clean
+  const storageDir = path.join(process.cwd(), 'backend/utils/storage');
+  if (fs.existsSync(storageDir)) {
+    fs.rmSync(storageDir, { recursive: true, force: true });
+  }
+
+  // Generate python script to test buffer logic
+  const pyScript = `
+import sys
+import os
+
+# Ensure backend module is resolvable
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from backend.utils.vision_capture import VisionCapture
+
+capture_util = VisionCapture(storage_dir="backend/utils/storage")
+with open(sys.argv[1], 'rb') as f:
+    capture_util.capture(f.read())
+`;
+  const pyScriptPath = path.join(process.cwd(), 'temp_capture_test.py');
+  fs.writeFileSync(pyScriptPath, pyScript);
+
+  try {
+    for (let i = 0; i < 7; i++) {
+      // Trigger UI update to satisfy scenario
+      await page.goto('/health');
+      if (i % 2 === 0) {
+        await page.click('[data-testid="tab-code-quality"]');
+      } else {
+        await page.click('[data-testid="tab-system-health"]');
+      }
+      
+      const tempFramePath = path.join(process.cwd(), 'temp_capture_frame.png');
+      await page.screenshot({ path: tempFramePath });
+      
+      // Pass the frame to our vision capture utility
+      execSync('python3 ' + pyScriptPath + ' ' + tempFramePath);
+      
+      // Cleanup temp frame
+      if (fs.existsSync(tempFramePath)) {
+        fs.unlinkSync(tempFramePath);
+      }
+    }
+    
+    // Verify directory contents
+    const files = fs.readdirSync(storageDir);
+    expect(files.length).toBe(6);
+    expect(files).toContain('current.png');
+    expect(files).toContain('T-1.png');
+    expect(files).toContain('T-2.png');
+    expect(files).toContain('T-3.png');
+    expect(files).toContain('T-4.png');
+    expect(files).toContain('T-5.png');
+    // Ensure T-6 is not there since max history is 5 (T-1 to T-5 plus current)
+    expect(files).not.toContain('T-6.png');
+
+  } finally {
+    if (fs.existsSync(pyScriptPath)) {
+      fs.unlinkSync(pyScriptPath);
+    }
+  }
+
+  await page.screenshot({ path: 'evidence.png' });
+});
