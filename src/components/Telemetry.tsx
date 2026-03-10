@@ -6,6 +6,7 @@ import { useTelemetryLogs } from '../hooks/useTelemetryLogs';
 import { TelemetryStats } from './TelemetryStats';
 import { TelemetryLogGrid } from './TelemetryLogGrid';
 import { PageLayout } from './PageLayout';
+import { TopNavUtility } from './TopNavUtility';
 
 export function Telemetry() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -41,6 +42,7 @@ export function Telemetry() {
 
   const rightContent = (
     <>
+      <TopNavUtility />
       <div className="relative group">
         <button 
           onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -95,10 +97,26 @@ export function Telemetry() {
     </>
   );
 
+  const leftContent = (
+    <div className="flex items-center gap-8">
+      <h2 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">
+        Telemetry <span className="mx-1">/</span> <span className="text-white">Log Grid</span>
+      </h2>
+      <nav className="flex items-center gap-4">
+        <button className="text-[10px] font-black text-electric-blue border-b border-electric-blue pb-0.5 tracking-widest uppercase">Health</button>
+        <button className="text-[10px] font-bold text-slate-500 hover:text-white tracking-widest uppercase transition-colors">Logs</button>
+        <button className="text-[10px] font-bold text-slate-500 hover:text-white tracking-widest uppercase transition-colors">Nodes</button>
+      </nav>
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-1 rounded-full bg-electric-blue animate-pulse"></div>
+        <span className="text-[9px] font-black text-electric-blue uppercase tracking-tighter neon-glow-blue">Engine Active</span>
+      </div>
+    </div>
+  );
+
   return (
     <PageLayout
-      titlePrimary="Telemetry"
-      titleSecondary="Log Grid"
+      leftContent={leftContent}
       statusIndicator={statusIndicator}
       rightContent={rightContent}
       transparentBackground={false}

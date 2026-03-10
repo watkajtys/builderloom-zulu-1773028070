@@ -5,6 +5,7 @@ import { InfrastructureStack } from './InfrastructureStack';
 import { HardwarePulse } from './HardwarePulse';
 import { PageLayout } from './PageLayout';
 import { ViewTabs } from './ViewTabs';
+import { TopNavUtility } from './TopNavUtility';
 
 export function SystemHealth() {
   const { chartData } = useTelemetry();
@@ -21,6 +22,7 @@ export function SystemHealth() {
 
   const rightContent = (
     <>
+      <TopNavUtility />
       <div className="flex items-center gap-3 px-3 py-1.5 rounded bg-dark-surface border border-border-muted">
         <span className="text-[10px] font-bold text-zinc-grey uppercase">Refresh rate:</span>
         <span className="font-mono text-[11px] text-electric-blue">500ms</span>

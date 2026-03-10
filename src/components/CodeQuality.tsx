@@ -6,6 +6,7 @@ import { ViewTabs } from './ViewTabs';
 import { CodeQualityChart } from './CodeQualityChart';
 import { CodeQualityStats } from './CodeQualityStats';
 import { CodeQualityFindingsTable } from './CodeQualityFindingsTable';
+import { TopNavUtility } from './TopNavUtility';
 
 export function CodeQuality() {
   const { repositories, architectFindings } = useRepositories();
@@ -23,6 +24,7 @@ export function CodeQuality() {
 
   const rightContent = (
     <>
+      <TopNavUtility />
       <div className="flex items-center gap-4 border-r border-border-muted pr-6">
         <div className="flex flex-col items-end">
           <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">
