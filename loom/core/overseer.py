@@ -23,7 +23,10 @@ from loom.core.state import ConductorState, LoopIteration, AttemptRecord, Backlo
 from loom.environment.git import GitClient
 from loom.environment.phoenix import PhoenixServer
 from loom.agents.stitch import StitchClient, StitchQuotaError
-from loom.agents.jules import JulesClient
+from loom.agents.jules import JulesAgent
+from backend.agents.router import RouterAgent
+from backend.agents.core.io_models import AgentRequest
+import uuid
 from loom.agents.mock_jules import MockJulesClient
 from loom.agents.architect import ArchitectAgent
 from loom.agents.vision import VisionAgent
@@ -54,12 +57,13 @@ class Overseer:
         pb_host = os.getenv("PB_HOSTNAME", "loom-pocketbase")
         self.pb_url = f"http://{pb_host}:8090"
         
+        self.router = RouterAgent(node_id="OVERSEER-ROUTER")
         # Use Mock Jules if requested
         if os.getenv("USE_MOCK_JULES", "").lower() == "true":
             logger.info("[bold yellow]Using Mock Jules Client (Local Gemini)[/bold yellow]", extra={"markup": True})
             self.jules = MockJulesClient()
         else:
-            self.jules = JulesClient()
+            self.router.register_agent("jules", JulesAgent(node_id="OVERSEER-JULES"))
             
         self.stitch = StitchClient()
         self.phoenix = PhoenixServer()
@@ -1444,9 +1448,24 @@ Example output:
                     resume_session = f"sessions/{match.group(1)}"
 
             try:
-                self.jules.run_task(task_prompt, owner, repo_name, branch_name, 
-                                   activity_callback=lambda act, url: self._update_jules_state(act, url),
-                                   resume_session_name=resume_session)
+                if hasattr(self, 'jules') and self.jules.__class__.__name__ == 'MockJulesClient':
+                    self.jules.run_task(task_prompt, owner, repo_name, branch_name, activity_callback=lambda act, url: self._update_jules_state(act, url), resume_session_name=resume_session)
+                else:
+                    request = AgentRequest(
+                        task_id=str(uuid.uuid4()),
+                        data={
+                            "task_type": "jules",
+                            "prompt": task_prompt,
+                            "repo_owner": owner,
+                            "repo_name": repo_name,
+                            "branch": branch_name,
+                            "resume_session_name": resume_session
+                        },
+                        context={"activity_callback": lambda act, url: self._update_jules_state(act, url)}
+                    )
+                    response = self.router.execute(request)
+                    if response.status != "success":
+                        raise Exception(f"Jules execution failed: {response.errors}")
                 self._check_shutdown()
                 self.git.commit(f"feat: implementation attempt {current_attempt}")
                 self.git.push_branch(branch_name)
