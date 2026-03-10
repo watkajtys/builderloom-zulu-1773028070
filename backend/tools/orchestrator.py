@@ -72,8 +72,10 @@ class Orchestrator:
             _emit_json_log("ERROR", f"Job {job_id} not found.")
             return
 
+        # Core routing logic: dispatch the job to the correct registered execution engine
         engine_impl = self.engines.get(job.engine)
         if not engine_impl:
+            _emit_json_log("ERROR", f"Routing failed: Engine '{job.engine}' not registered.")
             job.status = JobStatus.FAILED
             job.error = f"Engine '{job.engine}' not registered."
             self._save_job(job)
@@ -83,6 +85,7 @@ class Orchestrator:
         self._save_job(job)
 
         try:
+            # Dispatch the job execution to the resolved engine
             updated_job = engine_impl.execute(job)
             self._save_job(updated_job)
         except Exception as e:

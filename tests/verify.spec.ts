@@ -1033,7 +1033,8 @@ if __name__ == '__main__':
   expect(resultJson.result.mock_result).toBe(true);
   
   // Also verify that the orchestrator generated a job ID properly
-  expect(resultJson.id).toBeDefined();
+  expect(typeof resultJson.id).toBe('string');
+  expect(resultJson.id.length).toBeGreaterThan(10);
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   await page.goto('/');
