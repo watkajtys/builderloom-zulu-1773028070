@@ -1391,3 +1391,72 @@ test('Verify System Health Split-View Monitoring UI component', async ({ page })
   // Take screenshot as required
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('Implement Temporal Screenshot Storage for Vibe Agent', async ({ page }) => {
+  await page.goto('/health');
+
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+  
+  // Set up storage directory and ensure it's clean
+  const storageDir = path.join(process.cwd(), 'backend/vision/storage');
+  if (fs.existsSync(storageDir)) {
+    fs.rmSync(storageDir, { recursive: true, force: true });
+  }
+
+  // Generate python script to test buffer logic
+  const pyScript = `
+import sys
+import os
+
+# Ensure backend module is resolvable
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from backend.vision.temporal_buffer import TemporalScreenshotBuffer
+
+buf = TemporalScreenshotBuffer(storage_dir="backend/vision/storage")
+with open(sys.argv[1], 'rb') as f:
+    buf.store_frame(f.read())
+`;
+  const pyScriptPath = path.join(process.cwd(), 'temp_buffer_test.py');
+  fs.writeFileSync(pyScriptPath, pyScript);
+
+  try {
+    for (let i = 0; i < 6; i++) {
+      // Trigger UI update to satisfy scenario
+      if (i % 2 === 0) {
+        await page.click('[data-testid="tab-code-quality"]');
+      } else {
+        await page.click('[data-testid="tab-system-health"]');
+      }
+      
+      const tempFramePath = path.join(process.cwd(), 'temp_frame.png');
+      await page.screenshot({ path: tempFramePath });
+      
+      // Pass the frame to our temporal buffer
+      execSync('python3 ' + pyScriptPath + ' ' + tempFramePath);
+      
+      // Cleanup temp frame
+      if (fs.existsSync(tempFramePath)) {
+        fs.unlinkSync(tempFramePath);
+      }
+    }
+    
+    // Verify directory contents
+    const files = fs.readdirSync(storageDir);
+    expect(files.length).toBe(6);
+    expect(files).toContain('current.png');
+    expect(files).toContain('T-1.png');
+    expect(files).toContain('T-2.png');
+    expect(files).toContain('T-3.png');
+    expect(files).toContain('T-4.png');
+    expect(files).toContain('T-5.png');
+
+  } finally {
+    if (fs.existsSync(pyScriptPath)) {
+      fs.unlinkSync(pyScriptPath);
+    }
+  }
+
+  await page.screenshot({ path: 'evidence.png' });
+});

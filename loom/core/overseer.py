@@ -1711,6 +1711,16 @@ CRITICAL RULES:
             if os.path.exists("app/evidence.png"):
                 ts = int(time.time())
                 evidence_path = f"viewer/public/artifacts/iter_{self.state.current_iteration}_attempt_{attempt}_evidence_{ts}.png"
+                
+                # Store in rolling temporal buffer for Vibe/Vision context before moving
+                try:
+                    from backend.vision.temporal_buffer import TemporalScreenshotBuffer
+                    buffer = TemporalScreenshotBuffer()
+                    with open("app/evidence.png", "rb") as f:
+                        buffer.store_frame(f.read())
+                except Exception as e:
+                    logger.warning(f"Failed to store evidence frame in temporal buffer: {e}")
+
                 shutil.move("app/evidence.png", evidence_path)
                 # Store relative path for UI
                 self.app_screenshot_path = f"artifacts/iter_{self.state.current_iteration}_attempt_{attempt}_evidence_{ts}.png"
@@ -1733,6 +1743,14 @@ CRITICAL RULES:
             app_screenshot_path = f"artifacts/iter_{self.state.current_iteration}_attempt_{attempt}_app_{ts}.png"
             with open(f"viewer/public/{app_screenshot_path}", "wb") as f:
                 f.write(self.app_screenshot)
+                
+            # Store in rolling temporal buffer for Vibe/Vision context
+            try:
+                from backend.vision.temporal_buffer import TemporalScreenshotBuffer
+                buffer = TemporalScreenshotBuffer()
+                buffer.store_frame(self.app_screenshot)
+            except Exception as e:
+                logger.warning(f"Failed to store frame in temporal buffer: {e}")
         
         # 2. Persist the Code Patch as an artifact so the Viewer can display it
         jules_patch_artifact = None

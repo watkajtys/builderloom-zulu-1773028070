@@ -11,3 +11,4 @@ evidence.png
 jules.patch
 *.log
 __pycache__/
+backend/vision/storage/
