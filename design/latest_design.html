@@ -2,7 +2,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Zulu OS: Repository Pulse Variant</title>
+<title>Zulu OS: Segmented Header Control Variant</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -17,6 +17,7 @@
                         "cyber-cyan": "#00f3ff",
                         "synth-magenta": "#ff00ff",
                         "background-dark": "#0a0c10",
+                        "deep-obsidian": "#0d1117",
                         "carbon-surface": "#161b22",
                         "carbon-border": "#30363d"
                     },
@@ -31,7 +32,7 @@
     </script>
 <style type="text/tailwindcss">
         @layer base {
-            body { @apply font-sans; }
+            body { @apply font-sans bg-background-dark; }
         }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
@@ -50,9 +51,21 @@
         .health-score-ring {
             background: conic-gradient(from 0deg, #00f3ff 94.2%, #161b22 0%);
         }
+        .segmented-control {
+            @apply flex p-1 bg-black/40 rounded-lg border border-carbon-border;
+        }
+        .segment-btn {
+            @apply flex items-center gap-2 px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all relative;
+        }
+        .segment-btn-active {
+            @apply bg-carbon-surface text-white shadow-sm border border-carbon-border;
+        }
+        .segment-btn-inactive {
+            @apply text-slate-500 hover:text-slate-300;
+        }
     </style>
 </head>
-<body class="bg-background-dark text-slate-100 h-screen overflow-hidden">
+<body class="text-slate-100 h-screen overflow-hidden">
 <div class="flex h-full overflow-hidden">
 <aside class="w-64 border-r border-carbon-border flex flex-col bg-background-dark flex-shrink-0">
 <div class="p-6">
@@ -72,8 +85,8 @@
 <span class="text-sm font-medium">Telemetry</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary transition-colors" href="#">
-<span class="material-symbols-outlined text-[20px] fill-[1]">code_blocks</span>
-<span class="text-sm font-semibold">Code Quality</span>
+<span class="material-symbols-outlined text-[20px] fill-[1]">dashboard_customize</span>
+<span class="text-sm font-semibold">System Control</span>
 </a>
 <a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-400 hover:bg-white/5 transition-colors" href="#">
 <span class="material-symbols-outlined text-[20px]">view_kanban</span>
@@ -102,10 +115,21 @@
 </div>
 </div>
 </aside>
-<main class="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-[#0d1117]">
+<main class="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-deep-obsidian">
 <header class="h-14 border-b border-carbon-border bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-20">
 <div class="flex items-center gap-6">
-<h2 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Code Quality / <span class="text-white">Repository Pulse</span></h2>
+<h2 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] flex-shrink-0">Repository Pulse</h2>
+<div class="segmented-control">
+<button class="segment-btn segment-btn-inactive">
+<span class="material-symbols-outlined text-sm">monitor_heart</span>
+                        System Health
+<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-synth-magenta rounded-full border-2 border-background-dark animate-pulse shadow-[0_0_8px_#ff00ff]"></span>
+</button>
+<button class="segment-btn segment-btn-active">
+<span class="material-symbols-outlined text-sm">code_blocks</span>
+                        Code Quality
+                    </button>
+</div>
 <div class="h-4 w-px bg-carbon-border"></div>
 <div class="flex items-center gap-4">
 <div class="flex items-center gap-2">
@@ -139,14 +163,14 @@
 <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
 <div class="mb-6 flex items-center justify-between">
 <div>
-<h3 class="text-sm font-bold text-white mb-1">Active Repositories</h3>
+<h3 class="text-sm font-bold text-white mb-1 font-mono">Active Repositories</h3>
 <p class="text-[10px] text-slate-500 uppercase tracking-widest">Tracking 14 production modules across 3 regions</p>
 </div>
 <div class="flex gap-2">
 <span class="px-2 py-1 bg-carbon-surface border border-carbon-border text-[9px] font-mono text-slate-400 rounded">SORT: COVERAGE DESC</span>
 </div>
 </div>
-<div class="grid grid-cols-1 gap-2">
+<div class="grid grid-cols-1 gap-2 font-mono">
 <div class="grid grid-cols-12 gap-4 px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-b border-carbon-border mb-2">
 <div class="col-span-4">Module Name</div>
 <div class="col-span-3">Test Coverage</div>
@@ -158,7 +182,7 @@
 <div class="col-span-4 flex items-center gap-3">
 <span class="material-symbols-outlined text-slate-500 group-hover:text-cyber-cyan transition-colors">hub</span>
 <div>
-<p class="text-xs font-bold text-white font-mono">zulu-factory-core-v2</p>
+<p class="text-xs font-bold text-white">zulu-factory-core-v2</p>
 <p class="text-[9px] text-slate-500 uppercase">Production / Go-lang</p>
 </div>
 </div>
@@ -166,7 +190,7 @@
 <div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
 <div class="w-[98%] h-full bg-cyber-cyan shadow-[0_0_8px_rgba(0,243,255,0.4)]"></div>
 </div>
-<span class="text-[11px] font-mono font-bold text-cyber-cyan">98.2%</span>
+<span class="text-[11px] font-bold text-cyber-cyan">98.2%</span>
 </div>
 <div class="col-span-2 flex justify-center">
 <div class="sparkline-container">
@@ -179,10 +203,10 @@
 </div>
 </div>
 <div class="col-span-1 text-right">
-<span class="text-[11px] font-mono text-slate-300">A+</span>
+<span class="text-[11px] text-slate-300">A+</span>
 </div>
 <div class="col-span-2 text-right">
-<p class="text-[10px] font-mono text-slate-400">4m ago</p>
+<p class="text-[10px] text-slate-400">4m ago</p>
 <p class="text-[9px] text-slate-600 uppercase">by ac-0x2</p>
 </div>
 </div>
@@ -190,7 +214,7 @@
 <div class="col-span-4 flex items-center gap-3">
 <span class="material-symbols-outlined text-slate-500">api</span>
 <div>
-<p class="text-xs font-bold text-white font-mono">gateway-proxy-handler</p>
+<p class="text-xs font-bold text-white">gateway-proxy-handler</p>
 <p class="text-[9px] text-slate-500 uppercase">Infrastructure / Rust</p>
 </div>
 </div>
@@ -198,7 +222,7 @@
 <div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
 <div class="w-[84%] h-full bg-cyber-cyan/70"></div>
 </div>
-<span class="text-[11px] font-mono font-bold text-slate-300">84.5%</span>
+<span class="text-[11px] font-bold text-slate-300">84.5%</span>
 </div>
 <div class="col-span-2 flex justify-center">
 <div class="sparkline-container">
@@ -211,10 +235,10 @@
 </div>
 </div>
 <div class="col-span-1 text-right">
-<span class="text-[11px] font-mono text-slate-300">B</span>
+<span class="text-[11px] text-slate-300">B</span>
 </div>
 <div class="col-span-2 text-right">
-<p class="text-[10px] font-mono text-slate-400">18m ago</p>
+<p class="text-[10px] text-slate-400">18m ago</p>
 <p class="text-[9px] text-slate-600 uppercase">by jd-0xf</p>
 </div>
 </div>
@@ -222,7 +246,7 @@
 <div class="col-span-4 flex items-center gap-3">
 <span class="material-symbols-outlined text-slate-500">model_training</span>
 <div>
-<p class="text-xs font-bold text-white font-mono">neural-weight-distributor</p>
+<p class="text-xs font-bold text-white">neural-weight-distributor</p>
 <p class="text-[9px] text-slate-500 uppercase">AI Layer / Python</p>
 </div>
 </div>
@@ -230,7 +254,7 @@
 <div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
 <div class="w-[91%] h-full bg-cyber-cyan shadow-[0_0_4px_rgba(0,243,255,0.2)]"></div>
 </div>
-<span class="text-[11px] font-mono font-bold text-cyber-cyan">91.0%</span>
+<span class="text-[11px] font-bold text-cyber-cyan">91.0%</span>
 </div>
 <div class="col-span-2 flex justify-center">
 <div class="sparkline-container">
@@ -243,10 +267,10 @@
 </div>
 </div>
 <div class="col-span-1 text-right">
-<span class="text-[11px] font-mono text-slate-300">A</span>
+<span class="text-[11px] text-slate-300">A</span>
 </div>
 <div class="col-span-2 text-right">
-<p class="text-[10px] font-mono text-slate-400">1h ago</p>
+<p class="text-[10px] text-slate-400">1h ago</p>
 <p class="text-[9px] text-slate-600 uppercase">by system-bot</p>
 </div>
 </div>
@@ -254,7 +278,7 @@
 <div class="col-span-4 flex items-center gap-3">
 <span class="material-symbols-outlined text-slate-500">database</span>
 <div>
-<p class="text-xs font-bold text-white font-mono">vector-storage-adapter</p>
+<p class="text-xs font-bold text-white">vector-storage-adapter</p>
 <p class="text-[9px] text-slate-500 uppercase">Persistence / C++</p>
 </div>
 </div>
@@ -262,7 +286,7 @@
 <div class="flex-1 h-1.5 bg-black/40 rounded-full overflow-hidden">
 <div class="w-[72%] h-full bg-slate-600"></div>
 </div>
-<span class="text-[11px] font-mono font-bold text-slate-500">72.4%</span>
+<span class="text-[11px] font-bold text-slate-500">72.4%</span>
 </div>
 <div class="col-span-2 flex justify-center">
 <div class="sparkline-container">
@@ -275,10 +299,10 @@
 </div>
 </div>
 <div class="col-span-1 text-right">
-<span class="text-[11px] font-mono text-slate-500">C+</span>
+<span class="text-[11px] text-slate-500">C+</span>
 </div>
 <div class="col-span-2 text-right">
-<p class="text-[10px] font-mono text-slate-400">3h ago</p>
+<p class="text-[10px] text-slate-400">3h ago</p>
 <p class="text-[9px] text-slate-600 uppercase">by unknown-0x</p>
 </div>
 </div>
