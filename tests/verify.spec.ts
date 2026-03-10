@@ -3,6 +3,11 @@ import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
 
+test.beforeAll(() => {
+  // Ensure python dependencies are installed prior to running the backend integration tests
+  execSync('pip install -q -r requirements.txt', { stdio: 'ignore' });
+});
+
 test('App initializes correctly', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('text=Telemetry / Log Grid')).toBeVisible();

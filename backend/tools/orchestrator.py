@@ -37,6 +37,7 @@ class Orchestrator:
 
         self.queue.append(job_id)
         self._save_job(job)
+        _emit_json_log("INFO", f"Job {job_id} submitted for engine {engine}")
         return job_id
 
     def get_job(self, job_id: str) -> Optional[Job]:
@@ -88,6 +89,7 @@ class Orchestrator:
             # Dispatch the job execution to the resolved engine
             updated_job = engine_impl.execute(job)
             self._save_job(updated_job)
+            _emit_json_log("INFO", f"Job {job_id} completed successfully.")
         except Exception as e:
             _emit_json_log("ERROR", f"Error executing job {job_id}: {e}")
             job.status = JobStatus.FAILED
