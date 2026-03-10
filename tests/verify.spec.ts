@@ -8,6 +8,49 @@ test.beforeAll(() => {
   execSync('pip install -q -r requirements.txt', { stdio: 'ignore' });
 });
 
+test('Implement dynamic UI components to render the static analysis findings.', async ({ page }) => {
+  await page.route('**/api/collections/architect_findings/records*', async route => {
+    const json = {
+      items: [
+        {
+          id: "mock1",
+          filepath: "src/components/Sidebar.tsx",
+          score: 8.5,
+          issues: [{tool: "eslint", type: "error", line: 42, symbol: "no-unused-vars", message: "unused variable"}],
+          static_violations: [
+            {tool: "eslint", type: "error", line: 42, symbol: "no-unused-vars", message: "'Cpu' is defined but never used"},
+            {tool: "eslint", type: "warning", line: 45, symbol: "no-console", message: "Unexpected console statement"}
+          ]
+        }
+      ]
+    };
+    await route.fulfill({ json });
+  });
+
+  await page.goto('/system-health?tab=code-quality');
+  
+  // Verify the new Findings tab and count
+  await expect(page.locator('button', { hasText: 'Current Findings' })).toBeVisible();
+  
+  // Verify the table headers
+  await expect(page.locator('th', { hasText: 'Issue / Component' })).toBeVisible();
+  await expect(page.locator('th', { hasText: 'Severity' })).toBeVisible();
+  await expect(page.locator('th', { hasText: 'Debt Impact' })).toBeVisible();
+  
+  // Verify the mock data mapped correctly
+  await expect(page.locator('text=\'Cpu\' is defined but never used')).toBeVisible();
+  await expect(page.locator('text=src/components/Sidebar.tsx:42')).toBeVisible();
+  
+  await expect(page.locator('text=Unexpected console statement')).toBeVisible();
+  await expect(page.locator('text=src/components/Sidebar.tsx:45')).toBeVisible();
+  
+  // Verify Severity badges
+  await expect(page.locator('span', { hasText: 'ERROR' })).toBeVisible();
+  await expect(page.locator('span', { hasText: 'WARNING' })).toBeVisible();
+
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('App initializes correctly', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('text=Telemetry / Log Grid')).toBeVisible();
