@@ -434,6 +434,36 @@ print(store.pb.base_url)
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('User clicks the System Health tab in the sidebar and navigates to the new route successfully.', async ({ page }) => {
+  // Start on homepage
+  await page.goto('/');
+  
+  // Click on the new System Control sidebar tab
+  const sidebarLink = page.locator('[data-testid="sidebar-system-health"]');
+  await expect(sidebarLink).toBeVisible();
+  await sidebarLink.click();
+  
+  // Verify navigation to /system-health
+  await expect(page).toHaveURL(/.*\/system-health/);
+  
+  // Verify default tab is System Health
+  const systemHealthPlaceholder = page.getByText('Real-time Pulse Active', { exact: true });
+  await expect(systemHealthPlaceholder).toBeVisible();
+  
+  // Toggle to Code Quality
+  const codeQualityTab = page.locator('[data-testid="tab-code-quality"]');
+  await expect(codeQualityTab).toBeVisible();
+  await codeQualityTab.click();
+  
+  // Verify URL updated and Code Quality renders
+  await expect(page).toHaveURL(/.*tab=code-quality/);
+  const codeQualityPlaceholder = page.getByText('Scanning Repositories...', { exact: true });
+  await expect(codeQualityPlaceholder).toBeVisible();
+
+  // Capture evidence screenshot of active feature
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('Implement a single node executor with prompt interpolation', async ({ page }) => {
   const scriptContent = `
 import sys

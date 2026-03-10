@@ -1,11 +1,9 @@
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Webhook, Activity, HeartPulse, Kanban, Map, Cpu, Database, Code2 } from 'lucide-react';
+import { Webhook, Activity, Kanban, Map, Cpu, Database, LayoutDashboard } from 'lucide-react';
 
 export function Sidebar() {
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const activeTab = searchParams.get('tab');
 
   return (
     <aside className="w-60 border-r border-border-muted flex flex-col bg-obsidian flex-shrink-0">
@@ -25,13 +23,9 @@ export function Sidebar() {
           <Activity size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Telemetry</span>
         </NavLink>
-        <NavLink to="/health?tab=system-health" className={() => `flex items-center gap-3 px-3 py-2 rounded transition-all ${location.pathname === '/health' && (activeTab === 'system-health' || !activeTab) ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
-          <HeartPulse size={18} className="fill-[1]" />
-          <span className="text-xs font-bold uppercase tracking-wider neon-glow-blue">Health</span>
-        </NavLink>
-        <NavLink to="/health?tab=code-quality" className={() => `flex items-center gap-3 px-3 py-2 rounded transition-all ${location.pathname === '/health' && activeTab === 'code-quality' ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
-          <Code2 size={18} className="fill-[1]" />
-          <span className="text-xs font-bold uppercase tracking-wider">Code Quality</span>
+        <NavLink to="/system-health" data-testid="sidebar-system-health" className={() => `flex items-center gap-3 px-3 py-2 rounded transition-all ${location.pathname === '/system-health' ? 'bg-electric-blue/10 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
+          <LayoutDashboard size={18} className="fill-[1]" />
+          <span className="text-sm font-semibold uppercase tracking-wider">System Control</span>
         </NavLink>
         <NavLink to="/kanban" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-neon-purple hover:bg-white/5 transition-all">
           <Kanban size={18} />

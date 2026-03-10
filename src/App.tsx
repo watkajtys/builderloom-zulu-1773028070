@@ -9,7 +9,7 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Telemetry />} />
-          <Route path="/health" element={<HealthDashboard />} />
+          <Route path="/system-health" element={<HealthDashboard />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

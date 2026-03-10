@@ -18,6 +18,7 @@ export function PageLayout({
   titleSecondary,
   statusIndicator,
   rightContent,
+  leftContent,
   transparentBackground = false,
   footerZone,
   footerLoadOrCpu,
@@ -33,6 +34,7 @@ export function PageLayout({
         titleSecondary={titleSecondary}
         statusIndicator={statusIndicator}
         rightContent={rightContent}
+        leftContent={leftContent}
         transparentBackground={transparentBackground}
       />
       
