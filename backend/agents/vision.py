@@ -86,7 +86,8 @@ class VisionAgent(BaseAgent):
             "Rules:\n",
             "1. Ignore minor layout shifts or intended replacements.\n",
             "2. Flag a critical regression ONLY IF a clear functional element (like a button, panel, or graph) was present in earlier frames but is inexplicably missing or broken in the final frame.\n",
-            "3. Provide your assessment in strict JSON format with two keys: 'regression_detected' (boolean) and 'reason' (string).\n",
+            "3. Evaluate 'object permanence' across the timeline array. Severely penalize UI changes that unnecessarily destroy previously working elements.\n",
+            "4. Provide your assessment in strict JSON format with two keys: 'regression_detected' (boolean) and 'reason' (string).\n",
             "Output ONLY the JSON object, nothing else."
         ]
         
