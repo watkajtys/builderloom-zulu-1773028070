@@ -21,9 +21,9 @@ export function Sidebar() {
           <Activity size={18} />
           <span className="text-xs font-semibold uppercase tracking-wider">Telemetry</span>
         </NavLink>
-        <NavLink to="/system-health" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded transition-all ${isActive ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
+        <NavLink to="/health" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded transition-all ${isActive ? 'bg-electric-blue/5 text-electric-blue border-l-2 border-electric-blue' : 'text-slate-400 hover:text-electric-blue hover:bg-white/5'}`}>
           <HeartPulse size={18} className="fill-[1]" />
-          <span className="text-xs font-bold uppercase tracking-wider neon-glow-blue">System Health</span>
+          <span className="text-xs font-bold uppercase tracking-wider neon-glow-blue">Health</span>
         </NavLink>
         <NavLink to="/kanban" className="flex items-center gap-3 px-3 py-2 rounded text-slate-400 hover:text-neon-purple hover:bg-white/5 transition-all">
           <Kanban size={18} />

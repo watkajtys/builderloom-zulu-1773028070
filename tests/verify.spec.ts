@@ -27,7 +27,7 @@ test('Fix broken icon rendering showing raw text strings across the UI', async (
   await expect(sidebar).toBeVisible();
   
   // Checking that svgs exist within the sidebar links
-  const systemHealthLink = sidebar.locator('a[href="/system-health"]');
+  const systemHealthLink = sidebar.locator('a[href="/health"]');
   await expect(systemHealthLink.locator('svg')).toBeVisible();
 
   await page.screenshot({ path: 'evidence.png' });
@@ -60,7 +60,7 @@ test('Zulu Dashboard loads correctly', async ({ page }) => {
 });
 
 test('React system-health route loads and EXPORT button is de-emphasized', async ({ page }) => {
-  await page.goto('/system-health');
+  await page.goto('/health');
   await expect(page.locator('text=Zulu AI')).toBeVisible();
   
   const exportBtn = page.locator('button', { hasText: 'Export' });
@@ -80,7 +80,7 @@ test('PocketBase connection uses proper relative path', async ({ page }) => {
 });
 
 test('Dashboard uses abstracted reusable components', async ({ page }) => {
-  await page.goto('/system-health');
+  await page.goto('/health');
   
   // Verify Sidebar layout component is visible
   await expect(page.locator('aside').filter({ hasText: 'Zulu AI' })).toBeVisible();
@@ -103,7 +103,7 @@ test('Dashboard uses abstracted reusable components', async ({ page }) => {
 });
 
 test('Smooth chart data rendering to feel like a premium, realistic dashboard', async ({ page }) => {
-  await page.goto('/system-health');
+  await page.goto('/health');
   
   // Wait for the SVG to load
   const svgContainer = page.locator('.h-\\[220px\\]');
@@ -131,7 +131,7 @@ test('Smooth chart data rendering to feel like a premium, realistic dashboard', 
   await page.screenshot({ path: 'evidence.png' });
 });
 test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ page }) => {
-  await page.goto('/system-health');
+  await page.goto('/health');
   
   // Wait for the specific multiline error log to be rendered
   await page.waitForSelector('text=retrying...');
@@ -1300,5 +1300,37 @@ console.log(x, y, z);
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
+test('Scaffold the new UI Tab routing and shell component', async ({ page }) => {
+  // Navigate to the newly updated /health route
+  await page.goto('/health');
+
+  // Verify shell and tabs exist
+  const shell = page.locator('[data-testid="health-dashboard-shell"]');
+  await expect(shell).toBeVisible();
+
+  const tabSystemHealth = page.locator('[data-testid="tab-system-health"]');
+  const tabCodeQuality = page.locator('[data-testid="tab-code-quality"]');
+
+  await expect(tabSystemHealth).toBeVisible();
+  await expect(tabCodeQuality).toBeVisible();
+
+  // Verify default state
+  const placeholderSystemHealth = page.locator('[data-testid="placeholder-system-health"]');
+  await expect(placeholderSystemHealth).toBeVisible();
+
+  // Verify switching tabs
+  await tabCodeQuality.click();
+  const placeholderCodeQuality = page.locator('[data-testid="placeholder-code-quality"]');
+  await expect(placeholderCodeQuality).toBeVisible();
+  await expect(placeholderSystemHealth).not.toBeVisible();
+
+  // Switch back
+  await tabSystemHealth.click();
+  await expect(placeholderSystemHealth).toBeVisible();
+  await expect(placeholderCodeQuality).not.toBeVisible();
+
   await page.screenshot({ path: 'evidence.png' });
 });

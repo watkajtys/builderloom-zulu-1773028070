@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { SystemHealth } from './components/SystemHealth';
+import { HealthDashboard } from './components/HealthDashboard';
 import { Telemetry } from './components/Telemetry';
 
 export default function App() {
@@ -9,7 +9,7 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Telemetry />} />
-          <Route path="/system-health" element={<SystemHealth />} />
+          <Route path="/health" element={<HealthDashboard />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
