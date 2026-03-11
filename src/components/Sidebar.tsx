@@ -23,13 +23,9 @@ export function Sidebar() {
           <Activity size={20} />
           <span className="text-sm font-medium">Telemetry</span>
         </NavLink>
-        <NavLink to="/system-health" data-testid="sidebar-system-health" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive && !location.search.includes('tab=code-quality') ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
-          <LayoutDashboard size={20} className={location.pathname === '/system-health' && !location.search.includes('tab=code-quality') ? 'fill-[1]' : ''} />
+        <NavLink to="/system-health" data-testid="sidebar-system-health" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+          <LayoutDashboard size={20} className={location.pathname === '/system-health' ? 'fill-[1]' : ''} />
           <span className="text-sm font-semibold">System Control</span>
-        </NavLink>
-        <NavLink to="/system-health?tab=code-quality" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${location.pathname === '/system-health' && location.search.includes('tab=code-quality') ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
-          <Map size={20} className={location.pathname === '/system-health' && location.search.includes('tab=code-quality') ? 'fill-[1]' : ''} />
-          <span className="text-sm font-semibold">Architect Explorer</span>
         </NavLink>
         <NavLink to="/workflow" className={({ isActive }) => `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${isActive ? 'bg-electric-blue/10 text-electric-blue' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
           <Kanban size={20} />
