@@ -40,6 +40,7 @@ def init_core_collections():
         "Content-Type": "application/json"
     }
 
+    # Note: JSON fields require an options object with maxSize. Empty strings for rules enable public access.
     schema = [
         {
             "name": "conductor_state",

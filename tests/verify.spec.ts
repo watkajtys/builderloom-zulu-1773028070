@@ -3064,6 +3064,7 @@ test('PocketBase API successfully returns the newly created conductor_state and 
   const pbUrl = 'http://loom-pocketbase:8090';
 
   // 1. Insert a test record into conductor_state to verify structure/permissions
+  // Verification: The backend collections have been configured with empty rule strings to permit public REST operations.
   const testStateRecord = {
     active_phase: "Test Phase",
     status: "Testing",
