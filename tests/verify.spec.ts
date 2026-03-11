@@ -3711,3 +3711,111 @@ if __name__ == "__main__":
   
   await page.screenshot({ path: 'evidence.png' });
 });
+
+test('User navigates to /kanban, drags a task from the bottom of the column to the top. Collection updates the order index, UI reactively maintains the new layout.', async ({ page }) => {
+  // Navigate to kanban board
+  await page.goto('/kanban');
+  
+  // Wait for loading to finish and tasks to appear
+  await page.waitForSelector('text=Backlog');
+  await page.waitForSelector('text=Z-1042');
+  
+  // Wait for explicit target elements
+  const bottomTask = page.locator('text=Z-1048').locator('xpath=ancestor::div[contains(@class, "cursor-grab")]');
+  const topTask = page.locator('text=Z-1042').locator('xpath=ancestor::div[contains(@class, "cursor-grab")]');
+
+  // Verify initial order by checking vertical positions
+  const initialBottomBox = await bottomTask.boundingBox();
+  const initialTopBox = await topTask.boundingBox();
+  
+  if (!initialBottomBox || !initialTopBox) {
+    throw new Error('Could not find bounding boxes for tasks');
+  }
+  
+  // Assert initial positions (bottom is below top)
+  if (initialBottomBox.y <= initialTopBox.y) {
+    throw new Error('Initial order is incorrect: bottom task is above top task');
+  }
+
+  // Perform drag and drop action
+  await bottomTask.dragTo(topTask);
+  
+  // Wait a moment for state updates to trigger and re-render
+  await page.waitForTimeout(500);
+  
+  // Verify new order by checking vertical positions
+  const newBottomBox = await bottomTask.boundingBox();
+  const newTopBox = await topTask.boundingBox();
+  
+  if (!newBottomBox || !newTopBox) {
+    throw new Error('Could not find bounding boxes for tasks after drag');
+  }
+  
+  // Assert new positions (previously bottom task is now above the top task)
+  if (newBottomBox.y >= newTopBox.y) {
+    throw new Error('New order is incorrect: bottom task did not move above top task');
+  }
+
+  // Verify Pocketbase persistence using Python script
+  const fetchScript = `
+import requests
+import os
+import sys
+
+# Connect to the docker network pocketbase instance
+POCKETBASE_URL = os.environ.get("POCKETBASE_URL", "http://loom-pocketbase:8090")
+
+try:
+    url = f"{POCKETBASE_URL}/api/collections/kanban_tasks/records"
+    # Get all tasks in backlog
+    resp = requests.get(url, params={"filter": "status='backlog'", "sort": "order"})
+    
+    if resp.status_code != 200:
+        print(f"Error fetching tasks: {resp.text}")
+        sys.exit(1)
+        
+    records = resp.json().get('items', [])
+    if not records:
+        print("No tasks found in backlog")
+        sys.exit(1)
+        
+    # Check if Z-1048 (the dragged task) is now the first item
+    first_task_id = records[0].get('task_id')
+    if first_task_id != 'Z-1048':
+        print(f"Order failed. Expected Z-1048 to be first, but found {first_task_id}")
+        sys.exit(1)
+        
+    print("Order verified successfully")
+    sys.exit(0)
+except Exception as e:
+    print(f"Error checking order: {e}")
+    sys.exit(1)
+`;
+  
+  const fs = await import('fs');
+  const { execSync } = await import('child_process');
+  
+  const testScriptPath = '/tmp/verify_order.py';
+  fs.writeFileSync(testScriptPath, fetchScript);
+  
+  try {
+    execSync(`python3 ${testScriptPath}`, { stdio: 'pipe' });
+  } catch (err: unknown) {
+    if (err instanceof Error && 'stdout' in err && 'stderr' in err) {
+        console.error((err as unknown as {stdout: Buffer}).stdout.toString());
+        console.error((err as unknown as {stderr: Buffer}).stderr.toString());
+    }
+    throw new Error('Backend order verification failed.');
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  // Open modal just to capture it in screenshot as per instruction
+  await page.click('text=Steer');
+  await page.waitForSelector('text=Human-in-the-Loop Steering');
+
+  // Screenshot evidence
+  await page.screenshot({ path: 'evidence.png' });
+});
