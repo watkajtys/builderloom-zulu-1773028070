@@ -3060,10 +3060,6 @@ test('The Overseer successfully routes a task, executes the Frontend Agent, vali
 });
 
 test('PocketBase API successfully returns the newly created conductor_state and repo_memory collections, accepting a test record insertion via standard REST requests.', async ({ page, request }) => {
-  // Ensure the database collections are created before testing them
-  const { execSync } = await import('child_process');
-  execSync('python3 backend/init_db.py', { stdio: 'inherit' });
-
   // Use http://loom-pocketbase:8090 because tests run inside a Docker network
   const pbUrl = 'http://loom-pocketbase:8090';
 
