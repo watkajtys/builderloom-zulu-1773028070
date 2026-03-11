@@ -48,6 +48,7 @@ Output ONLY the condensed, highly dense text block. No pleasantries, no markdown
             learnings = request.data.get("learnings", [])
             record_id = None
             
+            # Isolate high-latency summarization and state-reduction logic
             try:
                 records = pb.collection('repo_memory').get_full_list()
                 if records and len(records) > 0:

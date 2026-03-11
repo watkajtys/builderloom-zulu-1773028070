@@ -1,6 +1,6 @@
 
 import { NavLink, useLocation } from 'react-router-dom';
-import { Webhook, Activity, Kanban, Map, Cpu, Database, LayoutDashboard } from 'lucide-react';
+import { Webhook, Activity, Kanban,   Database, LayoutDashboard } from 'lucide-react';
 
 export function Sidebar() {
   const location = useLocation();

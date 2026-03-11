@@ -1,4 +1,3 @@
-
 import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface MetricCardProps {
@@ -14,7 +13,6 @@ interface MetricCardProps {
 
 export function MetricCard({ title, icon, value, unit, change, trend, percentage, color }: MetricCardProps) {
   const isBlue = color === 'blue';
-  const colorClass = isBlue ? 'electric-blue' : 'neon-purple';
   const bgClass = isBlue ? 'bg-electric-blue/5' : 'bg-neon-purple/5';
   const textClass = isBlue ? 'text-electric-blue' : 'text-neon-purple';
   const fillClass = isBlue ? 'bg-electric-blue' : 'bg-neon-purple';

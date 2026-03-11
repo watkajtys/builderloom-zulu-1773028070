@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { pb } from '../services/pocketbase';
-import { mockTelemetryLogs } from '../services/mockTelemetryData';
+import { telemetryService } from '../services/telemetryService';
 import { getLogLevelConfig, formatLogMessage } from '../utils/telemetryConfig';
 
 export interface TelemetryLog {
@@ -9,7 +8,8 @@ export interface TelemetryLog {
   log_level: string;
   node_id: string;
   event_type: string;
-  payload: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload: Record<string, unknown>;
 }
 
 export interface DisplayLog {
@@ -31,14 +31,18 @@ export function useTelemetryLogs() {
   });
 
   useEffect(() => {
-    // Initial mock data as requested for test passing
-    setLogs(mockTelemetryLogs);
-
-    // In a real scenario, we'd fetch from pb.collection('telemetry').getList(...)
-    // and subscribe to changes pb.collection('telemetry').subscribe('*', function(e) { ... })
+    let isMounted = true;
+    
+    telemetryService.getLogs().then(fetchedLogs => {
+      if (isMounted) setLogs(fetchedLogs);
+    });
+    
+    telemetryService.getStats().then(fetchedStats => {
+      if (isMounted) setStats(fetchedStats);
+    });
 
     return () => {
-      // pb.collection('telemetry').unsubscribe('*');
+      isMounted = false;
     };
   }, []);
 

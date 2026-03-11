@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Network, Box, Code2, Database, LucideIcon } from 'lucide-react';
+import {  LucideIcon } from 'lucide-react';
 import { pb } from '../services/pocketbase';
 import { ArchitectFinding } from '../types/architect';
 import { mockRepositories } from '../services/mockRepositoryData';

@@ -4,7 +4,9 @@ import { TelemetryLog } from './useTelemetryLogs';
 
 export function useTelemetryFilter(logs: TelemetryLog[]) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeLevels = searchParams.get('levels')?.split(',') || ['INFO', 'ERROR', 'WARN', 'DEBUG', 'THOUGHT'];
+  const activeLevels = useMemo(() => {
+    return searchParams.get('levels')?.split(',') || ['INFO', 'ERROR', 'WARN', 'DEBUG', 'THOUGHT'];
+  }, [searchParams]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 

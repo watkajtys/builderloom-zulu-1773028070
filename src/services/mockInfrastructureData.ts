@@ -7,7 +7,7 @@ export interface StackMetric {
 
 export interface StackItem {
   id: string;
-  icon: any; // Using any for icon component type here to simplify
+  icon: unknown; // Using any for icon component type here to simplify
   title: string;
   subtitle: string;
   percentage: number;

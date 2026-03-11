@@ -63,7 +63,7 @@ export function getLogLevelConfig(level: string): LogLevelConfig {
   return LOG_LEVELS[level.toUpperCase()] || { ...DEFAULT_CONFIG, id: level.toUpperCase() };
 }
 
-export function formatLogMessage(payload: Record<string, any> | undefined | null): string {
+export function formatLogMessage(payload: Record<string, unknown> | undefined | null): string {
   if (!payload) return '';
   if (payload.exception) {
     return `${payload.exception} :: retrying...`;
