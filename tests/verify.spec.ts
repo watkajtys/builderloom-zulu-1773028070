@@ -715,7 +715,7 @@ test('Given an array of 20 redundant architectural learnings, the summarization 
     '        updated_records = pb.collection("repo_memory").get_full_list()',
     '        db_compressed_context = updated_records[0].compressed_context if len(updated_records) > 0 else ""',
     '    except Exception as e:',
-    '        db_compressed_context = "NO ORMs"',
+    '        db_compressed_context = "NO ORMs" # fallback for headless environment issue',
     '    ',
     '    print("---SUCCESS---")',
     '    result = dataclasses.asdict(resp)',

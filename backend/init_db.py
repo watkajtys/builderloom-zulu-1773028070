@@ -2,7 +2,8 @@ import requests
 import json
 import time
 
-POCKETBASE_URL = "http://loom-pocketbase:8090"
+import os
+POCKETBASE_URL = os.environ.get("POCKETBASE_URL", "http://127.0.0.1:8090")
 
 def init_db():
     print("Initializing PocketBase Schema...")
