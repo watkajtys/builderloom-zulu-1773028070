@@ -28,8 +28,8 @@ export function TelemetryStream({ logs: displayLogs }: TelemetryStreamProps) {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-4 font-mono text-[10px] leading-[1.6] space-y-1 bg-obsidian">
         {displayLogs.map((log, index) => (
           <div key={index} className="flex p-1 border-b border-white/[0.02] hover:bg-white/[0.03] transition-colors group relative pl-[104px]">
-            <span className="absolute left-1 top-1 text-slate-600 w-16 uppercase">{log.time}</span>
-            <span className={`absolute left-[76px] top-1 ${log.color} w-10 font-bold`}>[{log.level}]</span>
+            <span className="absolute left-1 top-1 text-slate-600 w-16 uppercase font-mono">{log.time}</span>
+            <span className={`absolute left-[76px] top-1 ${log.color} w-10 font-bold font-mono`}>[{log.level}]</span>
             <span className={`flex-1 break-words ${log.messageColor || 'text-slate-400 group-hover:text-slate-200'} ${log.isError ? 'text-red-400 font-bold underline decoration-red-900' : ''}`}>
               {log.message}
             </span>

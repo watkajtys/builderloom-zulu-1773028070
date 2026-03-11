@@ -41,7 +41,7 @@ export function HardwarePulse({ chartData, stats, logs }: HardwarePulseProps) {
             <HardwarePulseBar key={i} {...h} />
           ))}
         </div>
-        <div className="flex justify-between font-mono text-[9px] text-zinc-grey uppercase">
+        <div className="flex justify-between font-mono text-[9px] text-zinc-grey uppercase font-mono">
           <span>T-300ms</span>
           <span>T-200ms</span>
           <span>T-100ms</span>

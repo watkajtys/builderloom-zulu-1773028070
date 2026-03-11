@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { telemetryService } from '../services/telemetryService';
+import { telemetryService, TelemetryStats } from '../services/telemetryService';
 import { getLogLevelConfig, formatLogMessage } from '../utils/telemetryConfig';
 
 export interface TelemetryLog {
@@ -8,7 +8,7 @@ export interface TelemetryLog {
   log_level: string;
   node_id: string;
   event_type: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   payload: Record<string, unknown>;
 }
 
@@ -23,7 +23,7 @@ export interface DisplayLog {
 
 export function useTelemetryLogs() {
   const [logs, setLogs] = useState<TelemetryLog[]>([]);
-  const [stats, setStats] = useState({ 
+  const [stats, setStats] = useState<TelemetryStats>({ 
     totalLogs: 12482, 
     errorRate: 0.02,
     errorCount: 0,
@@ -33,16 +33,28 @@ export function useTelemetryLogs() {
   useEffect(() => {
     let isMounted = true;
     
-    telemetryService.getLogs().then(fetchedLogs => {
-      if (isMounted) setLogs(fetchedLogs);
+    // Initial fetch
+    Promise.all([
+      telemetryService.getLogs(),
+      telemetryService.getStats()
+    ]).then(([fetchedLogs, fetchedStats]) => {
+      if (isMounted) {
+        setLogs(fetchedLogs);
+        setStats(fetchedStats);
+      }
     });
-    
-    telemetryService.getStats().then(fetchedStats => {
-      if (isMounted) setStats(fetchedStats);
+
+    // Subscribe to realtime updates
+    const unsubscribe = telemetryService.subscribeToState((newLogs, newStats) => {
+      if (isMounted) {
+        setLogs(newLogs);
+        setStats(newStats);
+      }
     });
 
     return () => {
       isMounted = false;
+      unsubscribe();
     };
   }, []);
 

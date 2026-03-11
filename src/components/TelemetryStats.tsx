@@ -15,7 +15,7 @@ export function TelemetryStats({ stats }: TelemetryStatsProps) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h3 className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">Log Volume Over Time</h3>
-            <p className="text-xl font-bold mt-1 text-white">{stats.totalLogs.toLocaleString()} <span className="text-[10px] text-zinc-grey font-normal ml-1">events/min</span></p>
+            <p className="text-xl font-mono font-bold mt-1 text-white">{stats.totalLogs.toLocaleString()} <span className="text-[10px] text-zinc-grey font-normal ml-1">events/min</span></p>
           </div>
           <div className="flex gap-2">
             <div className="flex items-center gap-1.5">
@@ -36,7 +36,7 @@ export function TelemetryStats({ stats }: TelemetryStatsProps) {
         <div>
           <h3 className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">Error Rate</h3>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl font-bold text-rose-500">{stats.errorRate}%</span>
+            <span className="text-2xl font-mono font-bold text-rose-500">{stats.errorRate}%</span>
             <span className="text-[10px] text-electric-blue font-bold flex items-center gap-1">
               <TrendingDown size={12} /> 4%
             </span>
@@ -44,7 +44,7 @@ export function TelemetryStats({ stats }: TelemetryStatsProps) {
         </div>
         <div className="pt-4 border-t border-border-muted">
           <span className="text-[9px] font-bold text-zinc-grey uppercase">Avg Response</span>
-          <p className="text-sm font-semibold text-white">124ms</p>
+          <p className="text-sm font-mono font-semibold text-white">124ms</p>
         </div>
       </div>
     </div>

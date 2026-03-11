@@ -22,11 +22,11 @@ export function TelemetryLogGrid({ filteredLogs }: TelemetryLogGridProps) {
 
           return (
             <div key={log.id || i} className="flex items-center border-b border-border-muted hover:bg-white/5 transition-colors px-4 py-2 font-mono text-[11px] group">
-              <div className="w-40 shrink-0 text-zinc-grey">{log.timestamp}</div>
+              <div className="w-40 shrink-0 text-zinc-grey font-mono">{log.timestamp}</div>
               <div className="w-24 shrink-0 flex justify-center">
                 <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${levelClass}`}>{log.log_level}</span>
               </div>
-              <div className="flex-1 px-4 text-slate-300 break-all -indent-[10px] pl-[10px]">
+              <div className="flex-1 px-4 text-slate-300 break-all -indent-[10px] pl-[10px] font-mono">
                 <span className="text-slate-500">{'{'}</span> 
                 {Object.entries(log.payload || {}).map(([k, v], idx, arr) => (
                   <span key={k}>
