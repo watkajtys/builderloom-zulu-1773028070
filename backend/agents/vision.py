@@ -83,11 +83,11 @@ class VisionAgent(BaseAgent):
         
         prompt = [
             f"You are the Vision Agent for Zulu AI Factory OS. Your goal was: '{inspiration_goal}'.\n",
-            "You are reviewing a chronological timeline of UI screenshots (T-5, T-1, Current).\n",
-            "CRITICAL TASK: Analyze the timeline specifically looking for the 'Bulldozer Problem'—the unintended deletion or breaking of previously working UI elements in the final frame (Current) compared to earlier frames (T-5 and T-1).\n",
+            f"You are reviewing a chronological timeline of UI screenshots ({', '.join(valid_keys)}).\n",
+            "CRITICAL TASK: Analyze the timeline specifically looking for the 'Bulldozer Problem'—the unintended deletion or breaking of previously working UI elements in the final frame (Current) compared to earlier frames.\n",
             "Rules:\n",
             "1. Ignore minor layout shifts or intended replacements.\n",
-            "2. Flag a critical regression ONLY IF a clear functional element (like a button, panel, or graph) was present in earlier frames (T-5 or T-1) but is inexplicably missing or broken in the Current frame.\n",
+            "2. Flag a critical regression ONLY IF a clear functional element (like a button, panel, or graph) was present in earlier frames but is inexplicably missing or broken in the Current frame.\n",
             "3. Evaluate 'object permanence' across the timeline. Severely penalize UI changes that unnecessarily destroy previously working elements.\n",
             "4. Provide your assessment in strict JSON format with two keys: 'regression_detected' (boolean) and 'reason' (string).\n",
             "Output ONLY the JSON object, nothing else."
