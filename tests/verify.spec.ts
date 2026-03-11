@@ -8,6 +8,129 @@ test.beforeAll(() => {
   execSync('pip install -q -r requirements.txt', { stdio: 'ignore' });
 });
 
+test('overseer.py tracks the token length of repo_memory. When it exceeds the threshold limit, it halts standard execution, invokes the memory_agent to compress state in PocketBase, and resumes the loop with the newly compressed context.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+  const { execSync } = await import('child_process');
+
+  const testScriptPath = path.resolve(process.cwd(), 'temp_overseer_memory_compression_test.py');
+  
+  const testScriptContent = `
+import sys
+import os
+import json
+import dataclasses
+from unittest.mock import MagicMock
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import google.generativeai as genai
+
+mock_model = MagicMock()
+mock_response = MagicMock()
+mock_response.text = "Mocked LLM generation"
+mock_model.generate_content.return_value = mock_response
+genai.GenerativeModel = MagicMock(return_value=mock_model)
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+from loom.core.overseer import Overseer
+from loom.core.state import ConductorState
+
+def main():
+    # Setup test state
+    ConductorState.reset()
+    state = ConductorState.load()
+    
+    # Generate learnings that exceed 4000 tokens (approx 16000 chars)
+    # We will make 200 items of 100 characters each to be safe
+    large_learnings = [{"iteration": i, "goal": "test", "success": True, "takeaways": "X" * 100} for i in range(200)]
+    state.repo_memory["learnings"] = large_learnings
+    state.save()
+    
+    overseer = Overseer()
+    
+    # Mock the memory_agent's router execution to return success and compressed block without needing pocketbase
+    # We mock it because the Pocketbase server might not be actively running inside the test container during this headless test run, causing connection refused errors.
+    def mock_router_execute(req):
+        from backend.agents.core.io_models import AgentResponse
+        if req.data.get("task_type") == "memory":
+            return AgentResponse(status="success", data={"compressed_context": "COMPRESSED_MOCK_DATA"})
+        return AgentResponse(status="failure", data={}, errors=["Not memory"])
+        
+    overseer.router.execute = mock_router_execute
+    
+    # We also need to mock requests.get so it doesn't fail trying to reach PocketBase
+    import requests
+    class MockResponse:
+        def __init__(self):
+            self.ok = True
+        def json(self):
+            return {"items": [{"compressed_context": "MOCK_CONTEXT"}]}
+    
+    original_get = requests.get
+    def mock_get(url, **kwargs):
+        if "repo_memory" in url:
+            return MockResponse()
+        return original_get(url, **kwargs)
+    requests.get = mock_get
+    
+    # Execute the memory management directly which triggers the mocked agent
+    overseer._manage_repo_memory()
+    
+    # Load state to check the outcome
+    updated_state = ConductorState.load()
+    
+    learnings_count = len(updated_state.repo_memory.get("learnings", []))
+    compressed_ctx = updated_state.repo_memory.get("compressed_context", "")
+    
+    print("---SUCCESS---")
+    print(json.dumps({
+        "learnings_cleared": learnings_count == 0,
+        "compressed_context": compressed_ctx
+    }))
+
+if __name__ == "__main__":
+    main()
+  `;
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  // Re-run init_db.py to ensure the schema is initialized before our script runs
+  try {
+      execSync('python3 backend/init_db.py', { encoding: 'utf-8', stdio: 'ignore' });
+  } catch(e) {}
+
+  let stdout = '';
+  try {
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.learnings_cleared).toBe(true);
+  expect(resultJson.compressed_context).toBe('COMPRESSED_MOCK_DATA');
+
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('Implement dynamic UI components to render the static analysis findings.', async ({ page }) => {
   await page.route('**/api/collections/architect_findings/records*', async route => {
     const json = {

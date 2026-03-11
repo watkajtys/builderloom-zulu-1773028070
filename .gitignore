@@ -13,3 +13,5 @@ jules.patch
 __pycache__/
 backend/vision/storage/
 backend/utils/storage/
+loom_memory.json
+session_state.json

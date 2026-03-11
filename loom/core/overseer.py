@@ -33,6 +33,7 @@ from loom.agents.vision import VisionAgent
 from loom.agents.pm import PMAgent
 from loom.agents.vibe import VibeAgent
 from loom.agents.reflection import ReflectionAgent
+from backend.agents.memory_agent import MemoryAgent
 
 load_dotenv(override=True)
 
@@ -103,12 +104,15 @@ class Overseer:
             genai.configure(api_key=api_key)
             # Principal Overseer (Logic & Planning)
             self.model = genai.GenerativeModel('gemini-3.1-pro-preview')
-            # Specialized Reviewers (Fast & Efficient)
-            self.architect = ArchitectAgent('gemini-3-flash-preview')
-            self.vision = VisionAgent('gemini-3-flash-preview')
-            self.pm = PMAgent('gemini-3.1-pro-preview')
-            self.vibe = VibeAgent('gemini-3.1-pro-preview')
-            self.reflection = ReflectionAgent('gemini-3-flash-preview')
+            
+        self.router.register_agent("memory", MemoryAgent(node_id="OVERSEER-MEMORY"))
+        
+        # Specialized Reviewers (Fast & Efficient)
+        self.architect = ArchitectAgent('gemini-3-flash-preview')
+        self.vision = VisionAgent('gemini-3-flash-preview')
+        self.pm = PMAgent('gemini-3.1-pro-preview')
+        self.vibe = VibeAgent('gemini-3.1-pro-preview')
+        self.reflection = ReflectionAgent('gemini-3-flash-preview')
 
     @retry(
         stop=stop_after_attempt(5),
@@ -510,6 +514,62 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         except Exception as e:
             logger.warning(f"Failed to refresh DB stats: {e}")
 
+    def _manage_repo_memory(self):
+        """Monitors repo memory size, triggers compression via PocketBase if token limit exceeded, and fetches latest context."""
+        try:
+            # We must resolve pb_url internally as well.
+            pb_url = getattr(self, 'pb_url', "http://loom-pocketbase:8090")
+            from loom.environment.pocketbase import DatabaseProvisioner
+            provisioner = DatabaseProvisioner(pb_url=pb_url)
+            if provisioner.ensure_admin():
+                import requests
+                headers = {"Authorization": f"Bearer {provisioner.token}"}
+                resp = requests.get(f"{pb_url}/api/collections/repo_memory/records?perPage=1", headers=headers, timeout=5)
+                if resp.ok:
+                    items = resp.json().get("items", [])
+                    if items:
+                        record = items[0]
+                        self.state.repo_memory["compressed_context"] = record.get("compressed_context", "")
+        except Exception as e:
+            logger.warning(f"Failed to fetch repo_memory from PocketBase: {e}")
+
+        # 2. Check token size of local learnings
+        learnings = self.state.repo_memory.get("learnings", [])
+        if not learnings:
+            return
+
+        # Rough token estimation: chars / 4
+        token_length = sum(len(str(l)) for l in learnings) // 4
+        
+        # Hard token threshold for tripwire
+        if token_length > 4000:
+            logger.info(f"[bold yellow]Repo memory token length ({token_length}) exceeds threshold (4000). Halting standard execution to compress state.[/bold yellow]", extra={"markup": True})
+            self.state.current_status = "Compressing repo memory..."
+            self.state.save()
+            
+            # Serialize learnings to strings for the agent payload
+            payload_learnings = [json.dumps(l) for l in learnings]
+            req = AgentRequest(
+                task_id=str(uuid.uuid4()),
+                data={
+                    "task_type": "memory",
+                    "learnings": payload_learnings
+                }
+            )
+            
+            try:
+                res = self.router.execute(req)
+                if res.status == "success":
+                    self.state.repo_memory["compressed_context"] = res.data.get("compressed_context", "")
+                    self.state.repo_memory["learnings"] = []
+                    self.state.save()
+                    logger.info("[bold green]Memory compression complete. Resuming loop with compressed context.[/bold green]", extra={"markup": True})
+                else:
+                    logger.warning(f"Memory compression failed: {res.errors}")
+            except Exception as e:
+                logger.error(f"Error executing memory compression task: {e}")
+
+
     def loop(self):
         logger.info("[bold green]Starting Loom Loop...[/bold green]", extra={"markup": True})
         
@@ -531,6 +591,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                 self._check_for_updates()
                 self._refresh_db_stats()
                 self._consume_steering()
+                self._manage_repo_memory()
                 
                 # 0. THE VIBE CHECK (If sprint is ending)
                 if not self.state.backlog and not self.state.active_task_id:
@@ -1570,11 +1631,18 @@ Example output:
 
     def _get_jules_prompt(self, attempt, active_task: BacklogTask):
         memory_context = ""
+        compressed = self.state.repo_memory.get("compressed_context", "")
+        if compressed:
+            memory_context += f"\n=== CORE ARCHITECTURAL CONSTRAINTS ===\n{compressed}\n"
+
         if self.state.repo_memory.get("learnings"):
-            memory_context = "\n=== PAST LEARNINGS (AVOID THESE MISTAKES) ===\n"
+            if not memory_context:
+                memory_context += "\n=== PAST LEARNINGS (AVOID THESE MISTAKES) ===\n"
+            else:
+                memory_context += "\n=== RECENT LEARNINGS ===\n"
             for l in self.state.repo_memory["learnings"][-3:]:
-                status = "Success" if l['success'] else "Failure"
-                memory_context += f"- Iteration {l['iteration']} ({status}): {l['takeaways']}\n"
+                status = "Success" if l.get('success') else "Failure"
+                memory_context += f"- Iteration {l.get('iteration')} ({status}): {l.get('takeaways')}\n"
 
         data_model_context = f"\n=== DATA MODEL (POCKETBASE SCHEMA) ===\n{active_task.data_model}\n" if active_task.data_model else ""
 
