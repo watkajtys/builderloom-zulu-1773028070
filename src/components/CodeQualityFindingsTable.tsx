@@ -1,3 +1,4 @@
+import React from 'react';
 import { ArchitectFinding } from '../types/architect';
 
 interface CodeQualityFindingsTableProps {
@@ -42,31 +43,60 @@ export function CodeQualityFindingsTable({ architectFindings }: CodeQualityFindi
                 </td>
               </tr>
             ) : (
-              architectFindings.flatMap(finding => 
-                finding.static_violations?.map((issue, idx) => (
-                  <tr key={`${finding.id}-${idx}`} className="hover:bg-white/5 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span className="text-xs font-semibold text-white">{issue.message}</span>
-                        <span className="text-[10px] text-zinc-grey">{finding.filepath}{issue.line ? `:${issue.line}` : ''}</span>
+              architectFindings.map(finding => (
+                <React.Fragment key={finding.id}>
+                  {/* File group header */}
+                  <tr className="bg-white/5">
+                    <td colSpan={3} className="px-6 py-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-zinc-300">File:</span>
+                        <code className="text-xs font-mono font-bold text-electric-blue bg-electric-blue/10 px-2 py-0.5 rounded">
+                          {finding.filepath}
+                        </code>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`px-2 py-0.5 border text-[9px] font-bold rounded ${
-                        issue.type === 'error' || issue.type === 'critical' ? 'border-neon-purple/40 bg-neon-purple/10 text-neon-purple' :
-                        issue.type === 'warning' || issue.type === 'high' ? 'border-orange-500/40 bg-orange-500/10 text-orange-500' :
-                        issue.type === 'medium' ? 'border-yellow-500/40 bg-yellow-500/10 text-yellow-500' :
-                        'border-electric-blue/40 bg-electric-blue/10 text-electric-blue'
-                      }`}>
-                        {(issue.type || 'info').toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-xs font-bold text-zinc-300">{issue.type === 'error' ? '4.5h' : issue.type === 'warning' ? '2.0h' : '0.5h'}</span>
-                    </td>
                   </tr>
-                ))
-              )
+                  
+                  {/* Issues under this file */}
+                  {finding.static_violations?.map((issue, idx) => (
+                    <tr key={`${finding.id}-${idx}`} className="hover:bg-white/5 transition-colors group">
+                      <td className="px-6 py-4 relative">
+                        {/* Tree line connector */}
+                        <div className="absolute left-[34px] top-0 bottom-0 w-px bg-border-muted/50 -translate-x-1/2"></div>
+                        <div className="absolute left-[34px] top-1/2 w-4 h-px bg-border-muted/50 -translate-y-1/2 -translate-x-1/2"></div>
+                        
+                        <div className="flex flex-col gap-1 pl-8">
+                          <span className="text-xs font-semibold text-white">{issue.message}</span>
+                          <div className="flex items-center gap-2 text-[10px] text-zinc-grey">
+                            <span className="font-mono text-electric-blue/80">Line {issue.line || '?'}</span>
+                            {issue.symbol && (
+                              <>
+                                <span>&bull;</span>
+                                <span className="font-mono">{issue.symbol}</span>
+                              </>
+                            )}
+                            <span>&bull;</span>
+                            <span>{issue.tool}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`px-2 py-0.5 border text-[9px] font-bold rounded ${
+                          issue.type === 'error' || issue.type === 'critical' ? 'border-neon-purple/40 bg-neon-purple/10 text-neon-purple' :
+                          issue.type === 'warning' || issue.type === 'high' ? 'border-orange-500/40 bg-orange-500/10 text-orange-500' :
+                          issue.type === 'medium' ? 'border-yellow-500/40 bg-yellow-500/10 text-yellow-500' :
+                          'border-electric-blue/40 bg-electric-blue/10 text-electric-blue'
+                        }`}>
+                          {(issue.type || 'info').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="text-xs font-bold text-zinc-300">{issue.type === 'error' ? '4.5h' : issue.type === 'warning' ? '2.0h' : '0.5h'}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </React.Fragment>
+              ))
             )}
           </tbody>
         </table>

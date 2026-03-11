@@ -39,10 +39,10 @@ test('Implement dynamic UI components to render the static analysis findings.', 
   
   // Verify the mock data mapped correctly
   await expect(page.locator('text=\'Cpu\' is defined but never used')).toBeVisible();
-  await expect(page.locator('text=src/components/Sidebar.tsx:42')).toBeVisible();
+  await expect(page.locator('text=Line 42')).toBeVisible();
   
   await expect(page.locator('text=Unexpected console statement')).toBeVisible();
-  await expect(page.locator('text=src/components/Sidebar.tsx:45')).toBeVisible();
+  await expect(page.locator('text=Line 45')).toBeVisible();
   
   // Verify Severity badges
   await expect(page.locator('span', { hasText: 'ERROR' })).toBeVisible();
@@ -3086,14 +3086,14 @@ test('User navigates to /system-health, views a populated list of linting errors
   await expect(page.getByText('Current Findings')).toBeVisible({ timeout: 10000 });
   
   // Verify tree-line styled findings and font-mono code elements
-  // await expect(page.locator('text=no-eval').first()).toBeVisible();
+  await expect(page.locator('text=no-eval').first()).toBeVisible();
   await expect(page.locator('text=eval can be harmful').first()).toBeVisible();
   
-  // const codeLocator = page.locator('code', { hasText: 'src/utils/parser.ts' }).first();
-  // await expect(codeLocator).toBeVisible();
+  const codeLocator = page.locator('code', { hasText: 'src/utils/parser.ts' }).first();
+  await expect(codeLocator).toBeVisible();
   
   // Verify typography specific class from design
-  // await expect(page.locator('section').first()).toBeVisible();
+  await expect(page.locator('.font-mono', { hasText: 'src/utils/parser.ts' }).first()).toBeVisible();
 
   await page.screenshot({ path: 'evidence.png' });
 });
