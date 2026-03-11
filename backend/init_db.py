@@ -6,7 +6,7 @@ logger = logging.getLogger("loom")
 
 def init_core_collections():
     """Initializes the core data model for state persistence using standard REST API."""
-    logger.info("Initializing PocketBase collections for Conductor State and Repo Memory via Admin REST...")
+    logger.info("Initializing PocketBase collections for Conductor State and Repo Memory via Admin REST API...")
     
     pb_host = os.getenv("PB_HOSTNAME", "loom-pocketbase")
     pb_url = f"http://{pb_host}:8090"

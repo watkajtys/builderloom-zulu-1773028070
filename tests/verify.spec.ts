@@ -1861,7 +1861,7 @@ test('Pass a timeline of 3 images to the VisionAgent where a button is deleted i
   await page.screenshot({ path: 'evidence.png' });
 });
 
-test('', async ({ page }) => {
+test('BaseAgent and core classes implement correct _emit_json_log functionality', async ({ page }) => {
   const scriptContent = `
 import sys
 import json
@@ -3060,9 +3060,12 @@ test('The Overseer successfully routes a task, executes the Frontend Agent, vali
 });
 
 test('PocketBase API successfully returns the newly created conductor_state and repo_memory collections, accepting a test record insertion via standard REST requests.', async ({ page, request }) => {
+  // Ensure the database collections are created before testing them
+  const { execSync } = await import('child_process');
+  execSync('python3 backend/init_db.py', { stdio: 'inherit' });
+
   // Use http://loom-pocketbase:8090 because tests run inside a Docker network
   const pbUrl = 'http://loom-pocketbase:8090';
-
 
   // 1. Insert a test record into conductor_state to verify structure/permissions
   const testStateRecord = {
