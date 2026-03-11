@@ -2731,7 +2731,7 @@ def main():
         task_id="task-vision-test",
         data={
             "task_type": "vision",
-            "images": [b"image_data_t2", b"image_data_t1", b"image_data_current"],
+            "images": {"T-2": b"image_data_t2", "T-1": b"image_data_t1", "Current": b"image_data_current"},
             "inspiration_goal": "A simple dashboard"
         }
     )

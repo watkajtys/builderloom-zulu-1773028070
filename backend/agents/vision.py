@@ -62,23 +62,24 @@ class VisionAgent(BaseAgent):
         images = request.data.get("images", {})
         inspiration_goal = request.data.get("inspiration_goal", "UI Component Evolution")
         
-        if not images:
-            self._log("ERROR", "Missing 'images' in AgentRequest data.")
+        if not images or not isinstance(images, dict):
+            self._log("ERROR", "Missing or invalid 'images' dictionary in AgentRequest data.")
             return AgentResponse(
                 status="failure",
                 data={},
-                errors=["Missing 'images' in request data."]
+                errors=["Missing or invalid 'images' dictionary in request data. Must be a dictionary mapping frame names to image data."]
             )
             
-        required_keys = ['T-5', 'T-1', 'Current']
-        if not all(k in images and images[k] is not None for k in required_keys):
-            self._log("INFO", f"Not all required frames ({required_keys}) provided with valid image data, temporal comparison skipped.")
+        # Ensure we have at least 'Current' and one historical frame
+        valid_keys = [k for k, v in images.items() if v is not None]
+        if 'Current' not in valid_keys or len(valid_keys) < 2:
+            self._log("INFO", f"Insufficient frames ({valid_keys}) provided with valid image data, temporal comparison skipped.")
             return AgentResponse(
                 status="success",
                 data={"regression_detected": False, "reason": "Insufficient frames for timeline comparison."}
             )
 
-        self._log("INFO", f"Starting temporal visual analysis across frames: {', '.join(required_keys)}.")
+        self._log("INFO", f"Starting temporal visual analysis across frames: {', '.join(valid_keys)}.")
         
         prompt = [
             f"You are the Vision Agent for Zulu AI Factory OS. Your goal was: '{inspiration_goal}'.\n",
@@ -93,7 +94,7 @@ class VisionAgent(BaseAgent):
         ]
         
         content = [*prompt]
-        for key in required_keys:
+        for key in valid_keys:
             img_data = images[key]
             content.append(f"Frame {key}:")
             if isinstance(img_data, bytes):
@@ -138,7 +139,7 @@ class VisionAgent(BaseAgent):
                 data={
                     "regression_detected": regression_detected,
                     "reason": reason,
-                    "frames_analyzed": len(required_keys)
+                    "frames_analyzed": len(valid_keys)
                 }
             )
             
