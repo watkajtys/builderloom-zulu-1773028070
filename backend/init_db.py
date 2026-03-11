@@ -8,6 +8,38 @@ def init_core_collections():
     """Initializes the core data model for state persistence using standard REST API."""
     logger.info("Initializing PocketBase collections for Conductor State and Repo Memory via Admin REST...")
     
+    # PocketBase SDK
+    import pocketbase
+    pb_host = os.getenv("PB_HOSTNAME", "loom-pocketbase")
+    pb_url = f"http://{pb_host}:8090"
+    client = pocketbase.PocketBase(pb_url)
+    
+    admin_email = "admin@loom.local"
+    admin_password = os.environ.get("PB_ADMIN_PASSWORD", "loom_secure_password")
+    
+    # Authenticate via Admin API
+    token = None
+    # Try Modern v0.23+ and Legacy endpoints
+    auth_endpoints = [
+        f"{pb_url}/api/collections/_superusers/auth-with-password",
+        f"{pb_url}/api/admins/auth-with-password"
+    ]
+    
+    for endpoint in auth_endpoints:
+        try:
+            resp = requests.post(endpoint, json={"identity": admin_email, "password": admin_password}, timeout=5)
+            if resp.status_code == 200:
+                token = resp.json().get("token")
+                break
+        except Exception:
+            pass
+            
+    if not token:
+        logger.error("Failed to authenticate as PocketBase Superuser/Admin.")
+        return False
+
+    client.auth_store.save(token, None)
+
     schema = [
         {
             "name": "conductor_state",
@@ -40,70 +72,26 @@ def init_core_collections():
         }
     ]
 
-    pb_host = os.getenv("PB_HOSTNAME", "loom-pocketbase")
-    pb_url = f"http://{pb_host}:8090"
+    success = True
     
-    # Authenticate via Admin API
-    admin_email = "admin@loom.local"
-    admin_password = os.environ.get("PB_ADMIN_PASSWORD", "loom_secure_password")
-    
-    token = None
-    # Try Modern v0.23+ and Legacy endpoints
-    auth_endpoints = [
-        f"{pb_url}/api/collections/_superusers/auth-with-password",
-        f"{pb_url}/api/admins/auth-with-password"
-    ]
-    
-    for endpoint in auth_endpoints:
-        try:
-            resp = requests.post(endpoint, json={"identity": admin_email, "password": admin_password}, timeout=5)
-            if resp.status_code == 200:
-                token = resp.json().get("token")
-                break
-        except Exception:
-            pass
-            
-    if not token:
-        logger.error("Failed to authenticate as PocketBase Superuser/Admin.")
-        return False
-        
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-    
-    collections_url = f"{pb_url}/api/collections"
-    
-    # Get existing collections
-    existing = {}
+    # Get existing collections via SDK
     try:
-        resp = requests.get(collections_url, headers=headers, timeout=5)
-        if resp.status_code == 200:
-            for item in resp.json().get("items", []):
-                existing[item["name"]] = item
+        existing_items = client.collections.get_full_list()
+        existing = {item.name: item.id for item in existing_items}
     except Exception as e:
         logger.error(f"Failed to fetch collections: {e}")
         return False
 
-    success = True
     for collection in schema:
         name = collection["name"]
         try:
             if name in existing:
-                col_id = existing[name]["id"]
-                resp = requests.patch(f"{collections_url}/{col_id}", json=collection, headers=headers)
-                if resp.status_code in (200, 204):
-                    logger.info(f"Successfully updated collection '{name}'.")
-                else:
-                    logger.error(f"Failed to patch collection '{name}': {resp.text}")
-                    success = False
+                col_id = existing[name]
+                client.collections.update(col_id, collection)
+                logger.info(f"Successfully updated collection '{name}'.")
             else:
-                resp = requests.post(collections_url, json=collection, headers=headers)
-                if resp.status_code in (200, 201):
-                    logger.info(f"Successfully created collection '{name}'.")
-                else:
-                    logger.error(f"Failed to create collection '{name}': {resp.text}")
-                    success = False
+                client.collections.create(collection)
+                logger.info(f"Successfully created collection '{name}'.")
         except Exception as e:
             logger.error(f"Exception while provisioning '{name}': {e}")
             success = False

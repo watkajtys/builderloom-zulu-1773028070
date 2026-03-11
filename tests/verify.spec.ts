@@ -512,7 +512,7 @@ chain = Chain(chain_id="chain-test-123", nodes=[node1, node2], edges=[edge])
 
 state = ExecutionState(chain_id=chain.chain_id, current_node="n1", variables={"query": "test"})
 
-store = ChainStore()
+store = ChainStore("http://loom-pocketbase:8090")
 
 print("---MODELS---")
 print(json.dumps(chain.model_dump()))
@@ -1035,7 +1035,7 @@ class DummyPB:
         return self._collection
 
 def main():
-    store = ExecutionStore("http://127.0.0.1:8090")
+    store = ExecutionStore("http://loom-pocketbase:8090")
     store.pb = DummyPB()
     job_id = str(uuid.uuid4())
     job = Job(id=job_id, engine="python_analyzer", target="main.py", status=JobStatus.RUNNING)
@@ -1159,7 +1159,7 @@ class DummyCollection:
         return DummyRecord(data)
 
 def main():
-    store = ExecutionStore("http://127.0.0.1:8090")
+    store = ExecutionStore("http://loom-pocketbase:8090")
     dummy_collection = DummyCollection()
     store.pb.collection = lambda name: dummy_collection
     
@@ -1302,7 +1302,7 @@ test('Add state tracking, error handling, and retries to the orchestrator', asyn
     '        return DummyRecord(data)',
     '',
     'def main():',
-    '    store = ExecutionStore("http://127.0.0.1:8090")',
+    '    store = ExecutionStore("http://loom-pocketbase:8090")',
     '    dummy_collection = DummyCollection()',
     '    store.pb.collection = lambda name: dummy_collection',
     '    ',

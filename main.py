@@ -269,7 +269,7 @@ if __name__ == "__main__":
         import sys
         sys.exit(1)
 
-    # Initialize core state collections in PocketBase
+    # Initialize core collections in PocketBase
     from backend.init_db import init_core_collections
     init_core_collections()
     
