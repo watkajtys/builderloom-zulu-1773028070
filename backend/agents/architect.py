@@ -30,21 +30,23 @@ class ArchitectAgent(BaseAgent):
         penalty_per_issue = float(request.data.get("penalty_per_issue", 1.0))
 
         if not filepath:
-            self._log("ERROR", "Missing 'filepath' in AgentRequest data.")
+            self._emit_json_log("ERROR", "Missing 'filepath' in AgentRequest data.", metadata=request.metadata)
             return AgentResponse(
                 status="failure",
                 data={"score": base_score},
-                errors=["Missing 'filepath' in request data."]
+                errors=["Missing 'filepath' in request data."],
+                metadata=request.metadata
             )
 
-        self._log("INFO", f"Starting static analysis on {filepath}")
+        self._emit_json_log("INFO", f"Starting static analysis on {filepath}", metadata=request.metadata)
         
         if not os.path.exists(filepath):
-            self._log("ERROR", f"File not found: {filepath}")
+            self._emit_json_log("ERROR", f"File not found: {filepath}", metadata=request.metadata)
             return AgentResponse(
                 status="failure",
                 data={"score": base_score},
-                errors=[f"File not found: {filepath}"]
+                errors=[f"File not found: {filepath}"],
+                metadata=request.metadata
             )
 
         with open(filepath, "r", encoding="utf-8") as f:
@@ -60,10 +62,11 @@ class ArchitectAgent(BaseAgent):
         total_penalty = num_issues * penalty_per_issue
         final_score = max(0.0, base_score - total_penalty)
 
-        self._log(
+        self._emit_json_log(
             "INFO", 
             f"Static analysis complete. Found {num_issues} issues. Base score {base_score} -> {final_score}",
-            extra_data={"issues": issues, "penalized_score": final_score}
+            extra_data={"issues": issues, "penalized_score": final_score},
+            metadata=request.metadata
         )
 
         return AgentResponse(
@@ -73,5 +76,6 @@ class ArchitectAgent(BaseAgent):
                 "issues": issues,
                 "static_violations": issues,
                 "filepath": filepath
-            }
+            },
+            metadata=request.metadata
         )
