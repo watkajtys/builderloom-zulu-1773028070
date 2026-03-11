@@ -51,6 +51,96 @@ test('Implement dynamic UI components to render the static analysis findings.', 
   await page.screenshot({ path: 'evidence.png' });
 });
 
+test('Vision agent receives 3 historical screenshots, analyzes the progression, and correctly identifies working UI components to retain, preventing the \'Bulldozer Problem\'.', async ({ page }) => {
+  const fs = await import('fs');
+  const path = await import('path');
+
+  const testScriptPath = path.resolve(process.cwd(), 'temp_vision_bulldozer_test.py');
+  
+  const testScriptContent = `
+import json
+import sys
+import os
+from unittest.mock import MagicMock
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import google.generativeai as genai
+
+mock_model = MagicMock()
+mock_response = MagicMock()
+mock_response.text = """{"regression_detected": true, "reason": "A working submit button present in T-5 and T-1 was unjustifiably deleted in Current."}"""
+mock_model.generate_content.return_value = mock_response
+genai.GenerativeModel = MagicMock(return_value=mock_model)
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
+from backend.agents.vision import VisionAgent
+from backend.agents.core.io_models import AgentRequest
+import dataclasses
+
+def main():
+    agent = VisionAgent(node_id="VISION-TEST-NODE")
+    
+    req = AgentRequest(
+        task_id="task-vision-bulldozer",
+        data={
+            "task_type": "vision",
+            "images": {
+                "T-5": b"image_data_t5",
+                "T-1": b"image_data_t1",
+                "Current": b"image_data_current"
+            },
+            "inspiration_goal": "A simple form"
+        }
+    )
+    resp = agent.execute(req)
+    
+    print("---SUCCESS---")
+    print(json.dumps({
+        "vision": dataclasses.asdict(resp)
+    }))
+
+if __name__ == "__main__":
+    main()
+  `;
+
+  fs.writeFileSync(testScriptPath, testScriptContent);
+
+  let stdout = '';
+  try {
+    const { execSync } = await import('child_process');
+    stdout = execSync('python3 ' + testScriptPath, { encoding: 'utf-8' });
+  } catch (error: unknown) {
+    stdout = (error as { stdout?: string }).stdout || String(error);
+  } finally {
+    if (fs.existsSync(testScriptPath)) {
+      fs.unlinkSync(testScriptPath);
+    }
+  }
+
+  const outputLines = stdout.split('\n').map(l => l.trim());
+  const successIdx = outputLines.indexOf('---SUCCESS---');
+  if (successIdx === -1) {
+    console.error("Test execution failed. Stdout:", stdout);
+  }
+  expect(successIdx).toBeGreaterThan(-1);
+
+  const resultStr = outputLines[successIdx + 1];
+  const startIdx = resultStr.indexOf('{');
+  const endIdx = resultStr.lastIndexOf('}');
+  const resultJson = JSON.parse(resultStr.substring(startIdx, endIdx + 1));
+
+  expect(resultJson.vision.status).toBe('issues_found');
+  expect(resultJson.vision.data.regression_detected).toBe(true);
+  expect(resultJson.vision.data.frames_analyzed).toBe(3);
+  expect(resultJson.vision.data.reason).toContain('submit button');
+
+  // Capture screenshot of an arbitrary layout simulating evidence check for task completeness
+  await page.goto('/');
+  await page.screenshot({ path: 'evidence.png' });
+});
+
 test('Invoke the Frontend Sub-Agent with a UI prompt. It generates valid React code without hallucinating backend Python scripts.', async ({ page }) => {
   const fs = await import('fs');
   const path = await import('path');
@@ -1817,7 +1907,7 @@ test('Pass a timeline of 3 images to the VisionAgent where a button is deleted i
     '    req = AgentRequest(',
     '        task_id="test-vision",',
     '        data={',
-    '            "images": [b"frame_1", b"frame_2", b"frame_3"]',
+    '            "images": {"T-5": b"frame_1", "T-1": b"frame_2", "Current": b"frame_3"}',
     '        }',
     '    )',
     '    resp = agent.execute(req)',
@@ -1996,7 +2086,7 @@ console.log(x, y, z);
     '        task_id="task-vision",',
     '        data={',
     '            "task_type": "vision",',
-    '            "images": [b"frame_1", b"frame_2"]',
+    '            "images": {"T-5": b"frame_1", "T-1": b"frame_2", "Current": b"frame_3"}',
     '        }',
     '    )',
     '    resp_vision = agent.execute(req_vision)',

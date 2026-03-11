@@ -56,10 +56,10 @@ class VisionAgent(BaseAgent):
         Executes a temporal visual analysis.
         
         request.data requires:
-        - "images": List[bytes] (an array of image data in chronological order)
+        - "images": Dict[str, bytes] (mapping 'T-5', 'T-1', 'Current' to image data)
         - "inspiration_goal": str (optional context of what is being built)
         """
-        images = request.data.get("images", [])
+        images = request.data.get("images", {})
         inspiration_goal = request.data.get("inspiration_goal", "UI Component Evolution")
         
         if not images:
@@ -70,30 +70,32 @@ class VisionAgent(BaseAgent):
                 errors=["Missing 'images' in request data."]
             )
             
-        if len(images) < 2:
-            self._log("INFO", "Only 1 image provided, temporal comparison skipped.")
+        required_keys = ['T-5', 'T-1', 'Current']
+        if not all(k in images and images[k] is not None for k in required_keys):
+            self._log("INFO", f"Not all required frames ({required_keys}) provided with valid image data, temporal comparison skipped.")
             return AgentResponse(
                 status="success",
                 data={"regression_detected": False, "reason": "Insufficient frames for timeline comparison."}
             )
 
-        self._log("INFO", f"Starting temporal visual analysis across {len(images)} frames.")
+        self._log("INFO", f"Starting temporal visual analysis across frames: {', '.join(required_keys)}.")
         
         prompt = [
             f"You are the Vision Agent for Zulu AI Factory OS. Your goal was: '{inspiration_goal}'.\n",
-            "You are reviewing a chronological timeline of UI screenshots.\n",
-            "CRITICAL TASK: Analyze the timeline specifically looking for the 'Bulldozer Problem'—the unintended deletion or breaking of previously working UI elements in the final frame compared to earlier frames.\n",
+            "You are reviewing a chronological timeline of UI screenshots (T-5, T-1, Current).\n",
+            "CRITICAL TASK: Analyze the timeline specifically looking for the 'Bulldozer Problem'—the unintended deletion or breaking of previously working UI elements in the final frame (Current) compared to earlier frames (T-5 and T-1).\n",
             "Rules:\n",
             "1. Ignore minor layout shifts or intended replacements.\n",
-            "2. Flag a critical regression ONLY IF a clear functional element (like a button, panel, or graph) was present in earlier frames but is inexplicably missing or broken in the final frame.\n",
-            "3. Evaluate 'object permanence' across the timeline array. Severely penalize UI changes that unnecessarily destroy previously working elements.\n",
+            "2. Flag a critical regression ONLY IF a clear functional element (like a button, panel, or graph) was present in earlier frames (T-5 or T-1) but is inexplicably missing or broken in the Current frame.\n",
+            "3. Evaluate 'object permanence' across the timeline. Severely penalize UI changes that unnecessarily destroy previously working elements.\n",
             "4. Provide your assessment in strict JSON format with two keys: 'regression_detected' (boolean) and 'reason' (string).\n",
             "Output ONLY the JSON object, nothing else."
         ]
         
         content = [*prompt]
-        for idx, img_data in enumerate(images):
-            content.append(f"Frame {idx + 1} (T-{len(images) - 1 - idx}):")
+        for key in required_keys:
+            img_data = images[key]
+            content.append(f"Frame {key}:")
             if isinstance(img_data, bytes):
                 content.append({"mime_type": "image/png", "data": img_data})
             elif isinstance(img_data, str):
@@ -102,9 +104,9 @@ class VisionAgent(BaseAgent):
                     decoded = base64.b64decode(img_data)
                     content.append({"mime_type": "image/png", "data": decoded})
                 except Exception as e:
-                    self._log("WARN", f"Failed to decode base64 image at index {idx}: {e}")
+                    self._log("WARN", f"Failed to decode base64 image at {key}: {e}")
             else:
-                self._log("WARN", f"Unrecognized image format at index {idx}.")
+                self._log("WARN", f"Unrecognized image format at {key}.")
                 
         try:
             response = self._generate_content_with_retry(content)
@@ -136,7 +138,7 @@ class VisionAgent(BaseAgent):
                 data={
                     "regression_detected": regression_detected,
                     "reason": reason,
-                    "frames_analyzed": len(images)
+                    "frames_analyzed": len(required_keys)
                 }
             )
             

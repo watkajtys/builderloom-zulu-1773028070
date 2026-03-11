@@ -48,3 +48,14 @@ class TemporalScreenshotBuffer:
             with open(target, "rb") as f:
                 return f.read()
         return None
+
+    def get_temporal_context(self) -> dict[str, Union[bytes, None]]:
+        """
+        Retrieves exactly the 'T-5', 'T-1', and 'Current' frames as a dictionary payload
+        expected by the VisionAgent. If a frame does not exist, its value will be None.
+        """
+        return {
+            "T-5": self.get_frame(5),
+            "T-1": self.get_frame(1),
+            "Current": self.get_frame(0)
+        }

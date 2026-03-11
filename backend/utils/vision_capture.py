@@ -50,3 +50,27 @@ class VisionCapture:
                 with open(target, "rb") as f:
                     history.append(f.read())
         return history
+
+    def get_temporal_context(self) -> dict[str, Union[bytes, None]]:
+        """
+        Retrieves exactly the 'T-5', 'T-1', and 'Current' frames as a dictionary payload
+        expected by the VisionAgent. If a frame does not exist, its value will be None.
+        """
+        context = {"T-5": None, "T-1": None, "Current": None}
+        
+        t5_target = self.storage_dir / "T-5.png"
+        if t5_target.exists():
+            with open(t5_target, "rb") as f:
+                context["T-5"] = f.read()
+                
+        t1_target = self.storage_dir / "T-1.png"
+        if t1_target.exists():
+            with open(t1_target, "rb") as f:
+                context["T-1"] = f.read()
+                
+        current_target = self.storage_dir / "current.png"
+        if current_target.exists():
+            with open(current_target, "rb") as f:
+                context["Current"] = f.read()
+                
+        return context
