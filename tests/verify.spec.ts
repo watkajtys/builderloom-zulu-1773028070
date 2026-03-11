@@ -3079,6 +3079,7 @@ test('PocketBase API successfully returns the newly created conductor_state and 
   const insertedConductorData = await insertConductorRes.json();
   expect(insertedConductorData.active_phase).toBe("Test Phase");
   expect(insertedConductorData.id).toBeDefined();
+  expect(insertedConductorData.collectionName).toBe("conductor_state");
 
   // 2. Insert a test record into repo_memory to verify structure/permissions
   const testRepoRecord = {
@@ -3094,6 +3095,7 @@ test('PocketBase API successfully returns the newly created conductor_state and 
   const insertedRepoData = await insertRepoRes.json();
   expect(insertedRepoData.type).toBe("Test Type");
   expect(insertedRepoData.id).toBeDefined();
+  expect(insertedRepoData.collectionName).toBe("repo_memory");
 
   // 3. Render a visual confirmation for the evidence screenshot
   await page.setContent(`

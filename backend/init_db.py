@@ -8,11 +8,8 @@ def init_core_collections():
     """Initializes the core data model for state persistence using standard REST API."""
     logger.info("Initializing PocketBase collections for Conductor State and Repo Memory via Admin REST...")
     
-    # PocketBase SDK
-    import pocketbase
     pb_host = os.getenv("PB_HOSTNAME", "loom-pocketbase")
     pb_url = f"http://{pb_host}:8090"
-    client = pocketbase.PocketBase(pb_url)
     
     admin_email = "admin@loom.local"
     admin_password = os.environ.get("PB_ADMIN_PASSWORD", "loom_secure_password")
@@ -38,7 +35,10 @@ def init_core_collections():
         logger.error("Failed to authenticate as PocketBase Superuser/Admin.")
         return False
 
-    client.auth_store.save(token, None)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
 
     schema = [
         {
@@ -74,10 +74,16 @@ def init_core_collections():
 
     success = True
     
-    # Get existing collections via SDK
+    # Get existing collections
+    existing = {}
     try:
-        existing_items = client.collections.get_full_list()
-        existing = {item.name: item.id for item in existing_items}
+        resp = requests.get(f"{pb_url}/api/collections?page=1&perPage=100", headers=headers, timeout=5)
+        if resp.status_code == 200:
+            for item in resp.json().get("items", []):
+                existing[item["name"]] = item["id"]
+        else:
+            logger.error(f"Failed to fetch collections: {resp.status_code}")
+            return False
     except Exception as e:
         logger.error(f"Failed to fetch collections: {e}")
         return False
@@ -87,11 +93,19 @@ def init_core_collections():
         try:
             if name in existing:
                 col_id = existing[name]
-                client.collections.update(col_id, collection)
-                logger.info(f"Successfully updated collection '{name}'.")
+                resp = requests.patch(f"{pb_url}/api/collections/{col_id}", json=collection, headers=headers, timeout=5)
+                if resp.status_code == 200:
+                    logger.info(f"Successfully updated collection '{name}'.")
+                else:
+                    logger.error(f"Failed to update collection '{name}': {resp.status_code} {resp.text}")
+                    success = False
             else:
-                client.collections.create(collection)
-                logger.info(f"Successfully created collection '{name}'.")
+                resp = requests.post(f"{pb_url}/api/collections", json=collection, headers=headers, timeout=5)
+                if resp.status_code == 200:
+                    logger.info(f"Successfully created collection '{name}'.")
+                else:
+                    logger.error(f"Failed to create collection '{name}': {resp.status_code} {resp.text}")
+                    success = False
         except Exception as e:
             logger.error(f"Exception while provisioning '{name}': {e}")
             success = False
