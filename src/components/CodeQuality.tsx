@@ -1,105 +1,54 @@
-import { Filter, Search } from 'lucide-react';
 import { useRepositories } from '../hooks/useRepositories';
-import { RepositoryRow } from './RepositoryRow';
-import { PageLayout } from './PageLayout';
-import { ViewTabs } from './ViewTabs';
-import { CodeQualityChart } from './CodeQualityChart';
-import { CodeQualityStats } from './CodeQualityStats';
-import { CodeQualityFindingsTable } from './CodeQualityFindingsTable';
-import { TopNavUtility } from './TopNavUtility';
+import { ActiveModulesList } from './ActiveModulesList';
+import { AnalysisFindingsView } from './AnalysisFindingsView';
 
 export function CodeQuality() {
-  const { repositories, architectFindings } = useRepositories();
-
-  const statusIndicator = (
-    <div className="flex items-center gap-2">
-      <div className="w-2 h-2 rounded-full bg-electric-blue shadow-[0_0_8px_#00F2FF]"></div>
-      <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">
-        Deep Audit Mode Active
-      </span>
-    </div>
-  );
-
-  const leftContent = <ViewTabs activeTab="code-quality" title="Repository Pulse" />;
-
-  const rightContent = (
-    <>
-      <TopNavUtility />
-      <div className="flex items-center gap-4 border-r border-border-muted pr-6">
-        <div className="flex flex-col items-end">
-          <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">
-            Global Coverage
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-mono font-bold text-white tracking-tighter">
-              91.4<span className="text-electric-blue">%</span>
-            </span>
-          </div>
-          <div data-testid="architect-findings-count" className="text-[10px] text-zinc-grey mt-2 uppercase tracking-widest font-mono">
-            Architect Findings: {architectFindings?.length || 0}
-          </div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <button className="p-2 rounded hover:bg-white/5 text-zinc-grey">
-          <Filter size={20} />
-        </button>
-      </div>
-    </>
-  );
+  const { architectFindings } = useRepositories();
 
   return (
-    <PageLayout
-      leftContent={leftContent}
-      statusIndicator={statusIndicator}
-      rightContent={rightContent}
-      transparentBackground={true}
-      footerZone="CLOUD-NATIVE-X86"
-      footerLoadOrCpu="Automated Linting: Enabled"
-      footerVersion="V2.4.1-Stable"
-      footerTransparentBackground={true}
-      contentClassName="flex-1 flex overflow-hidden"
-    >
-        <div className="w-[30%] border-r border-border-muted flex flex-col bg-obsidian/30">
-          <div className="p-4 border-b border-border-muted flex items-center justify-between">
-            <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">Modules (14)</span>
-            <Search size={14} className="text-zinc-grey" />
-          </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar">
-            {repositories.map((repo, idx) => (
-              <RepositoryRow key={idx} {...repo} isActive={idx === 0} />
-            ))}
+    <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-[#0d1117] h-full">
+      <header className="h-14 border-b border-border-muted bg-obsidian/50 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-20">
+        <div className="flex items-center gap-6">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">System Health / <span className="text-white font-mono">Architect Findings</span></h2>
+          <div className="h-4 w-px bg-border-muted"></div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-neon-purple animate-pulse shadow-[0_0_8px_#BC13FE]"></div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">Deep Static Analysis Active</span>
           </div>
         </div>
-        
-        <div className="flex-1 overflow-y-auto custom-scrollbar bg-obsidian flex flex-col p-8">
-          <div className="shrink-0 flex items-center justify-between mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-xl font-mono font-bold text-white">zulu-factory-core-v2</h2>
-                <span className="px-2 py-0.5 bg-electric-blue/10 border border-electric-blue/30 text-[9px] text-electric-blue font-bold rounded">ACTIVE AUDIT</span>
-              </div>
-              <p className="text-xs text-zinc-400">Analyzing historical trend data for 30-day development cycle</p>
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col items-end border-r border-border-muted pr-6">
+            <span className="text-[10px] font-bold text-zinc-grey uppercase tracking-widest">Selected Module Health</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-mono font-bold text-white tracking-tighter">82.4<span className="text-neon-purple">%</span></span>
             </div>
-            <div className="flex gap-3">
-              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold text-zinc-grey uppercase">Lines of Code</span>
-                <span className="text-sm font-mono font-bold text-white">142,809</span>
-              </div>
-              <div className="w-px h-8 bg-border-muted"></div>
-              <div className="flex flex-col items-end">
-                <span className="text-[9px] font-bold text-zinc-grey uppercase">Unit Tests</span>
-                <span className="text-sm font-mono font-bold text-white">1,402</span>
-              </div>
+            <div data-testid="architect-findings-count" className="text-[10px] text-zinc-grey mt-0.5 uppercase tracking-widest font-mono">
+              Architect Findings: {architectFindings?.length || 0}
             </div>
           </div>
-          
-          <CodeQualityChart />
-          
-          <CodeQualityFindingsTable architectFindings={architectFindings} />
-          
-          <CodeQualityStats />
+          <button className="bg-dark-surface hover:bg-slate-800 text-zinc-300 text-[10px] font-bold px-3 py-1.5 rounded border border-border-muted uppercase tracking-widest transition-all">Export Report</button>
         </div>
-    </PageLayout>
+      </header>
+
+      <div className="flex-1 flex overflow-hidden">
+        <ActiveModulesList />
+        <AnalysisFindingsView architectFindings={architectFindings} />
+      </div>
+
+      <footer className="h-10 border-t border-border-muted bg-obsidian/80 flex items-center justify-between px-6 flex-shrink-0 text-[10px] font-bold text-zinc-grey uppercase tracking-widest">
+        <div className="flex items-center gap-6 font-mono">
+          <div className="flex items-center gap-2">
+            <span>ARCHITECT-ENGINE: v4.0.2</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>Sample Size: 1.2M Lines</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <span>Zulu OS V2.4.1-Stable</span>
+          <div className="w-2 h-2 rounded-full bg-electric-blue shadow-[0_0_8px_#00F2FF]"></div>
+        </div>
+      </footer>
+    </div>
   );
 }
