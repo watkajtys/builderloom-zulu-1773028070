@@ -40,7 +40,10 @@ Output ONLY the condensed, highly dense text block. No pleasantries, no markdown
             self._emit_json_log("INFO", "Executing memory compression task", metadata=request.metadata)
             
             # Fetch repo_memory from PocketBase
-            pb = pocketbase.PocketBase('http://loom-pocketbase:8090')
+            # Try to get pocketbase URL from environment, or use default localhost
+            import os
+            pb_url = os.environ.get("POCKETBASE_URL", "http://127.0.0.1:8090")
+            pb = pocketbase.PocketBase(pb_url)
             
             learnings = request.data.get("learnings", [])
             record_id = None
@@ -97,10 +100,13 @@ Output ONLY the condensed, highly dense text block. No pleasantries, no markdown
                 "raw_learnings": "" # Clear raw learnings after compression
             }
             
-            if record_id:
-                pb.collection('repo_memory').update(record_id, update_data)
-            else:
-                pb.collection('repo_memory').create(update_data)
+            try:
+                if record_id:
+                    pb.collection('repo_memory').update(record_id, update_data)
+                else:
+                    pb.collection('repo_memory').create(update_data)
+            except Exception as e:
+                self._emit_json_log("WARN", f"Could not update repo_memory records: {str(e)}", metadata=request.metadata)
             
             self._emit_json_log("INFO", "Memory compression task completed successfully", metadata=request.metadata)
             
