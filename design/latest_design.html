@@ -2,7 +2,7 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Zulu OS: High-Density Interactive Kanban Variant</title>
+<title>Zulu OS: Collapsible Lane Kanban</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
@@ -35,24 +35,31 @@
         @layer base {
             body { @apply font-sans; }
         }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; }
         .custom-scrollbar::-webkit-scrollbar-track { @apply bg-transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { @apply bg-white/5 rounded-full; }
         .kanban-column {
-            @apply flex-shrink-0 w-72 border-r border-carbon-border flex flex-col bg-deep-obsidian/30;
+            @apply flex-shrink-0 w-80 border-r border-carbon-border flex flex-col bg-deep-obsidian/30 transition-all duration-300;
+        }
+        .kanban-column-collapsed {
+            @apply flex-shrink-0 w-12 border-r border-carbon-border flex flex-col bg-deep-obsidian/50 transition-all duration-300 overflow-hidden;
         }
         .task-card {
-            @apply bg-carbon-surface border border-carbon-border p-3 mb-2 rounded cursor-grab active:cursor-grabbing hover:border-slate-500 transition-colors;
+            @apply bg-carbon-surface/50 border border-carbon-border p-2 mb-1.5 rounded cursor-grab active:cursor-grabbing hover:border-slate-500 transition-colors;
         }
         .drop-zone {
-            @apply border-2 border-dashed border-zinc-grey bg-zinc-grey/5 rounded-lg h-24 mb-2 flex items-center justify-center;
+            @apply border border-dashed border-zinc-grey bg-zinc-grey/5 rounded h-12 mb-1.5 flex items-center justify-center;
         }
         .pulse-cyan {
             border-color: #00f3ff;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
         }
         #steering-overlay:target {
             display: flex;
+        }
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
         }
     </style>
 </head>
@@ -97,7 +104,7 @@
 </nav>
 <div class="p-4 border-t border-carbon-border">
 <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer">
-<img alt="User Profile" class="w-8 h-8 rounded-full border border-carbon-border" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAohT0ubD4Qde6VECGKoF3XCR65xEc7pUJdplqowaXAV7_DP2DpXs9nCl1JR2lovzUMyB55BYJAciQdGEClhBW9Zu-4HubkSiJA__VM4LvDmkqSEx36e1P02DjmEVYr7SD1XypUxgSdKoE5IAv5YsCaiuNMupYrzf9GQHtfjyeluhXXfk6XCt8IHqDwBsvvqcbaNoAuK-NVaRgKyRLH32gj9jmpcc-BaPRnZ6DTa8Ob3nWlJREX6XDatQ8WZh7Cd93QwoJrvw8zqUh3"/>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-carbon-border" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWQ_rs8Qp8VoqcfNZ8Yzag0HH9SddLD03iXq3Gkt5en-5RfuKGi78mKRFQNVZt2qVIjN2CgBxFEOVG7gClZ5Skvn9il8pRiYQylrMgFlWSahH3wM2W0bK757K5KiqFO4Zr0DftEm1S4iRgx2oIrQNeN-xfacdSXigAO9nET4h28foeYOV1F4m3epNF4vA-XPNY0ehf6XPXD-FVPnuy-EyrvUGjOf5i7aOyvQxpMksSaOvc-QWFW028C3vm5G26i_z9cAZAzHDiNiNv"/>
 <div class="flex-1 min-w-0">
 <p class="text-xs font-semibold truncate">Alex Chen</p>
 <p class="text-[10px] text-slate-500 truncate uppercase">Lead Architect</p>
@@ -109,7 +116,7 @@
 <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-deep-obsidian">
 <header class="h-14 border-b border-carbon-border bg-background-dark/50 backdrop-blur-md flex items-center justify-between px-6 flex-shrink-0 z-20">
 <div class="flex items-center gap-6">
-<h2 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Factory Flow / <span class="text-white font-mono">High-Density Kanban</span></h2>
+<h2 class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Factory Flow / <span class="text-white font-mono">Collapsible Lanes</span></h2>
 <button class="flex items-center gap-2 bg-primary/20 hover:bg-primary/30 text-primary px-3 py-1 rounded border border-primary/30 transition-all">
 <span class="material-symbols-outlined text-sm">rocket_launch</span>
 <span class="text-[10px] font-bold uppercase tracking-widest font-mono">Global Steer</span>
@@ -123,136 +130,131 @@
 </div>
 <div class="h-8 w-px bg-carbon-border mx-2"></div>
 <div class="flex items-center gap-2">
-<span class="text-[10px] font-mono text-slate-500 uppercase">View: 1.2.x_density</span>
-<span class="material-symbols-outlined text-slate-500 text-sm">view_compact</span>
+<span class="text-[10px] font-mono text-slate-500 uppercase">View: V2_Collapsible</span>
+<span class="material-symbols-outlined text-slate-500 text-sm">view_column_2</span>
 </div>
 </div>
 </header>
 <div class="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar flex bg-background-dark/30">
-<div class="kanban-column">
-<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/80 backdrop-blur-sm z-10">
-<div class="flex items-center gap-2">
-<span class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-<h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Backlog</h3>
-<span class="text-[10px] font-mono text-slate-600 bg-carbon-surface px-1 rounded">24</span>
+<div class="kanban-column-collapsed group">
+<div class="h-full flex flex-col items-center pt-4 relative">
+<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xs text-slate-500 cursor-pointer">keyboard_double_arrow_right</span>
 </div>
-<span class="material-symbols-outlined text-sm text-slate-600">more_horiz</span>
-</div>
-<div class="flex-1 overflow-y-auto custom-scrollbar p-2">
-<div class="task-card">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-1042</span>
-<span class="text-[9px] font-mono text-synth-magenta">P1</span>
-</div>
-<p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">Optimize neural-weight distribution for batch processing v4</p>
-<div class="mt-2 flex items-center gap-2">
-<span class="text-[9px] text-slate-500 font-mono">2h ago</span>
-</div>
-</div>
-<div class="task-card pulse-cyan">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-1045</span>
-<span class="text-[9px] font-mono text-yellow-500">P2</span>
-</div>
-<p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">Refactor circular dependency in factory-core module</p>
-<div class="mt-2 flex items-center gap-2">
-<span class="text-[9px] text-slate-500 font-mono">5m ago</span>
-</div>
-</div>
-<div class="task-card">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-1048</span>
-<span class="text-[9px] font-mono text-slate-500">P3</span>
-</div>
-<p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">Telemetry dashboard refresh: Add realtime log stream</p>
-</div>
-<div class="drop-zone">
-<span class="text-[10px] font-mono text-slate-600 uppercase">Drop to Stage</span>
-</div>
+<h3 class="vertical-text text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Backlog</h3>
+<span class="text-[9px] font-mono text-slate-700 bg-carbon-surface px-1 py-0.5 rounded rotate-90">24</span>
 </div>
 </div>
 <div class="kanban-column">
-<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/80 backdrop-blur-sm z-10">
+<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/90 backdrop-blur-sm z-10">
 <div class="flex items-center gap-2">
 <span class="w-1.5 h-1.5 rounded-full bg-cyber-cyan shadow-[0_0_5px_#00f3ff]"></span>
 <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">In Analysis</h3>
 <span class="text-[10px] font-mono text-slate-600 bg-carbon-surface px-1 rounded">3</span>
 </div>
+<span class="material-symbols-outlined text-xs text-slate-600 cursor-pointer hover:text-white transition-colors">keyboard_double_arrow_left</span>
+</div>
+<div class="px-3 py-1 bg-carbon-surface/30 border-b border-carbon-border flex items-center justify-between">
+<span class="text-[8px] font-mono text-slate-500 uppercase tracking-tighter">PocketBase Sync</span>
+<span class="text-[8px] font-mono text-cyber-cyan/60">CONNECTED_IDLE</span>
 </div>
 <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
 <div class="task-card border-cyber-cyan/30">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-1020</span>
-<span class="text-[9px] font-mono text-synth-magenta">P1</span>
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-primary font-bold">Z-1020</span>
+<span class="text-[8px] font-mono text-synth-magenta">P1</span>
 </div>
-<p class="text-[11px] text-white line-clamp-2 leading-snug">Memory leak investigation: gateway-proxy-handler</p>
-<div class="mt-2 flex items-center justify-between">
+<p class="text-[10px] text-white line-clamp-1 font-medium">Memory leak investigation: gateway-proxy</p>
+<div class="mt-1 flex items-center justify-between">
 <div class="flex -space-x-1">
-<div class="w-4 h-4 rounded-full bg-slate-700 border border-deep-obsidian"></div>
+<div class="w-3.5 h-3.5 rounded-full bg-slate-700 border border-deep-obsidian"></div>
 </div>
-<span class="text-[9px] font-mono text-cyber-cyan animate-pulse">Running...</span>
+<span class="text-[8px] font-mono text-cyber-cyan animate-pulse">ANALYZING...</span>
 </div>
 </div>
 <div class="task-card">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-1025</span>
-<span class="text-[9px] font-mono text-yellow-500">P2</span>
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-primary font-bold">Z-1025</span>
+<span class="text-[8px] font-mono text-yellow-500">P2</span>
 </div>
-<p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">API Rate limiter: implementation for external mesh</p>
+<p class="text-[10px] text-slate-300 line-clamp-1">API Rate limiter: mesh implementation</p>
+</div>
+<div class="task-card pulse-cyan">
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-primary font-bold">Z-1089</span>
+<span class="text-[8px] font-mono text-slate-500">P3</span>
+</div>
+<p class="text-[10px] text-slate-300 line-clamp-1">Schema validation for edge inputs</p>
+</div>
+<div class="drop-zone">
+<span class="text-[8px] font-mono text-slate-600 uppercase">Drop Zone</span>
 </div>
 </div>
 </div>
-<div class="kanban-column">
-<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/80 backdrop-blur-sm z-10">
+<div class="kanban-column border-cyber-cyan/10">
+<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/90 backdrop-blur-sm z-10">
 <div class="flex items-center gap-2">
 <span class="w-1.5 h-1.5 rounded-full bg-synth-magenta shadow-[0_0_5px_#ff00ff]"></span>
 <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Synthesizing</h3>
 <span class="text-[10px] font-mono text-slate-600 bg-carbon-surface px-1 rounded">2</span>
 </div>
 </div>
-<div class="flex-1 overflow-y-auto custom-scrollbar p-2">
-<div class="task-card">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-988</span>
-<span class="text-[9px] font-mono text-slate-500">P3</span>
-</div>
-<p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">Documentation auto-gen: Zulu DSL Specification</p>
-</div>
-</div>
-</div>
-<div class="kanban-column">
-<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/80 backdrop-blur-sm z-10">
-<div class="flex items-center gap-2">
-<span class="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-<h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Validation</h3>
-<span class="text-[10px] font-mono text-slate-600 bg-carbon-surface px-1 rounded">12</span>
-</div>
+<div class="px-3 py-1 bg-carbon-surface/30 border-b border-carbon-border flex items-center justify-between">
+<span class="text-[8px] font-mono text-slate-500 uppercase tracking-tighter">PocketBase Sync</span>
+<span class="text-[8px] font-mono text-synth-magenta/60">PUSHING_CHANGES</span>
 </div>
 <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
 <div class="task-card">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-primary font-bold">Z-1011</span>
-<span class="text-[9px] font-mono text-synth-magenta">P1</span>
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-primary font-bold">Z-988</span>
+<span class="text-[8px] font-mono text-slate-500">P3</span>
 </div>
-<p class="text-[11px] text-slate-300 line-clamp-2 leading-snug">Hotfix: SSL handshake timeout in edge nodes</p>
+<p class="text-[10px] text-slate-300 line-clamp-1">Documentation auto-gen: Zulu DSL</p>
 </div>
+<div class="task-card">
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-primary font-bold">Z-1102</span>
+<span class="text-[8px] font-mono text-synth-magenta">P1</span>
+</div>
+<p class="text-[10px] text-slate-300 line-clamp-1">Re-architecting event-bus v2.4</p>
+</div>
+</div>
+</div>
+<div class="kanban-column-collapsed group border-l border-carbon-border">
+<div class="h-full flex flex-col items-center pt-4 relative">
+<div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-xs text-slate-500 cursor-pointer">keyboard_double_arrow_right</span>
+</div>
+<h3 class="vertical-text text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Validation</h3>
+<span class="text-[9px] font-mono text-slate-700 bg-carbon-surface px-1 py-0.5 rounded rotate-90">12</span>
 </div>
 </div>
 <div class="kanban-column">
-<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/80 backdrop-blur-sm z-10">
+<div class="p-3 border-b border-carbon-border flex items-center justify-between sticky top-0 bg-deep-obsidian/90 backdrop-blur-sm z-10">
 <div class="flex items-center gap-2">
 <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
 <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Deployed</h3>
 <span class="text-[10px] font-mono text-slate-600 bg-carbon-surface px-1 rounded">142</span>
 </div>
 </div>
+<div class="px-3 py-1 bg-carbon-surface/30 border-b border-carbon-border flex items-center justify-between">
+<span class="text-[8px] font-mono text-slate-500 uppercase tracking-tighter">PocketBase Sync</span>
+<span class="text-[8px] font-mono text-green-500/60">LIVE_POLLING</span>
+</div>
 <div class="flex-1 overflow-y-auto custom-scrollbar p-2 opacity-60">
 <div class="task-card grayscale">
-<div class="flex justify-between items-start mb-1">
-<span class="text-[9px] font-mono text-slate-500 font-bold">Z-940</span>
-<span class="text-[9px] font-mono text-slate-600">P4</span>
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-slate-500 font-bold">Z-940</span>
+<span class="text-[8px] font-mono text-slate-600">P4</span>
 </div>
-<p class="text-[11px] text-slate-400 line-clamp-2 leading-snug">Initial factory scaffold generation</p>
+<p class="text-[10px] text-slate-400 line-clamp-1">Initial factory scaffold generation</p>
+</div>
+<div class="task-card grayscale">
+<div class="flex justify-between items-start mb-0.5">
+<span class="text-[8px] font-mono text-slate-500 font-bold">Z-939</span>
+<span class="text-[8px] font-mono text-slate-600">P4</span>
+</div>
+<p class="text-[10px] text-slate-400 line-clamp-1">Env variable injection service</p>
 </div>
 </div>
 </div>
@@ -261,15 +263,15 @@
 <div class="flex items-center gap-6 font-mono">
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-sm">terminal</span>
-<span>BOARD-ENGINE: v2.4.0</span>
+<span>BOARD-ENGINE: v2.5.1_dynamic</span>
 </div>
 <div class="flex items-center gap-2">
 <span class="material-symbols-outlined text-sm">sync</span>
-<span>PocketBase Connected</span>
+<span class="text-cyber-cyan">PocketBase Active Hub</span>
 </div>
 </div>
 <div class="flex items-center gap-4">
-<span>Zulu OS V2.4.1-Stable</span>
+<span>Zulu OS V2.5-Collapsible</span>
 <div class="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_#00f3ff]"></div>
 </div>
 </footer>
@@ -290,7 +292,7 @@
 </a>
 </div>
 <div class="relative">
-<input autofocus="" class="w-full bg-deep-obsidian border border-carbon-border rounded-lg py-3 px-4 text-sm font-mono text-cyber-cyan placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-cyber-cyan focus:border-cyber-cyan transition-all" placeholder="Awaiting architect directive..." type="text"/>
+<input autofocus="" class="w-full bg-deep-obsidian border border-carbon-border rounded-lg py-3 px-4 text-sm font-mono text-cyber-cyan placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-cyber-cyan focus:border-cyber-cyan transition-all" placeholder="Enter lane management directive..." type="text"/>
 </div>
 <div class="flex justify-end items-center gap-4">
 <span class="text-[9px] font-mono text-slate-500 uppercase">Input stream active</span>
