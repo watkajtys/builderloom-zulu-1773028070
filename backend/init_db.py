@@ -110,7 +110,7 @@ def init_db():
 
         # Initialize kanban_tasks collection
         kanban_schema = {
-            "id": "kanban_tasks_col",
+            "id": "kanbantaskscol1",
             "name": "kanban_tasks",
             "type": "base",
             "system": False,
