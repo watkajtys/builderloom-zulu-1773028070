@@ -108,6 +108,63 @@ def init_db():
         else:
             print("repo_memory schema initialized successfully.")
 
+        # Initialize kanban_tasks collection
+        kanban_schema = {
+            "id": "kanban_tasks_id",
+            "name": "kanban_tasks",
+            "type": "base",
+            "system": False,
+            "schema": [
+                {
+                    "system": False,
+                    "name": "title",
+                    "type": "text",
+                    "required": True,
+                    "presentable": False,
+                    "unique": False,
+                    "options": {}
+                },
+                {
+                    "system": False,
+                    "name": "status",
+                    "type": "text",
+                    "required": True,
+                    "presentable": False,
+                    "unique": False,
+                    "options": {}
+                },
+                {
+                    "system": False,
+                    "name": "order_index",
+                    "type": "number",
+                    "required": True,
+                    "presentable": False,
+                    "unique": False,
+                    "options": {}
+                }
+            ],
+            "listRule": "",
+            "viewRule": "",
+            "createRule": "",
+            "updateRule": "",
+            "deleteRule": ""
+        }
+        
+        kanban_url = f"{POCKETBASE_URL}/api/collections/kanban_tasks"
+        resp = requests.get(kanban_url, timeout=2)
+        if resp.status_code == 200:
+            print("kanban_tasks collection exists. Updating schema...")
+            resp = requests.patch(kanban_url, json=kanban_schema, timeout=2)
+        else:
+            print("kanban_tasks collection does not exist. Creating...")
+            create_url = f"{POCKETBASE_URL}/api/collections"
+            resp = requests.post(create_url, json=kanban_schema, timeout=2)
+            
+        if resp.status_code >= 400:
+            print(f"Error creating/updating kanban_tasks schema: {resp.text}")
+        else:
+            print("kanban_tasks schema initialized successfully.")
+
     except Exception as e:
         print(f"PocketBase not reachable for init: {e}")
 

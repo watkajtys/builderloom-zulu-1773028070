@@ -8,6 +8,105 @@ test.beforeAll(() => {
   execSync('pip install -q -r requirements.txt', { stdio: 'ignore' });
 });
 
+test('Fix failing Playwright test: User drags a task from the bottom of the column to the top. The PocketBase collection updates the order index, and the UI reactively maintains the new layout.', async ({ page }) => {
+  // Mock PocketBase API for Kanban
+  const mockTasks = [
+    { id: 'task1', title: 'Task 1 - Top', status: 'TODO', order_index: 0 },
+    { id: 'task2', title: 'Task 2 - Middle', status: 'TODO', order_index: 1 },
+    { id: 'task3', title: 'Task 3 - Bottom', status: 'TODO', order_index: 2 }
+  ];
+
+  let patchRequests: any[] = [];
+  
+  // Intercept SSE realtime to prevent connection errors
+  await page.route('**/api/realtime**', async route => {
+    await route.fulfill({ status: 204, body: '' });
+  });
+
+  await page.route('**/api/collections/kanban_tasks/records**', async route => {
+    if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({
+            status: 204,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': '*'
+            }
+        });
+    } else if (route.request().method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ items: mockTasks })
+      });
+    } else if (route.request().method() === 'PATCH') {
+      const payload = route.request().postDataJSON();
+      patchRequests.push(payload);
+      await route.fulfill({ 
+          status: 200, 
+          headers: { 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify(payload) 
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  await page.goto('/kanban');
+  
+  // Wait for the board to load
+  await expect(page.locator('text=Workflow Kanban')).toBeVisible();
+  await expect(page.locator('text=Task 1 - Top')).toBeVisible();
+  
+  // We want to drag task3 from the bottom to the top
+  const bottomTask = page.locator('div[data-taskid="task3"]');
+  const topTask = page.locator('div[data-taskid="task1"]');
+  
+  // Dispatch native HTML5 Drag events for React since Playwright's dragTo often simulates Mouse events
+  // Use dataTransfer mock inside evaluate
+  await bottomTask.evaluate((node) => {
+    const dt = new DataTransfer();
+    dt.setData('taskId', 'task3');
+    const dragStart = new DragEvent('dragstart', { dataTransfer: dt, bubbles: true, cancelable: true });
+    node.dispatchEvent(dragStart);
+  });
+  
+  page.on('console', msg => console.log('BROWSER LOG:', msg.text()));
+
+  await topTask.evaluate((node) => {
+    const dt = new DataTransfer();
+    dt.setData('taskId', 'task3');
+    const dropEvent = new DragEvent('drop', { 
+      dataTransfer: dt, 
+      bubbles: true, 
+      cancelable: true,
+      clientY: node.getBoundingClientRect().top + 5 // drop on top half
+    });
+    node.dispatchEvent(dropEvent);
+  });
+  
+  // Wait for React to process the drop and API calls
+  await page.waitForTimeout(1000);
+  
+  // Check the patch requests: we expect order updates.
+  // The first item should now be task3, getting order_index: 0
+  expect(patchRequests.length).toBeGreaterThan(0);
+  
+  // Find if task3 got an order_index update
+  const updatedTask = patchRequests.find(req => req.order_index === 0);
+  expect(updatedTask).toBeDefined();
+
+  // Optionally verify the visual order by text contents in the column
+  const todoCol = page.locator('[data-testid="kanban-col-TODO"]');
+  const textContent = await todoCol.innerText();
+  
+  // Task 3 should appear before Task 1
+  expect(textContent.indexOf('Task 3')).toBeLessThan(textContent.indexOf('Task 1'));
+  
+  await page.screenshot({ path: 'evidence_old.png' });
+});
+
 test('overseer.py tracks the token length of repo_memory. When it exceeds the threshold limit, it halts standard execution, invokes the memory_agent to compress state in PocketBase, and resumes the loop with the newly compressed context.', async ({ page }) => {
   const fs = await import('fs');
   const path = await import('path');
