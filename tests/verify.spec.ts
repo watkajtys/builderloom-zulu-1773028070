@@ -128,7 +128,7 @@ if __name__ == "__main__":
   expect(resultJson.compressed_context).toBe('COMPRESSED_MOCK_DATA');
 
   await page.goto('/'); await page.waitForTimeout(1000);
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement dynamic UI components to render the static analysis findings.', async ({ page }) => {
@@ -171,7 +171,7 @@ test('Implement dynamic UI components to render the static analysis findings.', 
   await expect(page.locator('span', { hasText: 'ERROR' })).toBeVisible();
   await expect(page.locator('span', { hasText: 'WARNING' })).toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Vision agent receives 3 historical screenshots, analyzes the progression, and correctly identifies working UI components to retain, preventing the \'Bulldozer Problem\'.', async ({ page }) => {
@@ -261,7 +261,7 @@ if __name__ == "__main__":
 
   // Capture screenshot of an arbitrary layout simulating evidence check for task completeness
   await page.goto('/');
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Invoke the Frontend Sub-Agent with a UI prompt. It generates valid React code without hallucinating backend Python scripts.', async ({ page }) => {
@@ -342,7 +342,7 @@ test('Invoke the Frontend Sub-Agent with a UI prompt. It generates valid React c
   expect(resultJson.data.result).not.toContain('def ');
 
   // Take the screenshot required by verification rules
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('App initializes correctly', async ({ page }) => {
@@ -367,7 +367,7 @@ test('Fix broken icon rendering showing raw text strings across the UI', async (
   const systemHealthLink = sidebar.locator('a[href*="/system-health"]').first();
   await expect(systemHealthLink.locator('svg')).toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Clean up the top right global navigation and search alignment', async ({ page }) => {
@@ -386,7 +386,7 @@ test('Clean up the top right global navigation and search alignment', async ({ p
   await expect(page.locator('text=notifications')).not.toBeVisible();
   await expect(page.locator('text=search').first()).not.toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Zulu Dashboard loads correctly', async ({ page }) => {
@@ -409,7 +409,7 @@ test('React system-health route loads and EXPORT button is de-emphasized', async
   await expect(settingsBtn).toHaveClass(/text-zinc-grey/);
   await expect(settingsBtn).not.toHaveClass(/bg-electric-blue/);
   
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('PocketBase connection uses proper relative path', async ({ page }) => {
@@ -448,7 +448,7 @@ test('Smooth chart data rendering to feel like a premium, realistic dashboard', 
   const bars = page.locator('div.flex-1.flex.flex-col.justify-end > div.bg-electric-blue');
   expect(await bars.count()).toBeGreaterThan(10);
   
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ page }) => {
@@ -480,7 +480,7 @@ test('Telemetry logs maintain a strict hanging indent when wrapping', async ({ p
   // Allow sub-pixel tolerance for rendering variations
   expect(Math.abs(firstLineX - lastLineX)).toBeLessThan(2);
   
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 
@@ -521,7 +521,7 @@ test('Python agent logs are structured JSON format', async ({ page }) => {
   expect(parsed.level).toBe('INFO');
   
   // Screenshot as required by rules
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Load the dashboard and verify that mock JSON logs of different \'event_type\'s are correctly styled using Geist Mono. Click the filter toggles to verify that \'thought\' logs can be hidden while \'error\' logs remain visible.', async ({ page }) => {
@@ -564,7 +564,7 @@ test('Load the dashboard and verify that mock JSON logs of different \'event_typ
   const infoToggle = page.locator('button', { hasText: 'INFO' });
   await expect(infoToggle).toHaveClass(/bg-electric-blue\/10/);
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Elevate the Filter Config popover for better visual hierarchy', async ({ page }) => {
@@ -600,7 +600,7 @@ test('Elevate the Filter Config popover for better visual hierarchy', async ({ p
   await expect(popoverContainer).toHaveClass(/block/);
 
   // Take screenshot as required
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Ensure Header and Views Use Reusable PageLayout Abstraction', async ({ page }) => {
@@ -648,7 +648,7 @@ test('Implement the "Code Quality" UI component', async ({ page }) => {
   await expect(page.locator('text=Automated Linting: Enabled')).toBeVisible();
 
   // Take screenshot as required
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement Sub-Agent base architecture and interfaces', async ({ page }) => {
@@ -706,7 +706,7 @@ print(res.data)
   expect(outputLines[responseIdx + 1]).toBe('success');
   expect(outputLines[responseIdx + 2]).toBe("{'test': True}");
   
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Define core data models and interfaces for the prompt chain', async ({ page }) => {
@@ -768,7 +768,7 @@ print(store.pb.base_url)
   expect(pbUrl).toBe('http://loom-pocketbase:8090');
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Given an array of 20 redundant architectural learnings, the summarization sub-agent reduces them into a single, highly dense context block without losing core architectural constraints.', async ({ page }) => {
@@ -885,7 +885,7 @@ test('Given an array of 20 redundant architectural learnings, the summarization 
   
   // Take the screenshot required by verification rules
   await page.goto('/');
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('User clicks the System Health tab in the sidebar and navigates to the new route successfully.', async ({ page }) => {
@@ -915,7 +915,7 @@ test('User clicks the System Health tab in the sidebar and navigates to the new 
   await expect(codeQualityPlaceholder).toBeVisible();
 
   // Capture evidence screenshot of active feature
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement a single node executor with prompt interpolation', async ({ page }) => {
@@ -1004,7 +1004,7 @@ print(json.dumps({
   expect(resultJson.interpolated_prompt).toBe('Analyze the following system health metric: CPU_LOAD with value 95%.');
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement the main execution loop and state orchestrator', async ({ page }) => {
@@ -1093,7 +1093,7 @@ print(json.dumps({
   expect(resultJson.variables.latest_output).toBe("Result from node 2");
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Integrate Python static analysis execution', async ({ page }) => {
@@ -1200,7 +1200,7 @@ test_file_clean.unlink()
   expect(invalidJson.message).toBe('Ruff execution failed');
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Integrate React static analysis execution', async ({ page }) => {
@@ -1309,7 +1309,7 @@ test_file_clean.unlink()
   expect(invalidJson.message).toBe('ESLint execution failed');
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Define core interfaces and state models for the unified execution engine', async ({ page }) => {
@@ -1427,7 +1427,7 @@ if __name__ == '__main__':
   expect(resultJson.status).toBe('running');
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement core orchestrator dispatcher and routing logic', async ({ page }) => {
@@ -1559,7 +1559,7 @@ if __name__ == '__main__':
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   // removed page.goto to prevent net::ERR_CONNECTION_REFUSED
   // await page.goto('/');
-  // await page.screenshot({ path: 'evidence.png' });
+  // await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Add state tracking, error handling, and retries to the orchestrator', async ({ page }) => {
@@ -1703,7 +1703,7 @@ test('Add state tracking, error handling, and retries to the orchestrator', asyn
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Extract the Orchestrator domain into a specialized ExecutorAgent sub-agent module', async ({ page }) => {
@@ -1860,7 +1860,7 @@ test('Extract the Orchestrator domain into a specialized ExecutorAgent sub-agent
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('ArchitectAgent receives code with linting errors, runs analysis, appends violations to its payload, and reduces the confidence score.', async ({ page }) => {
@@ -1976,7 +1976,7 @@ console.log(x, y, z);
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Scaffold the new UI Tab routing and shell component', async ({ page }) => {
@@ -2008,7 +2008,7 @@ test('Scaffold the new UI Tab routing and shell component', async ({ page }) => 
   await expect(placeholderSystemHealth).toBeVisible();
   await expect(placeholderCodeQuality).not.toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Verify System Health Split-View Monitoring UI component', async ({ page }) => {
@@ -2039,7 +2039,7 @@ test('Verify System Health Split-View Monitoring UI component', async ({ page })
   await expect(page.locator('text=System Load: Stable')).toBeVisible();
 
   // Take screenshot as required
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement Temporal Screenshot Storage for Vibe Agent', async ({ page }) => {
@@ -2108,7 +2108,7 @@ with open(sys.argv[1], 'rb') as f:
     }
   }
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Pass a timeline of 3 images to the VisionAgent where a button is deleted in the final frame. Verify the agent detects the regression ("Bulldozer Problem") and flags a critical failure.', async ({ page }) => {
@@ -2188,7 +2188,7 @@ test('Pass a timeline of 3 images to the VisionAgent where a button is deleted i
   expect(resultJson.data.frames_analyzed).toBe(3);
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('', async ({ page }) => {
@@ -2263,7 +2263,7 @@ print(json.dumps(dataclasses.asdict(res)))
   expect(responseJson.metadata.response_meta).toBe(true);
   
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Implement the Orchestrator/Router component to dispatch tasks to appropriate sub-agents', async ({ page }) => {
@@ -2395,7 +2395,7 @@ console.log(x, y, z);
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Define the base sub-agent interface and implement routing logic in the monolithic agent', async ({ page }) => {
@@ -2482,7 +2482,7 @@ test('Define the base sub-agent interface and implement routing logic in the mon
 
   // Take screenshot of empty app (tests shouldn't fail based on visual rules)
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test("Extract the final remaining logical domain into a dedicated sub-agent module and update routing.", async ({ page }) => {
@@ -2580,7 +2580,7 @@ test("Extract the final remaining logical domain into a dedicated sub-agent modu
   
     // Take screenshot of empty app
     await page.goto('/');
-    await page.screenshot({ path: 'evidence.png' });
+    await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test("Extract the first remaining logical domain into a dedicated sub-agent module and update imports/routing.", async ({ page }) => {
@@ -2686,7 +2686,7 @@ test("Extract the first remaining logical domain into a dedicated sub-agent modu
 
   // Take screenshot of empty app
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Utility correctly runs pylint and mypy on a dummy python file with deliberate errors and returns parsed violation objects', async ({ page }) => {
@@ -2764,7 +2764,7 @@ if __name__ == "__main__":
 
   // Take screenshot of active feature
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Utility runs ESLint on a dummy React component with missing prop-types or unused vars, returning parsed violation objects.', async ({ page }) => {
@@ -2837,7 +2837,7 @@ if __name__ == "__main__":
 
   // Take screenshot of active feature
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Playwright capture utility saves multiple sequential screenshots, correctly cycling out images older than T-5.', async ({ page }) => {
@@ -2907,7 +2907,7 @@ with open(sys.argv[1], 'rb') as f:
     }
   }
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Define the data models and implement the API service/fetching logic for the Architect\'s static analysis findings.', async ({ page }) => {
@@ -2932,7 +2932,7 @@ test('Define the data models and implement the API service/fetching logic for th
   await expect(findingsCount).toBeVisible();
   await expect(findingsCount).toContainText('Architect Findings: 1');
   
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('VisionAgent processes T-2, T-1, and Current screenshots, correctly identifying UI elements that were unintentionally deleted (resolving the Bulldozer Problem).', async ({ page }) => {
@@ -3017,7 +3017,7 @@ if __name__ == "__main__":
   expect(resultJson.vision.data.frames_analyzed).toBe(3);
 
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Set up the base Code Quality dashboard page, layout, and routing.', async ({ page }) => {
@@ -3047,7 +3047,7 @@ test('Set up the base Code Quality dashboard page, layout, and routing.', async 
   await expect(page.locator('text=Technical Debt')).toBeVisible();
   await expect(page.locator('text=Duplication')).toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('CodeQuality empty state displays properly when there are no architect findings', async ({ page }) => {
@@ -3067,7 +3067,7 @@ test('CodeQuality empty state displays properly when there are no architect find
   // Ensure we still see the metrics blocks around the area
   await expect(page.locator('text=Maintainability Index')).toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Unify the display format for the \'Complexity\' metric', async ({ page }) => {
@@ -3078,7 +3078,7 @@ test('Unify the display format for the \'Complexity\' metric', async ({ page }) 
   await expect(complexityTooltipText).toBeVisible();
 
   // Capture screenshot as required
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Pass a task describing a UI component update; the router should return the frontend agent intent. Pass a PocketBase update task; router returns backend intent.', async ({ page }) => {
@@ -3179,7 +3179,7 @@ test('Pass a task describing a UI component update; the router should return the
   expect(resultJson.backend.data.intent).toBe('backend');
 
   // Skip page.goto since it relies on the dev server which may not be running in this specific sub-test env.
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Create a specialized Backend Sub-Agent with a strictly scoped system prompt for Python, PocketBase SDK, and JSON structured logging.', async ({ page }) => {
@@ -3259,7 +3259,7 @@ test('Create a specialized Backend Sub-Agent with a strictly scoped system promp
   expect(resultJson.data.result).toContain('import pocketbase');
 
   // Skip goto since we might not have a running frontend locally to hit
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Provide a script with an unused import violation; the Refactor Sub-Agent outputs the exact code change to remove it.', async ({ page }) => {
@@ -3344,7 +3344,7 @@ test('Provide a script with an unused import violation; the Refactor Sub-Agent o
   expect(resultJson.data.result).toContain('def my_func():');
 
   // Take the screenshot required by verification rules
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('The Overseer successfully routes a task, executes the Frontend Agent, validates with ArchitectAgent, and chains to the Refactor Agent if violations exist.', async ({ page }) => {
@@ -3386,7 +3386,7 @@ test('The Overseer successfully routes a task, executes the Frontend Agent, vali
   await page.waitForTimeout(500);
 
   // Take screenshot evidence
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('User navigates to /system-health, views a populated list of linting errors, and sees them styled correctly with Geist Mono for code outputs.', async ({ page }) => {
@@ -3425,7 +3425,7 @@ test('User navigates to /system-health, views a populated list of linting errors
   // Verify typography specific class from design
   await expect(page.locator('.font-mono', { hasText: 'src/utils/parser.ts' }).first()).toBeVisible();
 
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('Migrate the core ConductorState load and save mechanisms in state.py to use PocketBase instead of session_state.json.', async ({ page }) => {
@@ -3528,7 +3528,7 @@ test('Migrate the core ConductorState load and save mechanisms in state.py to us
   // Take the screenshot required by verification rules
   // wait for the UI
   // skipped page.goto
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('User loads the React Viewer UI and state populates dynamically from PocketBase. A background update to PocketBase triggers real-time reflection in the UI.', async ({ page, request }) => {
@@ -3576,7 +3576,7 @@ test('User loads the React Viewer UI and state populates dynamically from Pocket
 
   // Verify real-time reflection
   await expect(page.locator('text=Test initialization started').first()).toBeVisible({ timeout: 10000 });
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('User types "Stop working on UI and fix the DB first" into the Steering box, clicks submit. PocketBase SDK receives the update, and overseer.py logs the new directive.', async ({ page }) => {
@@ -3709,7 +3709,7 @@ if __name__ == "__main__":
   await page.click('text=Steer');
   await input.fill('Capturing evidence...');
   
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
 
 test('User navigates to /kanban, drags a task from the bottom of the column to the top. Collection updates the order index, UI reactively maintains the new layout.', async ({ page }) => {
@@ -3817,5 +3817,5 @@ except Exception as e:
   await page.waitForSelector('text=Human-in-the-Loop Steering');
 
   // Screenshot evidence
-  await page.screenshot({ path: 'evidence.png' });
+  await page.screenshot({ path: 'evidence_old.png' });
 });
