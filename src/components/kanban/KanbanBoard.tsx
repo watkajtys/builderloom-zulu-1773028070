@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { pb } from '../../services/pocketbase';
 
-export interface KanbanTask {
+interface KanbanTask {
   id: string;
   task_id: string;
   title: string;
@@ -12,7 +12,7 @@ export interface KanbanTask {
   order: number;
 }
 
-export const KANBAN_COLUMNS = [
+const KANBAN_COLUMNS = [
   { id: 'backlog', title: 'Backlog', dotColor: 'bg-slate-500' },
   { id: 'in_analysis', title: 'In Analysis', dotColor: 'bg-electric-blue shadow-[0_0_5px_#00f3ff]' },
   { id: 'synthesizing', title: 'Synthesizing', dotColor: 'bg-neon-purple shadow-[0_0_5px_#ff00ff]' },
