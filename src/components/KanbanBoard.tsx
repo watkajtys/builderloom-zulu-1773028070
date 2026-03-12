@@ -121,7 +121,7 @@ export function KanbanBoard() {
     if (!draggedTask) return;
 
     // Filter out the dragged task from the column it is entering if it was already there
-    let newColTasks = colTasks.filter(t => t.id !== taskId);
+    const newColTasks = colTasks.filter(t => t.id !== taskId);
 
     let dropIndex = newColTasks.length;
     

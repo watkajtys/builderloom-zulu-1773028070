@@ -33,12 +33,12 @@ export function SteeringOverlay() {
       const pbUrl = window.location.protocol + "//" + window.location.hostname + ":8090";
       const pb = new PocketBase(pbUrl);
       
-      let currentStateData: any = {};
+      let currentStateData: Record<string, unknown> = {};
       try {
           const record = await pb.collection('conductor_state').getOne('singleton123456');
           currentStateData = record.state_data || {};
-      } catch (err: any) {
-          if (err.status !== 404) {
+      } catch (err: unknown) {
+          if ((err as {status?: number}).status !== 404) {
               throw err;
           }
       }
@@ -54,8 +54,8 @@ export function SteeringOverlay() {
           await pb.collection('conductor_state').update('singleton123456', {
             state_data: updatedStateData
           });
-      } catch (err: any) {
-          if (err.status === 404) {
+      } catch (err: unknown) {
+          if ((err as {status?: number}).status === 404) {
               await pb.collection('conductor_state').create({
                   id: 'singleton123456',
                   state_data: updatedStateData
